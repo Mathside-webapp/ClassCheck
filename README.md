@@ -1,3 +1,13 @@
+# ClassCheck — V10.3 Dynamic SF2
+
+## V10.3 dynamic SF2 roster
+
+- SF2 is no longer limited to the Beryl roster size or to 25 male / 19 female learner slots.
+- The selected class name, grade, learner names, sex grouping, attendance marks, monthly totals, adviser, and school head are filled from ClassCheck data.
+- If a class exceeds the built-in SF2 learner rows, ClassCheck automatically inserts additional rows with the same borders, merges, row height, and cell styles.
+- Male/Female total rows, combined total, monthly summary, adviser signature, and school-head signature automatically move down when rows are inserted.
+- Smaller classes simply leave unused SF2 rows blank; no Beryl names or Beryl counts remain in the generated workbook.
+- No SQL/database change is required for this V10.3 update.
 
 ## V10.2 browser login / installed-app flow
 

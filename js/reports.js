@@ -359,111 +359,6 @@ document.addEventListener('DOMContentLoaded',async()=>{
     return original.slice(0);
   }
 
-  async function buildSf2WorkbookSheetJs(d){
-    if(!window.XLSX)throw new Error('Excel library is not available.');
-    const bytes=await getSf2TemplateBytes();
-    const wb=XLSX.read(bytes,{type:'array',cellStyles:true,cellNF:true,cellDates:false,cellFormula:true});
-    const sheetName=wb.SheetNames?.[0];
-    const ws=wb.Sheets?.[sheetName];
-    if(!ws)throw new Error('The supplied SF2 template is not readable.');
-
-    // Keep the exact uploaded SF2 layout. Only data cells are changed.
-    setTemplateCell(ws,'F3',safe(d.profile.school_id));
-    setTemplateCell(ws,'M3',safe(d.c.school_year||d.profile.school_year));
-    setTemplateCell(ws,'AA3',monthText(d.bounds.year,d.bounds.month-1));
-    setTemplateCell(ws,'F4',safe(d.profile.school_name));
-    setTemplateCell(ws,'AA4',safe(d.c.grade_level));
-    setTemplateCell(ws,'AM4',safe(d.c.section_name).toUpperCase());
-    setTemplateCell(ws,'AN80',safe(d.c.adviser_name||d.profile.full_name,'').toUpperCase());
-    setTemplateCell(ws,'AN86',safe(d.profile.school_head_name,'').toUpperCase());
-
-    const calendarDays=d.calendarDays||monthWeekdayCalendar(d.prefix);
-    SF2_DATE_COLUMNS.forEach(col=>clearTemplateCell(ws,`${col}6`));
-    calendarDays.forEach(item=>{
-      const col=SF2_DATE_COLUMNS[item.slotIndex];
-      if(!col)throw new Error(`The supplied SF2 format has no weekday slot for ${item.date}.`);
-      setTemplateCell(ws,`${col}6`,item.day);
-    });
-    // Row 7 already contains the template's fixed M, T, W, TH, F order. Never rewrite it.
-
-    const {male,female}=splitBySex(d.students);
-    // This exact template has 25 male slots and 19 female slots.
-    if(male.length>25)throw new Error(`The uploaded SF2 template has 25 male learner rows, but this class has ${male.length} males.`);
-    if(female.length>19)throw new Error(`The uploaded SF2 template has 19 female learner rows, but this class has ${female.length} females.`);
-
-    const learnerDataCells=(row)=>[
-      `A${row}`,`C${row}`,...SF2_DATE_COLUMNS.map(c=>`${c}${row}`),`AM${row}`,`AO${row}`,`AQ${row}`
-    ];
-    const clearLearnerRow=(row)=>learnerDataCells(row).forEach(a=>clearTemplateCell(ws,a));
-    for(let row=8;row<=32;row++)clearLearnerRow(row);
-    for(let row=34;row<=52;row++)clearLearnerRow(row);
-
-    const writeLearner=(s,row,number)=>{
-      setTemplateCell(ws,`A${row}`,number);
-      setTemplateCell(ws,`C${row}`,sf2LearnerName(s));
-      const map=d.byStudent.get(s.id)||new Map();
-      let absent=0,present=0;
-      calendarDays.forEach(item=>{
-        const rec=map.get(item.date);
-        let mark='';
-        if(rec?.status==='absent'){mark='X';absent++;}
-        else if(rec?.status==='late'){mark='L';present++;}
-        else if(rec?.status==='present'){present++;}
-        setTemplateCell(ws,`${SF2_DATE_COLUMNS[item.slotIndex]}${row}`,mark);
-      });
-      present=Math.max(0,d.schoolDays-absent);
-      setTemplateCell(ws,`AM${row}`,absent);
-      setTemplateCell(ws,`AO${row}`,present);
-      const remarks=s.remarks||((s.enrollment_status&&s.enrollment_status!=='Active')?s.enrollment_status:'');
-      setTemplateCell(ws,`AQ${row}`,remarks||'');
-    };
-
-    male.forEach((s,i)=>writeLearner(s,8+i,i+1));
-    female.forEach((s,i)=>writeLearner(s,34+i,i+1));
-
-    const writeFixedTotalRow=(row,label,students)=>{
-      // Keep the template's fixed total rows (33 for male, 53 for female, 54 combined).
-      setTemplateCell(ws,`A${row}`,students.length);
-      setTemplateCell(ws,`C${row}`,label);
-      SF2_DATE_COLUMNS.forEach(col=>clearTemplateCell(ws,`${col}${row}`));
-      const ids=new Set(students.map(s=>s.id));
-      calendarDays.forEach(item=>{
-        const col=SF2_DATE_COLUMNS[item.slotIndex];
-        const recs=(d.byDate.get(item.date)||[]).filter(r=>ids.has(r.student_id));
-        const absent=recs.filter(r=>r.status==='absent').length;
-        setTemplateCell(ws,`${col}${row}`,Math.max(0,students.length-absent));
-      });
-    };
-    writeFixedTotalRow(33,'<=== MALE | TOTAL Per Day ===>',male);
-    writeFixedTotalRow(53,'<=== FEMALE | TOTAL Per Day ===>',female);
-    writeFixedTotalRow(54,'Combined TOTAL Per Day',d.students);
-
-    // Fill the exact summary/computation block from the uploaded form.
-    const maleSum=attendanceSummaryFor(male,d,'male');
-    const femaleSum=attendanceSummaryFor(female,d,'female');
-    const totalSum=attendanceSummaryFor(d.students,d,'total');
-    const setTriplet=(rowNum,a,b,t)=>{
-      setTemplateCell(ws,`AR${rowNum}`,a);
-      setTemplateCell(ws,`AS${rowNum}`,b);
-      setTemplateCell(ws,`AT${rowNum}`,t);
-    };
-    setTemplateCell(ws,'AM55',`Month :\n${monthText(d.bounds.year,d.bounds.month-1)}`);
-    setTemplateCell(ws,'AP55',`No. of Days of Classes:\n${d.schoolDays}`);
-    setTriplet(57,maleSum.start,femaleSum.start,totalSum.start);
-    setTriplet(59,maleSum.late,femaleSum.late,totalSum.late);
-    setTriplet(63,maleSum.registered,femaleSum.registered,totalSum.registered);
-    setTriplet(65,`${(maleSum.pctEnrollment*100).toFixed(2)}%`,`${(femaleSum.pctEnrollment*100).toFixed(2)}%`,`${(totalSum.pctEnrollment*100).toFixed(2)}%`);
-    setTriplet(67,Number(maleSum.ada.toFixed(2)),Number(femaleSum.ada.toFixed(2)),Number(totalSum.ada.toFixed(2)));
-    setTriplet(69,`${(maleSum.pctAttendance*100).toFixed(2)}%`,`${(femaleSum.pctAttendance*100).toFixed(2)}%`,`${(totalSum.pctAttendance*100).toFixed(2)}%`);
-    setTriplet(70,absentFiveConsecutive(male,d),absentFiveConsecutive(female,d),absentFiveConsecutive(d.students,d));
-    setTriplet(71,maleSum.dropped,femaleSum.dropped,totalSum.dropped);
-    setTriplet(73,maleSum.transferredOut,femaleSum.transferredOut,totalSum.transferredOut);
-    setTriplet(75,maleSum.transferredIn,femaleSum.transferredIn,totalSum.transferredIn);
-
-    wb.Props={...(wb.Props||{}),Title:`SF2 ${d.c.grade_level} ${d.c.section_name} ${monthText(d.bounds.year,d.bounds.month-1)}`,Subject:'Daily Attendance Report of Learners',Author:'ClassCheck'};
-    return wb;
-  }
-
   function xmlEscapeText(value){
     return String(value??'')
       .replace(/&/g,'&amp;')
@@ -495,6 +390,116 @@ document.addEventListener('DOMContentLoaded',async()=>{
     for(const [address,value] of entries)out=patchTemplateCellXml(out,address,value);
     return out;
   }
+
+  // The official SF2 template shipped with ClassCheck has 25 built-in male
+  // learner rows and 19 built-in female learner rows.  Those are treated as
+  // minimum capacities, not hard limits.  When a class is larger, ClassCheck
+  // inserts styled learner rows into the workbook XML and shifts the total,
+  // summary and signature blocks downward without changing the form design.
+  function sf2DynamicLayout(maleCount,femaleCount){
+    const maleExtra=Math.max(0,Number(maleCount||0)-25);
+    const femaleExtra=Math.max(0,Number(femaleCount||0)-19);
+    const totalExtra=maleExtra+femaleExtra;
+    const mapOriginalRow=row=>{
+      const n=Number(row);
+      if(n>=53)return n+totalExtra;
+      if(n>=33)return n+maleExtra;
+      return n;
+    };
+    return{
+      maleExtra,femaleExtra,totalExtra,mapOriginalRow,
+      maleStart:8,
+      maleTotal:33+maleExtra,
+      femaleStart:34+maleExtra,
+      femaleTotal:53+totalExtra,
+      combinedTotal:54+totalExtra,
+      summaryStart:55+totalExtra,
+      adviserRow:80+totalExtra,
+      schoolHeadRow:86+totalExtra,
+      finalRow:87+totalExtra
+    };
+  }
+
+  function sf2RemapRowReference(ref,layout){
+    return String(ref).replace(/([A-Z]+)(\d+)/g,(_m,col,row)=>`${col}${layout.mapOriginalRow(Number(row))}`);
+  }
+
+  function sf2RemapExistingRowXml(rowXml,newRow){
+    let out=String(rowXml);
+    out=out.replace(/(<row\b[^>]*?\br=")\d+("[^>]*>)/,`$1${newRow}$2`);
+    out=out.replace(/(<c\b[^>]*?\br="[A-Z]+)\d+("[^>]*?)/g,`$1${newRow}$2`);
+    return out;
+  }
+
+  function sf2BlankLearnerRowClone(sourceXml,sourceRow,targetRow){
+    let out=sf2RemapExistingRowXml(sourceXml,targetRow);
+    // Keep every style/border attribute but remove the old learner's content.
+    out=out.replace(/<c\b([^>]*?)(?:\/>|>([\s\S]*?)<\/c>)/g,(_m,attrs)=>{
+      let clean=String(attrs||'').replace(/\s+t=("[^"]*"|'[^']*')/g,'').replace(/\s*\/$/,'');
+      clean=clean.replace(new RegExp(`(\\br="[A-Z]+)${targetRow}(\")`),`$1${targetRow}$2`);
+      return `<c${clean}/>`;
+    });
+    return out;
+  }
+
+  function sf2ExpandTemplateXml(xml,maleCount,femaleCount){
+    const layout=sf2DynamicLayout(maleCount,femaleCount);
+    if(!layout.totalExtra)return{xml,layout};
+
+    const sheetDataMatch=xml.match(/<sheetData>([\s\S]*?)<\/sheetData>/);
+    if(!sheetDataMatch)throw new Error('The SF2 template worksheet rows are unavailable.');
+    const originalSheetData=sheetDataMatch[1];
+    const rows=[];
+    const originalRows=new Map();
+    const rowRe=/<row\b[^>]*?\br="(\d+)"[^>]*>[\s\S]*?<\/row>/g;
+    let rowMatch;
+    while((rowMatch=rowRe.exec(originalSheetData))){
+      const originalRow=Number(rowMatch[1]);
+      const rowXml=rowMatch[0];
+      originalRows.set(originalRow,rowXml);
+      rows.push({row:layout.mapOriginalRow(originalRow),xml:sf2RemapExistingRowXml(rowXml,layout.mapOriginalRow(originalRow))});
+    }
+
+    const maleSource=originalRows.get(32);
+    const femaleSource=originalRows.get(52)||maleSource;
+    if(!maleSource||!femaleSource)throw new Error('The SF2 learner-row style could not be copied.');
+
+    for(let i=0;i<layout.maleExtra;i++){
+      const row=33+i;
+      rows.push({row,xml:sf2BlankLearnerRowClone(maleSource,32,row)});
+    }
+    for(let i=0;i<layout.femaleExtra;i++){
+      const row=53+layout.maleExtra+i;
+      rows.push({row,xml:sf2BlankLearnerRowClone(femaleSource,52,row)});
+    }
+    rows.sort((a,b)=>a.row-b.row);
+    xml=xml.replace(sheetDataMatch[0],`<sheetData>${rows.map(item=>item.xml).join('')}</sheetData>`);
+
+    // Remap all existing merged ranges, then give every inserted learner row
+    // the same merged-cell pattern as the template learner rows.
+    const mergeMatch=xml.match(/<mergeCells\b([^>]*)>([\s\S]*?)<\/mergeCells>/);
+    if(!mergeMatch)throw new Error('The SF2 template merged cells are unavailable.');
+    const originalMergeRefs=[...mergeMatch[2].matchAll(/<mergeCell\s+ref="([^"]+)"\s*\/>/g)].map(m=>m[1]);
+    const remapped=originalMergeRefs.map(ref=>sf2RemapRowReference(ref,layout));
+    const learnerMergePattern=originalMergeRefs.filter(ref=>{
+      const nums=[...ref.matchAll(/(\d+)/g)].map(m=>Number(m[1]));
+      return nums.length&&nums.every(n=>n===32);
+    });
+    const inserted=[];
+    const cloneMergeRow=(ref,target)=>ref.replace(/(\d+)/g,String(target));
+    for(let i=0;i<layout.maleExtra;i++)for(const ref of learnerMergePattern)inserted.push(cloneMergeRow(ref,33+i));
+    for(let i=0;i<layout.femaleExtra;i++)for(const ref of learnerMergePattern)inserted.push(cloneMergeRow(ref,53+layout.maleExtra+i));
+    const allMerges=[...remapped,...inserted];
+    const mergeXml=`<mergeCells count="${allMerges.length}">${allMerges.map(ref=>`<mergeCell ref="${ref}"/>`).join('')}</mergeCells>`;
+    xml=xml.replace(mergeMatch[0],mergeXml);
+
+    // Extend the worksheet used range so spreadsheet apps include the shifted
+    // summary/signature block in print/layout calculations.
+    xml=xml.replace(/<dimension\b([^>]*?\bref=")([A-Z]+)(\d+):([A-Z]+)(\d+)("[^>]*\/>)/,(_m,prefix,c1,r1,c2,r2,suffix)=>
+      `<dimension${prefix}${c1}${layout.mapOriginalRow(Number(r1))}:${c2}${layout.mapOriginalRow(Number(r2))}${suffix}`
+    );
+    return{xml,layout};
+  }
   async function buildSf2WorkbookExact(d){
     if(!window.JSZip)throw new Error('The SF2 workbook engine is not available. Refresh the page and try again.');
     const bytes=await getSf2TemplateBytes();
@@ -503,18 +508,25 @@ document.addEventListener('DOMContentLoaded',async()=>{
     const sheetFile=zip.file(sheetPath);
     if(!sheetFile)throw new Error('The converted SF2 template is missing its worksheet.');
     let xml=await sheetFile.async('string');
+
+    const {male,female}=splitBySex(d.students);
+    const expanded=sf2ExpandTemplateXml(xml,male.length,female.length);
+    xml=expanded.xml;
+    const layout=expanded.layout;
+    const shifted=row=>layout.mapOriginalRow(row);
     const changes=[];
     const put=(address,value)=>changes.push([address,value]);
 
-    // Header values only. No styles, dimensions, merges, borders, fonts or spacing are touched.
+    // Header values.  Section/grade/school/adviser are read from the selected
+    // ClassCheck class and Teacher Profile; nothing is tied to Beryl.
     put('F3',safe(d.profile.school_id,''));
     put('M3',safe(d.c.school_year||d.profile.school_year,''));
     put('AA3',monthText(d.bounds.year,d.bounds.month-1));
     put('F4',safe(d.profile.school_name,''));
     put('AA4',safe(d.c.grade_level,''));
     put('AM4',safe(d.c.section_name,'').toUpperCase());
-    put('AN80',safe(d.c.adviser_name||d.profile.full_name,'').toUpperCase());
-    put('AN86',safe(d.profile.school_head_name,'').toUpperCase());
+    put(`AN${layout.adviserRow}`,safe(d.c.adviser_name||d.profile.full_name,'').toUpperCase());
+    put(`AN${layout.schoolHeadRow}`,safe(d.profile.school_head_name,'').toUpperCase());
 
     const calendarDays=d.calendarDays||monthWeekdayCalendar(d.prefix);
     SF2_DATE_COLUMNS.forEach(col=>put(`${col}6`,''));
@@ -525,17 +537,13 @@ document.addEventListener('DOMContentLoaded',async()=>{
     });
     // Preserve row 7 exactly as supplied: M, T, W, TH, F repeated in the original order.
 
-    const {male,female}=splitBySex(d.students);
-    if(male.length>25)throw new Error(`The uploaded SF2 template has 25 male learner rows, but this class has ${male.length} males.`);
-    if(female.length>19)throw new Error(`The uploaded SF2 template has 19 female learner rows, but this class has ${female.length} females.`);
-
     const clearLearnerRow=(row)=>{
       put(`A${row}`,'');put(`C${row}`,'');
       SF2_DATE_COLUMNS.forEach(col=>put(`${col}${row}`,''));
       put(`AM${row}`,'');put(`AO${row}`,'');put(`AQ${row}`,'');
     };
-    for(let row=8;row<=32;row++)clearLearnerRow(row);
-    for(let row=34;row<=52;row++)clearLearnerRow(row);
+    for(let row=layout.maleStart;row<layout.maleTotal;row++)clearLearnerRow(row);
+    for(let row=layout.femaleStart;row<layout.femaleTotal;row++)clearLearnerRow(row);
 
     const writeLearner=(student,row,number)=>{
       put(`A${row}`,number);
@@ -556,29 +564,41 @@ document.addEventListener('DOMContentLoaded',async()=>{
       const remarks=student.remarks||((student.enrollment_status&&student.enrollment_status!=='Active')?student.enrollment_status:'');
       put(`AQ${row}`,remarks||'');
     };
-    male.forEach((student,index)=>writeLearner(student,8+index,index+1));
-    female.forEach((student,index)=>writeLearner(student,34+index,index+1));
+    male.forEach((student,index)=>writeLearner(student,layout.maleStart+index,index+1));
+    female.forEach((student,index)=>writeLearner(student,layout.femaleStart+index,index+1));
 
-    const writeTotalRow=(row,students)=>{
-      const ids=new Set(students.map(s=>s.id));
+    const writeTotalRow=(row,label,students)=>{
+      put(`A${row}`,students.length);
+      put(`C${row}`,label);
       SF2_DATE_COLUMNS.forEach(col=>put(`${col}${row}`,''));
+      const ids=new Set(students.map(s=>s.id));
       calendarDays.forEach(item=>{
         const col=SF2_DATE_COLUMNS[item.slotIndex];
         const recs=(d.byDate.get(item.date)||[]).filter(r=>ids.has(r.student_id));
         const absent=recs.filter(r=>r.status==='absent').length;
         put(`${col}${row}`,Math.max(0,students.length-absent));
       });
+      const counts=statusCounts(d.records.filter(r=>ids.has(r.student_id)));
+      put(`AM${row}`,counts.absent);
+      put(`AO${row}`,Math.max(0,(students.length*d.schoolDays)-counts.absent));
+      put(`AQ${row}`,'');
     };
-    writeTotalRow(33,male);
-    writeTotalRow(53,female);
-    writeTotalRow(54,d.students);
+    writeTotalRow(layout.maleTotal,'<=== MALE | TOTAL Per Day ===>',male);
+    writeTotalRow(layout.femaleTotal,'<=== FEMALE | TOTAL Per Day ===>',female);
+    writeTotalRow(layout.combinedTotal,'Combined TOTAL Per Day',d.students);
 
+    // Fill the original SF2 summary/computation block at its shifted location.
     const maleSum=attendanceSummaryFor(male,d,'male');
     const femaleSum=attendanceSummaryFor(female,d,'female');
     const totalSum=attendanceSummaryFor(d.students,d,'total');
-    const setTriplet=(row,a,b,total)=>{put(`AR${row}`,a);put(`AS${row}`,b);put(`AT${row}`,total);};
-    put('AM55',`Month :\n${monthText(d.bounds.year,d.bounds.month-1)}`);
-    put('AP55',`No. of Days of Classes:\n${d.schoolDays}`);
+    const setTriplet=(originalRow,a,b,total)=>{
+      const row=shifted(originalRow);
+      put(`AR${row}`,a);put(`AS${row}`,b);put(`AT${row}`,total);
+    };
+    put(`AM${shifted(55)}`,`Month :
+${monthText(d.bounds.year,d.bounds.month-1)}`);
+    put(`AP${shifted(55)}`,`No. of Days of Classes:
+${d.schoolDays}`);
     setTriplet(57,maleSum.start,femaleSum.start,totalSum.start);
     setTriplet(59,maleSum.late,femaleSum.late,totalSum.late);
     setTriplet(63,maleSum.registered,femaleSum.registered,totalSum.registered);

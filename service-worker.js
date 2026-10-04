@@ -1,5 +1,5 @@
-/* ClassCheck PWA — V10.2 login/install flow. */
-const CACHE_NAME = 'classcheck-pwa-v10.2-20261004';
+/* ClassCheck PWA — V10.3 dynamic SF2 roster support. */
+const CACHE_NAME = 'classcheck-pwa-v10.3-20261004';
 const CACHE_PREFIX = 'classcheck-pwa-';
 const APP_SHELL = [
   './',
@@ -31,7 +31,7 @@ const APP_SHELL = [
   './js/classes.js?v=9.5',
   './js/attendance.js?v=9.3',
   './js/calendar.js?v=9.3',
-  './js/reports.js?v=10.3',
+  './js/reports.js?v=10.4',
   './js/profile.js?v=9.2',
   './js/pwa.js?v=10.2',
   './js/jszip.min.js?v=9.5',

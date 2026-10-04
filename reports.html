@@ -1,0 +1,126 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+  <title>ClassCheck • Reports</title><meta name="theme-color" content="#fff7f8"><link rel="icon" href="assets/classcheck-favicon.svg?v=9" type="image/svg+xml"><style>html,body{margin:0;background:#fff7f8!important}main.app-shell{min-height:100vh;background:#fff7f8!important;opacity:1!important}</style>
+  <link rel="stylesheet" href="css/styles.css?v=9.8"><link rel="stylesheet" href="css/responsive.css?v=9.7"><link rel="prefetch" href="classes.html"><link rel="prefetch" href="attendance.html"><link rel="prefetch" href="calendar.html"><link rel="prefetch" href="profile.html">
+</head>
+<body class="classcheck-app">
+  <main class="app-shell secondary-page reports-page">
+    <header class="topbar page-topbar">
+      <span class="topbar-spacer" aria-hidden="true"></span>
+      <div class="page-title-stack"><h1>Reports</h1></div>
+      <span class="brand-mark compact-brand">SF2</span>
+    </header>
+
+    <section class="card reports-hero-card">
+      <div class="report-form-grid">
+        <div class="field report-field">
+          <label for="reportClass">Section / Class</label>
+          <select id="reportClass" class="input"></select>
+        </div>
+
+        <div class="field report-field report-month-wrap">
+          <label for="reportMonthBtn">Month</label>
+          <button id="reportMonthBtn" class="input month-select-btn" type="button" aria-expanded="false" aria-controls="reportMonthDrawer">
+            <span id="reportMonthLabel">October 2026</span>
+            <span data-icon="calendar" class="month-select-icon"></span>
+          </button>
+          <input id="reportMonth" type="hidden" value="">
+          <div id="reportMonthDrawer" class="report-month-drawer" aria-hidden="true">
+            <div class="report-month-drawer-inner">
+              <div class="report-month-head">
+                <button id="reportPrevYear" class="mini-round-btn" type="button" aria-label="Previous year" data-icon="chevron-left"></button>
+                <strong id="reportYearLabel">2026</strong>
+                <button id="reportNextYear" class="mini-round-btn" type="button" aria-label="Next year" data-icon="chevron-right"></button>
+              </div>
+              <div id="reportMonthGrid" class="report-month-grid"></div>
+              <div class="report-month-actions">
+                <button id="reportMonthClear" class="calendar-action ghost" type="button">Clear</button>
+                <button id="reportMonthToday" class="calendar-action primary" type="button">This month</button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="field report-field" id="reportTeacherWrap">
+          <label for="reportTeacher">Attendance source</label>
+          <select id="reportTeacher" class="input"></select>
+        </div>
+
+        <button id="previewBtn" class="btn soft block report-preview-btn">Preview attendance</button>
+      </div>
+    </section>
+
+    <section class="card report-summary-card report-summary-highlight" aria-labelledby="monthlyPreviewTitle">
+      <div class="card-head report-summary-head report-summary-head-highlight">
+        <div>
+          <h3 id="monthlyPreviewTitle">Monthly Preview</h3>
+          <p id="reportMeta" style="margin:5px 0 0"></p>
+        </div>
+        <span id="reportMonthBadge" class="tag report-month-badge">October 2026</span>
+      </div>
+      <div class="table-scroll report-table-scroll"><table class="report-table enhanced-report-table"><thead><tr><th>#</th><th>Learner Name</th><th>Present</th><th>Absent</th><th>Late</th><th>Total</th></tr></thead><tbody id="reportBody"></tbody></table></div>
+    </section>
+
+    <section class="report-export-actions" aria-label="Report actions">
+      <button id="sf2Btn" class="btn primary"><span data-icon="report"></span>Generate SF2</button>
+      <button id="excelBtn" class="btn ghost"><span data-icon="download"></span>Export Excel</button>
+    </section>
+  </main>
+
+<div class="modal hidden" id="sf2DetailsModal">
+  <div class="modal-panel sf2-details-panel">
+    <div class="handle"></div>
+    <div class="card-head sf2-details-head">
+      <div><h2>SF2 Monthly Details</h2><p class="modal-meta">Confirm the saved first-Friday enrolment, then enter only the monthly changes that apply.</p></div>
+      <button class="icon-btn" id="sf2DetailsClose" type="button" aria-label="Close" data-icon="close"></button>
+    </div>
+    <section class="sf2-baseline-block" aria-labelledby="sf2BaselineTitle">
+      <div class="sf2-baseline-copy">
+        <div><b id="sf2BaselineTitle">* Enrolment as of (1st Friday of June)</b><small>Saved for this class and automatically reused for the next month. Change these numbers only when you need to correct the class baseline.</small></div>
+        <span class="sf2-baseline-total" id="sf2BaselineTotal">0</span>
+      </div>
+      <div class="sf2-baseline-inputs">
+        <label>Boys (M)<input class="input" id="sf2BaselineMale" type="number" min="0" step="1" inputmode="numeric" value="0" data-sf2-baseline-sex="male"></label>
+        <label>Girls (F)<input class="input" id="sf2BaselineFemale" type="number" min="0" step="1" inputmode="numeric" value="0" data-sf2-baseline-sex="female"></label>
+      </div>
+      <p class="sf2-baseline-status" id="sf2BaselineStatus">Saved per class and reused every month.</p>
+    </section>
+    <div class="sf2-detail-list">
+      <button class="sf2-detail-toggle" type="button" data-sf2-detail="late" aria-expanded="false"><span><b>Enrollment beyond cut-off</b><small>Late enrollment during the month</small></span><span class="sf2-detail-count" data-sf2-count="late">0</span></button>
+      <div class="sf2-detail-inputs hidden" data-sf2-inputs="late"><label>Boys (M)<input class="input" type="number" min="0" step="1" inputmode="numeric" value="0" data-sf2-kind="late" data-sf2-sex="male"></label><label>Girls (F)<input class="input" type="number" min="0" step="1" inputmode="numeric" value="0" data-sf2-kind="late" data-sf2-sex="female"></label></div>
+
+      <button class="sf2-detail-toggle" type="button" data-sf2-detail="transferredIn" aria-expanded="false"><span><b>Transferred in</b><small>Learners transferred into the class this month</small></span><span class="sf2-detail-count" data-sf2-count="transferredIn">0</span></button>
+      <div class="sf2-detail-inputs hidden" data-sf2-inputs="transferredIn"><label>Boys (M)<input class="input" type="number" min="0" step="1" inputmode="numeric" value="0" data-sf2-kind="transferredIn" data-sf2-sex="male"></label><label>Girls (F)<input class="input" type="number" min="0" step="1" inputmode="numeric" value="0" data-sf2-kind="transferredIn" data-sf2-sex="female"></label></div>
+
+      <button class="sf2-detail-toggle" type="button" data-sf2-detail="transferredOut" aria-expanded="false"><span><b>Transferred out</b><small>Learners transferred out during the month</small></span><span class="sf2-detail-count" data-sf2-count="transferredOut">0</span></button>
+      <div class="sf2-detail-inputs hidden" data-sf2-inputs="transferredOut"><label>Boys (M)<input class="input" type="number" min="0" step="1" inputmode="numeric" value="0" data-sf2-kind="transferredOut" data-sf2-sex="male"></label><label>Girls (F)<input class="input" type="number" min="0" step="1" inputmode="numeric" value="0" data-sf2-kind="transferredOut" data-sf2-sex="female"></label></div>
+
+      <button class="sf2-detail-toggle" type="button" data-sf2-detail="dropped" aria-expanded="false"><span><b>Dropped out</b><small>Learners officially dropped during the month</small></span><span class="sf2-detail-count" data-sf2-count="dropped">0</span></button>
+      <div class="sf2-detail-inputs hidden" data-sf2-inputs="dropped"><label>Boys (M)<input class="input" type="number" min="0" step="1" inputmode="numeric" value="0" data-sf2-kind="dropped" data-sf2-sex="male"></label><label>Girls (F)<input class="input" type="number" min="0" step="1" inputmode="numeric" value="0" data-sf2-kind="dropped" data-sf2-sex="female"></label></div>
+    </div>
+    <p class="sf2-details-note">These figures are used only for the SF2 monthly summary. Attendance marked <b>L</b> is still counted as <b>Present</b> in daily totals, ADA, and attendance percentage.</p>
+    <div class="sf2-details-actions"><button class="btn ghost" id="sf2DetailsCancel" type="button">Cancel</button><button class="btn primary" id="sf2DetailsGenerate" type="button"><span data-icon="report"></span>Continue & Generate SF2</button></div>
+  </div>
+</div>
+<div class="modal hidden" id="sf2ResultModal">
+  <div class="modal-panel sf2-result-panel">
+    <div class="handle"></div>
+    <div class="card-head sf2-result-head"><div><h2>SF2 is ready</h2><p class="modal-meta" id="sf2ResultMeta">Generated SF2 workbook</p></div><button class="icon-btn" id="sf2ResultClose" type="button" aria-label="Close" data-icon="close"></button></div>
+    <div class="sf2-result-grid">
+      <div><span>School</span><b id="sf2ResultSchool">—</b></div><div><span>Class</span><b id="sf2ResultClass">—</b></div>
+      <div><span>Month</span><b id="sf2ResultMonth">—</b></div><div><span>Attendance source</span><b id="sf2ResultSource">—</b></div>
+      <div><span>Learners</span><b id="sf2ResultLearners">0</b></div><div><span>School days in month</span><b id="sf2ResultDays">0</b></div>
+      <div><span>Adviser</span><b id="sf2ResultAdviser">—</b></div><div><span>School Head</span><b id="sf2ResultSchoolHead">—</b></div>
+      
+    </div>
+    <p class="sf2-result-note">Uses your original SF2 template. ClassCheck only fills attendance marks and computed data; the template formatting is preserved.</p>
+    <button class="btn primary block" id="downloadSf2Btn" type="button"><span data-icon="download"></span>Download generated SF2</button>
+  </div>
+</div>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script><script src="https://cdn.jsdelivr.net/npm/xlsx-js-style@1.2.0/dist/xlsx.bundle.js" onerror="this.onerror=null;this.src='https://unpkg.com/xlsx-js-style@1.2.0/dist/xlsx.bundle.js'"></script><script src="js/config.js?v=9"></script><script src="js/demo-data.js?v=9"></script><script src="js/storage.js?v=9.4"></script><script src="js/supabase-client.js?v=9"></script><script src="js/bootstrap.js?v=9"></script><script src="js/offline-db.js?v=9"></script><script src="js/app.js?v=9"></script><script src="js/jszip.min.js?v=9.5"></script>
+  <script src="js/sf2-template.js?v=9.5"></script>
+  <script src="js/reports.js?v=10.3"></script>
+</body>
+</html>

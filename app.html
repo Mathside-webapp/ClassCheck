@@ -1,0 +1,337 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+  <title>ClassCheck • Attendance</title>
+  <meta name="theme-color" content="#fff7f8">
+  <link rel="icon" href="assets/classcheck-favicon.svg?v=9" type="image/svg+xml">
+  <style>html,body{margin:0;background:#fff7f8!important}main.app-shell{min-height:100vh;background:#fff7f8!important;opacity:1!important}</style>
+  <link rel="stylesheet" href="css/styles.css?v=9.8">
+  <link rel="stylesheet" href="css/responsive.css?v=9.7">
+</head>
+<body class="classcheck-app attendance-screen" data-classcheck-unified="true">
+  <div class="cc-app-panel" data-app-panel="classes" hidden>
+    <main class="app-shell secondary-page">
+<header class="topbar page-topbar">
+<span aria-hidden="true" class="topbar-spacer"></span>
+<div class="page-title-stack"><h1>My Classes</h1></div>
+<div class="class-header-actions">
+<button class="btn soft compact-action" id="joinClassBtn" type="button">Join class</button>
+<button aria-label="Create class" class="icon-btn" data-icon="plus" id="addClassBtn"></button>
+</div>
+</header>
+<div aria-label="Class filters" class="pills centered-pills">
+<span class="pill active">Active</span>
+<span class="pill">Shared rosters</span>
+<span class="pill">SF1 ready</span>
+</div>
+<section id="classList"></section>
+</main>
+  </div>
+  <div class="cc-app-panel" data-app-panel="attendance">
+    <main class="app-shell attendance-page">
+<header class="attendance-topbar">
+<a aria-label="Back to classes" class="icon-btn attendance-back" data-icon="arrow-left" href="classes.html"></a>
+<div class="attendance-title-group">
+<h1>Attendance</h1><span class="tag attendance-subject-badge" id="attendanceSubjectBadge">Advisory</span>
+<span class="sync-badge" id="syncBadge">Saved on device</span>
+</div>
+</header>
+<div class="attendance-workspace">
+<section aria-labelledby="controlsTitle" class="workspace-panel controls-panel">
+<div class="panel-heading centered-heading">
+<h2 id="controlsTitle">Date &amp; Section</h2>
+<p>Choose where you are recording attendance.</p>
+</div>
+<section aria-label="Choose attendance date" class="date-deck">
+<div class="date-deck-head">
+<button aria-label="Previous month" class="mini-round-btn" data-icon="chevron-left" id="prevMonthBtn"></button>
+<button aria-controls="calendarDrawer" aria-expanded="false" class="month-button" id="monthPickerBtn" type="button">
+<span id="monthLabel">October 2026</span>
+<span class="tiny-icon month-caret" data-icon="chevron-down"></span>
+</button>
+<button aria-label="Next month" class="mini-round-btn" data-icon="chevron-right" id="nextMonthBtn"></button>
+</div>
+<div aria-hidden="true" class="calendar-drawer" id="calendarDrawer">
+<div class="calendar-drawer-inner">
+<div aria-hidden="true" class="calendar-weekdays">
+<span>Su</span><span>Mo</span><span>Tu</span><span>We</span><span>Th</span><span>Fr</span><span>Sa</span>
+</div>
+<div aria-label="Choose attendance date" class="calendar-days" id="calendarDays" role="grid"></div>
+<div class="calendar-drawer-actions">
+<button class="calendar-action ghost" id="calendarTodayBtn" type="button">Today</button>
+<button class="calendar-action primary" id="calendarDoneBtn" type="button">Done</button>
+</div>
+</div>
+</div>
+<div class="date-rail" id="dateRail"></div>
+<input aria-label="Selected attendance date" class="visually-hidden" id="dateInput" tabindex="-1" type="date"/>
+</section>
+<div class="section-label inline-label centered-label">Section</div>
+<div aria-label="Choose class" class="class-rail" id="classRail"></div>
+<div aria-live="polite" class="attendance-summary-card">
+<span class="summary-icon" data-icon="clipboard-check"></span>
+<div class="summary-copy">
+<b id="selectedDateText">Today</b>
+<span id="attendanceSummary">0 present • 0 absent • 0 late</span>
+</div>
+</div>
+</section>
+<section aria-labelledby="rosterTitle" class="workspace-panel roster-panel">
+<div class="panel-heading roster-heading">
+<div>
+<h2 id="rosterTitle">Learners</h2>
+<p>Tap one status for each learner. Changes save automatically.</p>
+</div>
+<span class="roster-status">Live roster</span>
+</div>
+<section class="student-list radio-attendance-list" id="studentList"></section>
+</section>
+</div>
+</main>
+    <div class="bottom-actions">
+<div class="inner">
+<button class="btn primary block finish-attendance-btn" id="finishBtn">
+<span data-icon="check-circle"></span>
+        Finish Attendance
+      </button>
+</div>
+</div>
+  </div>
+  <div class="cc-app-panel" data-app-panel="calendar" hidden>
+    <main class="app-shell secondary-page">
+<header class="topbar page-topbar">
+<span aria-hidden="true" class="topbar-spacer"></span>
+<div class="page-title-stack"><h1>Calendar</h1></div>
+<a aria-label="Take attendance" class="icon-btn" data-icon="plus" href="attendance.html"></a>
+</header>
+<section class="week-strip">
+<div class="week-title"><button aria-label="Previous month" class="icon-btn" data-icon="chevron-left" id="prevMonth"></button><h2 id="calendarPageMonthLabel">Month</h2><button aria-label="Next month" class="icon-btn" data-icon="chevron-right" id="nextMonth"></button></div>
+<div class="calendar-grid"><div class="cal-label">SUN</div><div class="cal-label">MON</div><div class="cal-label">TUE</div><div class="cal-label">WED</div><div class="cal-label">THU</div><div class="cal-label">FRI</div><div class="cal-label">SAT</div></div>
+<div class="calendar-grid" id="calendarGrid"></div>
+</section>
+<div class="card compact-note"><h3>Calendar guide</h3><p>A check means you finished at least one attendance session on that date. Tap any date to open attendance.</p></div>
+</main>
+  </div>
+  <div class="cc-app-panel" data-app-panel="reports" hidden>
+    <main class="app-shell secondary-page reports-page">
+<header class="topbar page-topbar">
+<span aria-hidden="true" class="topbar-spacer"></span>
+<div class="page-title-stack"><h1>Reports</h1></div>
+<span class="brand-mark compact-brand">SF2</span>
+</header>
+<section class="card reports-hero-card">
+<div class="report-form-grid">
+<div class="field report-field">
+<label for="reportClass">Section / Class</label>
+<select class="input" id="reportClass"></select>
+</div>
+<div class="field report-field report-month-wrap">
+<label for="reportMonthBtn">Month</label>
+<button aria-controls="reportMonthDrawer" aria-expanded="false" class="input month-select-btn" id="reportMonthBtn" type="button">
+<span id="reportMonthLabel">October 2026</span>
+<span class="month-select-icon" data-icon="calendar"></span>
+</button>
+<input id="reportMonth" type="hidden" value=""/>
+<div aria-hidden="true" class="report-month-drawer" id="reportMonthDrawer">
+<div class="report-month-drawer-inner">
+<div class="report-month-head">
+<button aria-label="Previous year" class="mini-round-btn" data-icon="chevron-left" id="reportPrevYear" type="button"></button>
+<strong id="reportYearLabel">2026</strong>
+<button aria-label="Next year" class="mini-round-btn" data-icon="chevron-right" id="reportNextYear" type="button"></button>
+</div>
+<div class="report-month-grid" id="reportMonthGrid"></div>
+<div class="report-month-actions">
+<button class="calendar-action ghost" id="reportMonthClear" type="button">Clear</button>
+<button class="calendar-action primary" id="reportMonthToday" type="button">This month</button>
+</div>
+</div>
+</div>
+</div>
+<div class="field report-field" id="reportTeacherWrap">
+<label for="reportTeacher">Attendance source</label>
+<select class="input" id="reportTeacher"></select>
+</div>
+<button class="btn soft block report-preview-btn" id="previewBtn">Preview attendance</button>
+</div>
+</section>
+<section aria-labelledby="monthlyPreviewTitle" class="card report-summary-card report-summary-highlight">
+<div class="card-head report-summary-head report-summary-head-highlight">
+<div>
+<h3 id="monthlyPreviewTitle">Monthly Preview</h3>
+<p id="reportMeta" style="margin:5px 0 0"></p>
+</div>
+<span class="tag report-month-badge" id="reportMonthBadge">October 2026</span>
+</div>
+<div class="table-scroll report-table-scroll"><table class="report-table enhanced-report-table"><thead><tr><th>#</th><th>Learner Name</th><th>Present</th><th>Absent</th><th>Late</th><th>Total</th></tr></thead><tbody id="reportBody"></tbody></table></div>
+</section>
+<section aria-label="Report actions" class="report-export-actions">
+<button class="btn primary" id="sf2Btn"><span data-icon="report"></span>Generate SF2</button>
+<button class="btn ghost" id="excelBtn"><span data-icon="download"></span>Export Excel</button>
+</section>
+</main>
+
+<div class="modal hidden" id="sf2DetailsModal">
+  <div class="modal-panel sf2-details-panel">
+    <div class="handle"></div>
+    <div class="card-head sf2-details-head">
+      <div><h2>SF2 Monthly Details</h2><p class="modal-meta">Confirm the saved first-Friday enrolment, then enter only the monthly changes that apply.</p></div>
+      <button class="icon-btn" id="sf2DetailsClose" type="button" aria-label="Close" data-icon="close"></button>
+    </div>
+    <section class="sf2-baseline-block" aria-labelledby="sf2BaselineTitle">
+      <div class="sf2-baseline-copy">
+        <div><b id="sf2BaselineTitle">* Enrolment as of (1st Friday of June)</b><small>Saved for this class and automatically reused for the next month. Change these numbers only when you need to correct the class baseline.</small></div>
+        <span class="sf2-baseline-total" id="sf2BaselineTotal">0</span>
+      </div>
+      <div class="sf2-baseline-inputs">
+        <label>Boys (M)<input class="input" id="sf2BaselineMale" type="number" min="0" step="1" inputmode="numeric" value="0" data-sf2-baseline-sex="male"></label>
+        <label>Girls (F)<input class="input" id="sf2BaselineFemale" type="number" min="0" step="1" inputmode="numeric" value="0" data-sf2-baseline-sex="female"></label>
+      </div>
+      <p class="sf2-baseline-status" id="sf2BaselineStatus">Saved per class and reused every month.</p>
+    </section>
+    <div class="sf2-detail-list">
+      <button class="sf2-detail-toggle" type="button" data-sf2-detail="late" aria-expanded="false"><span><b>Enrollment beyond cut-off</b><small>Late enrollment during the month</small></span><span class="sf2-detail-count" data-sf2-count="late">0</span></button>
+      <div class="sf2-detail-inputs hidden" data-sf2-inputs="late"><label>Boys (M)<input class="input" type="number" min="0" step="1" inputmode="numeric" value="0" data-sf2-kind="late" data-sf2-sex="male"></label><label>Girls (F)<input class="input" type="number" min="0" step="1" inputmode="numeric" value="0" data-sf2-kind="late" data-sf2-sex="female"></label></div>
+
+      <button class="sf2-detail-toggle" type="button" data-sf2-detail="transferredIn" aria-expanded="false"><span><b>Transferred in</b><small>Learners transferred into the class this month</small></span><span class="sf2-detail-count" data-sf2-count="transferredIn">0</span></button>
+      <div class="sf2-detail-inputs hidden" data-sf2-inputs="transferredIn"><label>Boys (M)<input class="input" type="number" min="0" step="1" inputmode="numeric" value="0" data-sf2-kind="transferredIn" data-sf2-sex="male"></label><label>Girls (F)<input class="input" type="number" min="0" step="1" inputmode="numeric" value="0" data-sf2-kind="transferredIn" data-sf2-sex="female"></label></div>
+
+      <button class="sf2-detail-toggle" type="button" data-sf2-detail="transferredOut" aria-expanded="false"><span><b>Transferred out</b><small>Learners transferred out during the month</small></span><span class="sf2-detail-count" data-sf2-count="transferredOut">0</span></button>
+      <div class="sf2-detail-inputs hidden" data-sf2-inputs="transferredOut"><label>Boys (M)<input class="input" type="number" min="0" step="1" inputmode="numeric" value="0" data-sf2-kind="transferredOut" data-sf2-sex="male"></label><label>Girls (F)<input class="input" type="number" min="0" step="1" inputmode="numeric" value="0" data-sf2-kind="transferredOut" data-sf2-sex="female"></label></div>
+
+      <button class="sf2-detail-toggle" type="button" data-sf2-detail="dropped" aria-expanded="false"><span><b>Dropped out</b><small>Learners officially dropped during the month</small></span><span class="sf2-detail-count" data-sf2-count="dropped">0</span></button>
+      <div class="sf2-detail-inputs hidden" data-sf2-inputs="dropped"><label>Boys (M)<input class="input" type="number" min="0" step="1" inputmode="numeric" value="0" data-sf2-kind="dropped" data-sf2-sex="male"></label><label>Girls (F)<input class="input" type="number" min="0" step="1" inputmode="numeric" value="0" data-sf2-kind="dropped" data-sf2-sex="female"></label></div>
+    </div>
+    <p class="sf2-details-note">These figures are used only for the SF2 monthly summary. Attendance marked <b>L</b> is still counted as <b>Present</b> in daily totals, ADA, and attendance percentage.</p>
+    <div class="sf2-details-actions"><button class="btn ghost" id="sf2DetailsCancel" type="button">Cancel</button><button class="btn primary" id="sf2DetailsGenerate" type="button"><span data-icon="report"></span>Continue & Generate SF2</button></div>
+  </div>
+</div>
+<div class="modal hidden" id="sf2ResultModal">
+  <div class="modal-panel sf2-result-panel">
+    <div class="handle"></div>
+    <div class="card-head sf2-result-head"><div><h2>SF2 is ready</h2><p class="modal-meta" id="sf2ResultMeta">Generated SF2 workbook</p></div><button class="icon-btn" id="sf2ResultClose" type="button" aria-label="Close" data-icon="close"></button></div>
+    <div class="sf2-result-grid">
+      <div><span>School</span><b id="sf2ResultSchool">—</b></div>
+      <div><span>Class</span><b id="sf2ResultClass">—</b></div>
+      <div><span>Month</span><b id="sf2ResultMonth">—</b></div>
+      <div><span>Attendance source</span><b id="sf2ResultSource">—</b></div>
+      <div><span>Learners</span><b id="sf2ResultLearners">0</b></div>
+      <div><span>School days in month</span><b id="sf2ResultDays">0</b></div>
+      <div><span>Adviser</span><b id="sf2ResultAdviser">—</b></div>
+      <div><span>School Head</span><b id="sf2ResultSchoolHead">—</b></div>
+      
+    </div>
+    <p class="sf2-result-note">Uses your original SF2 template. ClassCheck only fills attendance marks and computed data; the template formatting is preserved.</p>
+    <button class="btn primary block" id="downloadSf2Btn" type="button"><span data-icon="download"></span>Download generated SF2</button>
+  </div>
+</div>
+  </div>
+  <div class="cc-app-panel" data-app-panel="profile" hidden>
+    <main class="app-shell secondary-page">
+<header class="topbar page-topbar">
+<a aria-label="Back" class="icon-btn" data-icon="arrow-left" href="classes.html"></a>
+<div class="page-title-stack"><h1>Teacher Profile</h1></div>
+<div class="brand-mark">CC</div>
+</header>
+<form class="card form-card" id="profileForm">
+<div class="field"><label>Full name</label><input class="input" name="full_name"/></div>
+<div class="field"><label>School name</label><input class="input" name="school_name"/></div>
+<div class="field"><label>School head name</label><input class="input" name="school_head_name" placeholder="Printed name of the school head"/></div>
+<div class="field"><label>School ID</label><input class="input" name="school_id"/></div>
+<div class="field"><label>School year</label><input class="input" name="school_year"/></div>
+<div class="field"><label>Region</label><input class="input" name="region"/></div>
+<div class="field"><label>Division</label><input class="input" name="division"/></div>
+<div class="field"><label>District</label><input class="input" name="district"/></div>
+<div class="field"><label>Position</label><input class="input" name="position"/></div>
+<button class="btn primary block" type="submit">Save profile</button><button class="btn ghost block" id="signOutBtn" type="button">Log out</button>
+</form>
+</main>
+  </div>
+
+  <div class="modal hidden" id="classModal">
+<div class="modal-panel">
+<div class="handle"></div>
+<div class="card-head"><h2>New class</h2><button aria-label="Close" class="icon-btn" data-close="" data-icon="close"></button></div>
+<form class="form-card" id="classForm">
+<div class="field"><label>Grade level</label><select class="input" name="grade"><option>Grade 7</option><option>Grade 8</option><option>Grade 9</option><option selected="">Grade 10</option><option>Grade 11</option><option>Grade 12</option></select></div>
+<div class="field"><label>Section</label><input class="input" name="section" placeholder="e.g. Beryl" required=""/></div>
+<button class="btn primary block" type="submit">Create class</button>
+</form>
+</div>
+</div>
+<div class="modal hidden" id="joinClassModal">
+<div class="modal-panel">
+<div class="handle"></div>
+<div class="card-head"><h2>Join a class</h2><button aria-label="Close" class="icon-btn" data-close="" data-icon="close"></button></div>
+<p class="modal-copy">Enter the adviser’s class code, then choose the subject you teach. The roster is shared; your attendance stays separate.</p>
+<form class="form-card" id="joinClassForm">
+<div class="field"><label>Class code</label><input autocomplete="off" class="input code-input" maxlength="6" name="code" placeholder="ABC234" required=""/></div>
+<div class="field"><label>Your subject</label><input class="input" list="subjectOptions" name="subject" placeholder="e.g. Science" required=""/></div>
+<datalist id="subjectOptions"><option value="English"><option value="Filipino"><option value="Mathematics"><option value="Science"><option value="Araling Panlipunan"><option value="MAPEH"><option value="TLE"><option value="Values Education"><option value="ESP"><option value="Research"><option value="General Mathematics"><option value="Statistics and Probability"></option></option></option></option></option></option></option></option></option></option></option></option></datalist>
+<button class="btn primary block" type="submit">Join class</button>
+</form>
+</div>
+</div>
+<div class="modal hidden" id="rosterModal">
+<div class="modal-panel roster-modal-panel">
+<div class="handle"></div>
+<div class="card-head"><div><h2 class="modal-title"></h2><p class="modal-meta" id="rosterRoleMeta"></p></div><button aria-label="Close" class="icon-btn" data-close="" data-icon="close"></button></div>
+<section class="share-panel hidden" id="sharePanel">
+<div><span class="eyebrow">Class join code</span><div class="share-code-row"><strong id="classJoinCode">------</strong><button class="btn soft" id="copyCodeBtn" type="button">Copy code</button></div><p>Share this one code with subject teachers. They choose their subject when joining.</p></div>
+</section>
+<section class="subject-teachers-panel hidden" id="subjectTeachersPanel">
+<div class="section-label inline-label">Subject teachers</div>
+<div class="shared-teacher-list" id="subjectTeachersList"></div>
+</section>
+<div class="section-label inline-label">Learners</div>
+<div class="roster-bulk-toolbar hidden" id="rosterBulkToolbar">
+<label class="bulk-select-all"><input id="selectAllStudents" type="checkbox"/><span>Select all shown</span></label>
+<span class="bulk-selected-count" id="selectedStudentCount">0 selected</span>
+<button class="btn danger bulk-delete-btn" disabled="" id="deleteSelectedStudentsBtn" type="button">Delete selected</button>
+</div>
+<div class="roster-body student-list"></div>
+<section class="adviser-roster-tools hidden" id="adviserRosterTools">
+<hr class="sep"/>
+<div class="roster-tool-head"><h3>Add learners</h3><label class="btn soft sf1-upload-label" for="sf1File" id="sf1ImportBtn"><span data-icon="download"></span><span>Upload SF1</span><input accept=".xls,.xlsx,.csv,application/vnd.ms-excel,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet,text/csv" id="sf1File" type="file"/></label></div>
+<p class="sf1-import-status" id="sf1ImportStatus">Accepts DepEd SF1 .xls/.xlsx files and CSV learner lists.</p>
+<form class="form-card" id="addStudentForm" style="margin-top:12px">
+<div class="field"><label>LRN</label><input class="input" name="lrn"/></div>
+<div class="field"><label>Last name</label><input class="input" name="last" required=""/></div>
+<div class="field"><label>First name</label><input class="input" name="first" required=""/></div>
+<div class="field"><label>Middle name</label><input class="input" name="middle"/></div>
+<div class="field"><label>Sex</label><select class="input" name="sex"><option>Male</option><option>Female</option></select></div>
+<button class="btn primary block" type="submit">Add learner</button>
+<button class="btn danger block" id="deleteClassBtn" type="button">Delete class permanently</button>
+</form>
+</section>
+</div>
+</div>
+<div class="modal hidden" id="sf1PreviewModal">
+<div class="modal-panel sf1-preview-panel">
+<div class="handle"></div>
+<div class="card-head"><div><h2>SF1 roster preview</h2><p class="modal-meta" id="sf1PreviewMeta"></p></div><button aria-label="Close" class="icon-btn" data-close="" data-icon="close"></button></div>
+<div class="table-scroll"><table class="report-table"><thead><tr><th>#</th><th>LRN</th><th>Learner</th><th>Sex</th></tr></thead><tbody id="sf1PreviewBody"></tbody></table></div>
+<button class="btn primary block" id="confirmSf1Import" type="button">Import learners</button>
+</div>
+</div>
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="https://cdn.jsdelivr.net/npm/xlsx-js-style@1.2.0/dist/xlsx.bundle.js" onerror="this.onerror=null;this.src='https://unpkg.com/xlsx-js-style@1.2.0/dist/xlsx.bundle.js'"></script>
+  <script src="js/config.js?v=9"></script>
+  <script src="js/demo-data.js?v=9"></script>
+  <script src="js/storage.js?v=9.4"></script>
+  <script src="js/offline-db.js?v=9"></script>
+  <script src="js/supabase-client.js?v=9"></script>
+  <script src="js/bootstrap.js?v=9"></script>
+  <script src="js/sync.js?v=9"></script>
+  <script src="js/app.js?v=9"></script>
+  <script src="js/classes.js?v=9.5"></script>
+  <script src="js/attendance.js?v=9"></script>
+  <script src="js/calendar.js?v=9"></script>
+  <script src="js/jszip.min.js?v=9.5"></script>
+  <script src="js/sf2-template.js?v=9.5"></script>
+  <script src="js/reports.js?v=10.3"></script>
+  <script src="js/profile.js?v=9.2"></script>
+</body>
+</html>

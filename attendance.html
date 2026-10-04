@@ -1,0 +1,99 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+  <title>ClassCheck • Attendance</title><meta name="theme-color" content="#fff7f8"><link rel="icon" href="assets/classcheck-favicon.svg?v=9" type="image/svg+xml"><style>html,body{margin:0;background:#fff7f8!important}main.app-shell{min-height:100vh;background:#fff7f8!important;opacity:1!important}</style>
+  <link rel="stylesheet" href="css/styles.css?v=9">
+  <link rel="stylesheet" href="css/responsive.css?v=9"><link rel="prefetch" href="classes.html"><link rel="prefetch" href="calendar.html"><link rel="prefetch" href="reports.html"><link rel="prefetch" href="profile.html">
+</head>
+<body class="classcheck-app attendance-screen">
+  <main class="app-shell attendance-page">
+    <header class="attendance-topbar">
+      <a href="classes.html" class="icon-btn attendance-back" aria-label="Back to classes" data-icon="arrow-left"></a>
+      <div class="attendance-title-group">
+        <h1>Attendance</h1><span id="attendanceSubjectBadge" class="tag attendance-subject-badge">Advisory</span>
+        <span id="syncBadge" class="sync-badge">Saved on device</span>
+      </div>
+    </header>
+
+    <div class="attendance-workspace">
+      <section class="workspace-panel controls-panel" aria-labelledby="controlsTitle">
+        <div class="panel-heading centered-heading">
+          <h2 id="controlsTitle">Date &amp; Section</h2>
+          <p>Choose where you are recording attendance.</p>
+        </div>
+
+        <section class="date-deck" aria-label="Choose attendance date">
+          <div class="date-deck-head">
+            <button id="prevMonthBtn" class="mini-round-btn" aria-label="Previous month" data-icon="chevron-left"></button>
+            <button id="monthPickerBtn" class="month-button" type="button" aria-expanded="false" aria-controls="calendarDrawer">
+              <span id="monthLabel">October 2026</span>
+              <span data-icon="chevron-down" class="tiny-icon month-caret"></span>
+            </button>
+            <button id="nextMonthBtn" class="mini-round-btn" aria-label="Next month" data-icon="chevron-right"></button>
+          </div>
+
+          <div id="calendarDrawer" class="calendar-drawer" aria-hidden="true">
+            <div class="calendar-drawer-inner">
+              <div class="calendar-weekdays" aria-hidden="true">
+                <span>Su</span><span>Mo</span><span>Tu</span><span>We</span><span>Th</span><span>Fr</span><span>Sa</span>
+              </div>
+              <div id="calendarDays" class="calendar-days" role="grid" aria-label="Choose attendance date"></div>
+              <div class="calendar-drawer-actions">
+                <button id="calendarTodayBtn" class="calendar-action ghost" type="button">Today</button>
+                <button id="calendarDoneBtn" class="calendar-action primary" type="button">Done</button>
+              </div>
+            </div>
+          </div>
+
+          <div id="dateRail" class="date-rail"></div>
+          <input id="dateInput" class="visually-hidden" type="date" aria-label="Selected attendance date" tabindex="-1">
+        </section>
+
+        <div class="section-label inline-label centered-label">Section</div>
+        <div id="classRail" class="class-rail" aria-label="Choose class"></div>
+
+        <div class="attendance-summary-card" aria-live="polite">
+          <span class="summary-icon" data-icon="clipboard-check"></span>
+          <div class="summary-copy">
+            <b id="selectedDateText">Today</b>
+            <span id="attendanceSummary">0 present • 0 absent • 0 late</span>
+          </div>
+        </div>
+      </section>
+
+      <section class="workspace-panel roster-panel" aria-labelledby="rosterTitle">
+        <div class="panel-heading roster-heading">
+          <div>
+            <h2 id="rosterTitle">Learners</h2>
+            <p>Tap one status for each learner. Changes save automatically.</p>
+          </div>
+          <span class="roster-status">Live roster</span>
+        </div>
+        <section id="studentList" class="student-list radio-attendance-list"></section>
+      </section>
+    </div>
+  </main>
+
+  <div class="bottom-actions">
+    <div class="inner">
+      <button id="finishBtn" class="btn primary block finish-attendance-btn">
+        <span data-icon="check-circle"></span>
+        Finish Attendance
+      </button>
+    </div>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="js/config.js?v=9"></script>
+  <script src="js/demo-data.js?v=9"></script>
+  <script src="js/storage.js?v=9.4"></script>
+  <script src="js/offline-db.js?v=9"></script>
+  <script src="js/supabase-client.js?v=9"></script>
+  <script src="js/bootstrap.js?v=9"></script>
+  <script src="js/sync.js?v=9"></script>
+  <script src="js/app.js?v=9"></script>
+  <script src="js/attendance.js?v=9"></script>
+</body>
+</html>

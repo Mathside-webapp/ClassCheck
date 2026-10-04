@@ -1,0 +1,107 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+  <title>ClassCheck • Classes</title><meta name="theme-color" content="#fff7f8"><link rel="icon" href="assets/classcheck-favicon.svg?v=9" type="image/svg+xml"><style>html,body{margin:0;background:#fff7f8!important}main.app-shell{min-height:100vh;background:#fff7f8!important;opacity:1!important}</style>
+  <link rel="stylesheet" href="css/styles.css?v=9">
+  <link rel="stylesheet" href="css/responsive.css?v=9"><link rel="prefetch" href="attendance.html"><link rel="prefetch" href="calendar.html"><link rel="prefetch" href="reports.html"><link rel="prefetch" href="profile.html">
+</head>
+<body class="classcheck-app">
+  <main class="app-shell secondary-page">
+    <header class="topbar page-topbar">
+      <span class="topbar-spacer" aria-hidden="true"></span>
+      <div class="page-title-stack"><h1>My Classes</h1></div>
+      <div class="class-header-actions">
+        <button id="joinClassBtn" class="btn soft compact-action" type="button">Join class</button>
+        <button id="addClassBtn" class="icon-btn" aria-label="Create class" data-icon="plus"></button>
+      </div>
+    </header>
+
+    <div class="pills centered-pills" aria-label="Class filters">
+      <span class="pill active">Active</span>
+      <span class="pill">Shared rosters</span>
+      <span class="pill">SF1 ready</span>
+    </div>
+    <section id="classList"></section>
+  </main>
+
+  <div id="classModal" class="modal hidden">
+    <div class="modal-panel">
+      <div class="handle"></div>
+      <div class="card-head"><h2>New class</h2><button data-close class="icon-btn" aria-label="Close" data-icon="close"></button></div>
+      <form id="classForm" class="form-card">
+        <div class="field"><label>Grade level</label><select class="input" name="grade"><option>Grade 7</option><option>Grade 8</option><option>Grade 9</option><option selected>Grade 10</option><option>Grade 11</option><option>Grade 12</option></select></div>
+        <div class="field"><label>Section</label><input class="input" name="section" required placeholder="e.g. Beryl"></div>
+        <button class="btn primary block" type="submit">Create class</button>
+      </form>
+    </div>
+  </div>
+
+  <div id="joinClassModal" class="modal hidden">
+    <div class="modal-panel">
+      <div class="handle"></div>
+      <div class="card-head"><h2>Join a class</h2><button data-close class="icon-btn" aria-label="Close" data-icon="close"></button></div>
+      <p class="modal-copy">Enter the adviser’s class code, then choose the subject you teach. The roster is shared; your attendance stays separate.</p>
+      <form id="joinClassForm" class="form-card">
+        <div class="field"><label>Class code</label><input class="input code-input" name="code" maxlength="6" autocomplete="off" required placeholder="ABC234"></div>
+        <div class="field"><label>Your subject</label><input class="input" name="subject" list="subjectOptions" required placeholder="e.g. Science"></div>
+        <datalist id="subjectOptions"><option value="English"><option value="Filipino"><option value="Mathematics"><option value="Science"><option value="Araling Panlipunan"><option value="MAPEH"><option value="TLE"><option value="Values Education"><option value="ESP"><option value="Research"><option value="General Mathematics"><option value="Statistics and Probability"></datalist>
+        <button class="btn primary block" type="submit">Join class</button>
+      </form>
+    </div>
+  </div>
+
+  <div id="rosterModal" class="modal hidden">
+    <div class="modal-panel roster-modal-panel">
+      <div class="handle"></div>
+      <div class="card-head"><div><h2 class="modal-title"></h2><p id="rosterRoleMeta" class="modal-meta"></p></div><button data-close class="icon-btn" aria-label="Close" data-icon="close"></button></div>
+
+      <section id="sharePanel" class="share-panel hidden">
+        <div><span class="eyebrow">Class join code</span><div class="share-code-row"><strong id="classJoinCode">------</strong><button id="copyCodeBtn" type="button" class="btn soft">Copy code</button></div><p>Share this one code with subject teachers. They choose their subject when joining.</p></div>
+      </section>
+
+      <section id="subjectTeachersPanel" class="subject-teachers-panel hidden">
+        <div class="section-label inline-label">Subject teachers</div>
+        <div id="subjectTeachersList" class="shared-teacher-list"></div>
+      </section>
+
+      <div class="section-label inline-label">Learners</div>
+      <div id="rosterBulkToolbar" class="roster-bulk-toolbar hidden">
+        <label class="bulk-select-all"><input id="selectAllStudents" type="checkbox"><span>Select all shown</span></label>
+        <span id="selectedStudentCount" class="bulk-selected-count">0 selected</span>
+        <button id="deleteSelectedStudentsBtn" class="btn danger bulk-delete-btn" type="button" disabled>Delete selected</button>
+      </div>
+      <div class="roster-body student-list"></div>
+
+      <section id="adviserRosterTools" class="adviser-roster-tools hidden">
+        <hr class="sep">
+        <div class="roster-tool-head"><h3>Add learners</h3><label id="sf1ImportBtn" for="sf1File" class="btn soft sf1-upload-label"><span data-icon="download"></span><span>Upload SF1</span><input id="sf1File" type="file" accept=".xls,.xlsx,.csv,application/vnd.ms-excel,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet,text/csv"></label></div>
+        <p id="sf1ImportStatus" class="sf1-import-status">Accepts DepEd SF1 .xls/.xlsx files and CSV learner lists.</p>
+        <form id="addStudentForm" class="form-card" style="margin-top:12px">
+          <div class="field"><label>LRN</label><input class="input" name="lrn"></div>
+          <div class="field"><label>Last name</label><input class="input" name="last" required></div>
+          <div class="field"><label>First name</label><input class="input" name="first" required></div>
+          <div class="field"><label>Middle name</label><input class="input" name="middle"></div>
+          <div class="field"><label>Sex</label><select class="input" name="sex"><option>Male</option><option>Female</option></select></div>
+          <button class="btn primary block" type="submit">Add learner</button>
+          <button type="button" id="deleteClassBtn" class="btn danger block">Delete class permanently</button>
+        </form>
+      </section>
+    </div>
+  </div>
+
+  <div id="sf1PreviewModal" class="modal hidden">
+    <div class="modal-panel sf1-preview-panel">
+      <div class="handle"></div>
+      <div class="card-head"><div><h2>SF1 roster preview</h2><p id="sf1PreviewMeta" class="modal-meta"></p></div><button data-close class="icon-btn" aria-label="Close" data-icon="close"></button></div>
+      <div class="table-scroll"><table class="report-table"><thead><tr><th>#</th><th>LRN</th><th>Learner</th><th>Sex</th></tr></thead><tbody id="sf1PreviewBody"></tbody></table></div>
+      <button id="confirmSf1Import" class="btn primary block" type="button">Import learners</button>
+    </div>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="https://cdn.jsdelivr.net/npm/xlsx-js-style@1.2.0/dist/xlsx.bundle.js" onerror="this.onerror=null;this.src='https://unpkg.com/xlsx-js-style@1.2.0/dist/xlsx.bundle.js'"></script>
+  <script src="js/config.js?v=9"></script><script src="js/demo-data.js?v=9"></script><script src="js/storage.js?v=9.4"></script><script src="js/supabase-client.js?v=9"></script><script src="js/bootstrap.js?v=9"></script><script src="js/app.js?v=9"></script><script src="js/classes.js?v=9.5"></script>
+</body>
+</html>

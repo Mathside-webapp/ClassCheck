@@ -1,0 +1,30 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+  <title>ClassCheck • Profile</title><meta name="theme-color" content="#fff7f8"><link rel="icon" href="assets/classcheck-favicon.svg?v=9" type="image/svg+xml"><style>html,body{margin:0;background:#fff7f8!important}main.app-shell{min-height:100vh;background:#fff7f8!important;opacity:1!important}</style>
+  <link rel="stylesheet" href="css/styles.css?v=9"><link rel="stylesheet" href="css/responsive.css?v=9"><link rel="prefetch" href="classes.html"><link rel="prefetch" href="attendance.html"><link rel="prefetch" href="calendar.html"><link rel="prefetch" href="reports.html">
+</head>
+<body class="classcheck-app">
+  <main class="app-shell secondary-page">
+    <header class="topbar page-topbar">
+      <a href="classes.html" class="icon-btn" aria-label="Back" data-icon="arrow-left"></a>
+      <div class="page-title-stack"><h1>Teacher Profile</h1></div>
+      <div class="brand-mark">CC</div>
+    </header>
+    <form id="profileForm" class="card form-card">
+      <div class="field"><label>Full name</label><input class="input" name="full_name"></div>
+      <div class="field"><label>School name</label><input class="input" name="school_name"></div>
+      <div class="field"><label>School head name</label><input class="input" name="school_head_name" placeholder="Printed name of the school head"></div>
+      <div class="field"><label>School ID</label><input class="input" name="school_id"></div>
+      <div class="field"><label>School year</label><input class="input" name="school_year"></div>
+      <div class="field"><label>Region</label><input class="input" name="region"></div>
+      <div class="field"><label>Division</label><input class="input" name="division"></div>
+      <div class="field"><label>District</label><input class="input" name="district"></div>
+      <div class="field"><label>Position</label><input class="input" name="position"></div>
+      <button type="submit" class="btn primary block">Save profile</button><button type="button" id="signOutBtn" class="btn ghost block">Log out</button>
+    </form>
+  </main>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script><script src="js/config.js?v=9"></script><script src="js/demo-data.js?v=9"></script><script src="js/storage.js?v=9.4"></script><script src="js/supabase-client.js?v=9"></script><script src="js/bootstrap.js?v=9"></script><script src="js/app.js?v=9"></script><script src="js/profile.js?v=9.2"></script>
+</body>
+</html>

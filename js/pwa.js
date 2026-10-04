@@ -202,9 +202,9 @@
   if('serviceWorker' in navigator && (location.protocol==='https:' || location.hostname==='localhost' || location.hostname==='127.0.0.1')){
     navigator.serviceWorker.addEventListener('controllerchange',()=>{
       if(reloadingForUpdate)return;
-      if(sessionStorage.getItem('classcheck_sw_reloaded_10_1')==='1')return;
+      if(sessionStorage.getItem('classcheck_sw_reloaded_10_2')==='1')return;
       reloadingForUpdate=true;
-      sessionStorage.setItem('classcheck_sw_reloaded_10_1','1');
+      sessionStorage.setItem('classcheck_sw_reloaded_10_2','1');
       location.reload();
     });
 

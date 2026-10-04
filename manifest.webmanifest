@@ -1,9 +1,9 @@
 {
-  "id": "./",
-  "name": "ClassCheck \u2014 Teacher Attendance",
+  "id": "./index.html",
+  "name": "ClassCheck — Teacher Attendance",
   "short_name": "ClassCheck",
   "description": "Teacher attendance, class rosters, calendar tracking, and SF2 reporting in one app.",
-  "start_url": "./",
+  "start_url": "./index.html?source=pwa",
   "scope": "./",
   "display": "standalone",
   "background_color": "#fff7f8",

@@ -1,3 +1,12 @@
+
+## V10.2 browser login / installed-app flow
+
+- Opening the normal ClassCheck website URL now stays on the public login/install screen, even when that browser still has an active Supabase session.
+- If a session already exists, the entry screen shows **Continue to ClassCheck** and **Log out** instead of silently jumping to the dashboard.
+- The **Install ClassCheck** control remains available before entering the workspace.
+- Launching the installed PWA restores the existing session and opens the workspace directly, matching normal installed-app behavior.
+- Logging out from Teacher Profile returns to the login screen.
+- No database or SQL change is required for this V10.2 update.
 # ClassCheck V8.5 — Exact SF2 Template Preservation
 
 ClassCheck is connected to the existing Supabase project but no longer depends on Mathside teacher profiles.

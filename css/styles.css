@@ -2021,3 +2021,38 @@ body.classcheck-app .modal{z-index:90!important}
 .pwa-dialog .pwa-card h2{font:700 27px/1.08 Georgia,serif;color:#341b24;margin:6px 44px 10px 0}
 .pwa-dialog .pwa-install-actions{margin-top:14px}
 @media(max-width:480px){.pwa-dialog .pwa-card{padding:21px 17px;border-radius:22px}.pwa-dialog .pwa-card h2{font-size:24px}}
+
+
+/* =========================================================
+   V10.2 — PUBLIC LOGIN / SESSION GATE
+   Keeps the website entry screen visible in a normal browser,
+   while an installed PWA may restore the signed-in workspace.
+   ========================================================= */
+.classcheck-login .login-card{width:min(520px,100%)}
+.existing-session-card{
+  display:grid;
+  grid-template-columns:46px minmax(0,1fr);
+  gap:12px 14px;
+  align-items:center;
+  padding:16px;
+  margin:16px 0;
+  border-radius:20px;
+  background:#fff;
+  box-shadow:var(--elevation-1);
+  border:1px solid rgba(116,21,45,.10);
+}
+.existing-session-card.hidden{display:none!important}
+.existing-session-icon{
+  width:46px;height:46px;border-radius:15px;display:grid;place-items:center;
+  background:var(--maroon-soft);color:var(--maroon);font-size:20px;font-weight:900;
+}
+.existing-session-copy{min-width:0;display:grid;gap:4px}
+.existing-session-copy b{font-size:14px;color:var(--ink)}
+.existing-session-copy span{font-size:15px;font-weight:850;color:var(--maroon-deep);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.existing-session-copy small{font-size:12px;line-height:1.45;color:var(--muted)}
+.existing-session-actions{grid-column:1/-1;display:grid;grid-template-columns:1fr 1fr;gap:9px}
+.classcheck-login .pwa-install-card{margin-top:18px}
+@media(max-width:520px){
+  .existing-session-actions{grid-template-columns:1fr}
+  .classcheck-login .login-card{border-radius:28px}
+}

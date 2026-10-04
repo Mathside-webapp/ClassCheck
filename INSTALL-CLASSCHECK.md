@@ -1,48 +1,22 @@
-# Install ClassCheck as an app
+# Install ClassCheck — V10.1
 
-ClassCheck V10 is a Progressive Web App (PWA). No APK is required.
+ClassCheck is an installable Progressive Web App (PWA). No new SQL is required.
 
-## Upload these new/updated files to GitHub Pages
-
-- `index.html`
-- `app.html`
-- `attendance.html`
-- `calendar.html`
-- `classes.html`
-- `profile.html`
-- `reports.html`
-- `css/styles.css`
-- `js/pwa.js`
-- `manifest.webmanifest`
-- `service-worker.js`
-- `offline.html`
-- `assets/icons/classcheck-180.png`
-- `assets/icons/classcheck-192.png`
-- `assets/icons/classcheck-512.png`
-- `assets/icons/classcheck-maskable-512.png`
-
-Your existing `js/config.js` is preserved unchanged.
-
-## Android / Chrome
-
-1. Open the deployed ClassCheck website in Chrome.
-2. Tap **Install ClassCheck** on the sign-in screen or in Teacher Profile.
-3. Tap **Install** in the browser prompt.
-4. If no prompt appears, tap Chrome’s **⋮** menu → **Add to Home screen** / **Install app**.
+## Android
+1. Upload the complete V10.1 files to your ClassCheck GitHub Pages repository.
+2. Open the HTTPS ClassCheck site in Chrome, Edge, Samsung Internet, or another PWA-capable browser.
+3. Sign in.
+4. On **My Classes**, tap the download/install button in the top-right, or use the **Install ClassCheck** card.
+5. Tap **Install now** if the browser offers it. If it does not, use the browser menu → **Install app** or **Add to Home screen**.
 
 ## iPhone / iPad
-
-1. Open ClassCheck in **Safari**.
-2. Tap **Share**.
+1. Open ClassCheck in Safari.
+2. Tap Share.
 3. Tap **Add to Home Screen**.
-4. Tap **Add**.
+4. Keep **Open as Web App** enabled if shown, then tap Add.
 
-## Desktop Chrome / Edge
+## Teacher Profile and Log out on mobile
+The mobile bottom navigation now has five tabs: **Classes, Attendance, Calendar, Reports, Profile**. Open **Profile** to edit teacher information, install ClassCheck, or tap **Log out**.
 
-1. Open the deployed ClassCheck site.
-2. Click **Install ClassCheck**, or click the install icon in the browser address bar.
-3. Confirm **Install**.
-
-## Updating an already installed ClassCheck
-
-After uploading a newer version, open ClassCheck while online once. The service worker will refresh the cached application files. If the launcher icon itself does not update, remove the installed PWA and install it again.
+## If the old version is still showing
+V10.1 changes the service worker to network-first and bumps the cache. Open the site while online and reload once. If the browser still keeps the old V10 files, close the ClassCheck tab/app completely and reopen it.

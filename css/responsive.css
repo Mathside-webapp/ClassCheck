@@ -267,3 +267,11 @@
   .status-radio{font-size:9px!important}
   .classcheck-login .login-wrap{padding:18px}.classcheck-login .login-card{padding:23px}.classcheck-login h1{font-size:34px}
 }
+
+
+/* V10.1 mobile navigation correction: Profile is the fifth bottom tab. */
+@media (max-width:780px){
+  .classcheck-profile-link{display:none!important}
+  .classcheck-mobile-profile-nav{display:flex!important}
+  .classcheck-nav-links{grid-template-columns:repeat(5,minmax(0,1fr))!important}
+}

@@ -156,3 +156,12 @@ Before generating SF2, ClassCheck now asks for Male/Female enrolment as of the 1
 - Android/Chrome uses the native install prompt when available. iPhone/iPad shows Safari Add to Home Screen instructions. Desktop Chrome/Edge is supported.
 - Existing local-first attendance behavior and Supabase configuration are preserved.
 - `js/config.js` is unchanged.
+
+
+## V10.1 Mobile Profile + Install Fix
+- Adds **Profile** as the fifth mobile bottom-navigation tab.
+- Restores access to **Teacher Profile** and **Log out** on phones.
+- Adds a compact install/download button to the Classes header.
+- Uses Android/iOS-specific install instructions similar to Mathside.
+- Makes the service worker network-first and bumps the cache so updates appear reliably.
+- No SQL/database changes are required.

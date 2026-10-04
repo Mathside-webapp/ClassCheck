@@ -1,5 +1,7 @@
-const CACHE_NAME = 'classcheck-v10-pwa-20261004';
-const CORE_ASSETS = [
+/* ClassCheck PWA — V10.1 mobile profile/install fix. */
+const CACHE_NAME = 'classcheck-pwa-v10.1-20261004';
+const CACHE_PREFIX = 'classcheck-pwa-';
+const APP_SHELL = [
   './',
   './index.html',
   './app.html',
@@ -10,81 +12,76 @@ const CORE_ASSETS = [
   './reports.html',
   './offline.html',
   './manifest.webmanifest',
-  './css/styles.css',
-  './css/responsive.css',
-  './assets/classcheck-favicon.svg',
+  './css/styles.css?v=10.1',
+  './css/responsive.css?v=10.1',
+  './assets/classcheck-favicon.svg?v=9',
+  './assets/icons/classcheck-180.png',
   './assets/icons/classcheck-192.png',
   './assets/icons/classcheck-512.png',
   './assets/icons/classcheck-maskable-512.png',
-  './assets/icons/classcheck-180.png',
-  './js/config.js',
-  './js/demo-data.js',
-  './js/storage.js',
-  './js/offline-db.js',
-  './js/supabase-client.js',
-  './js/bootstrap.js',
-  './js/sync.js',
-  './js/app.js',
-  './js/auth.js',
-  './js/classes.js',
-  './js/attendance.js',
-  './js/calendar.js',
-  './js/reports.js',
-  './js/profile.js',
-  './js/pwa.js',
-  './js/jszip.min.js',
-  './js/sf2-template.js',
+  './js/config.js?v=9',
+  './js/demo-data.js?v=9',
+  './js/storage.js?v=9.4',
+  './js/offline-db.js?v=9',
+  './js/supabase-client.js?v=9',
+  './js/bootstrap.js?v=9',
+  './js/sync.js?v=9',
+  './js/app.js?v=10.1',
+  './js/auth.js?v=9',
+  './js/classes.js?v=9.5',
+  './js/attendance.js?v=9.3',
+  './js/calendar.js?v=9.3',
+  './js/reports.js?v=10.3',
+  './js/profile.js?v=9.2',
+  './js/pwa.js?v=10.1',
+  './js/jszip.min.js?v=9.5',
+  './js/sf2-template.js?v=9.5',
   './assets/templates/SF2_SOURCE_TEMPLATE.xlsx'
 ];
 
 self.addEventListener('install', event => {
-  event.waitUntil(
-    caches.open(CACHE_NAME)
-      .then(cache => cache.addAll(CORE_ASSETS))
-      .then(() => self.skipWaiting())
-  );
+  event.waitUntil(caches.open(CACHE_NAME).then(cache => cache.addAll(APP_SHELL)));
+  self.skipWaiting();
 });
 
 self.addEventListener('activate', event => {
   event.waitUntil(
     caches.keys()
-      .then(keys => Promise.all(keys.filter(key => key.startsWith('classcheck-') && key !== CACHE_NAME).map(key => caches.delete(key))))
+      .then(keys => Promise.all(keys.filter(k => k.startsWith(CACHE_PREFIX) && k !== CACHE_NAME).map(k => caches.delete(k))))
       .then(() => self.clients.claim())
   );
 });
 
-self.addEventListener('fetch', event => {
-  const req = event.request;
-  if (req.method !== 'GET') return;
-  const url = new URL(req.url);
+self.addEventListener('message', event => {
+  if(event.data?.type === 'SKIP_WAITING') self.skipWaiting();
+});
 
-  if (req.mode === 'navigate') {
-    event.respondWith(
-      fetch(req)
-        .then(response => {
-          const copy = response.clone();
-          caches.open(CACHE_NAME).then(cache => cache.put(req, copy));
-          return response;
-        })
-        .catch(async () => (await caches.match(req, { ignoreSearch: true })) || (await caches.match('./offline.html')))
-    );
+self.addEventListener('fetch', event => {
+  const req=event.request;
+  if(req.method!=='GET')return;
+  const url=new URL(req.url);
+  if(url.origin!==self.location.origin)return;
+
+  if(req.mode==='navigate'){
+    event.respondWith((async()=>{
+      try{
+        const fresh=await fetch(req);
+        if(fresh?.ok){const cache=await caches.open(CACHE_NAME);cache.put(req,fresh.clone());}
+        return fresh;
+      }catch(_){
+        return (await caches.match(req,{ignoreSearch:true})) || (await caches.match('./index.html')) || (await caches.match('./offline.html'));
+      }
+    })());
     return;
   }
 
-  const sameOrigin = url.origin === self.location.origin;
-  const safeCdn = url.hostname === 'cdn.jsdelivr.net' || url.hostname === 'unpkg.com';
-  if (!sameOrigin && !safeCdn) return;
-
-  event.respondWith(
-    caches.match(req, { ignoreSearch: sameOrigin }).then(cached => {
-      const network = fetch(req).then(response => {
-        if (response && (response.ok || response.type === 'opaque')) {
-          const copy = response.clone();
-          caches.open(CACHE_NAME).then(cache => cache.put(req, copy));
-        }
-        return response;
-      }).catch(() => cached);
-      return cached || network;
-    })
-  );
+  event.respondWith((async()=>{
+    try{
+      const fresh=await fetch(req);
+      if(fresh?.ok){const cache=await caches.open(CACHE_NAME);cache.put(req,fresh.clone());}
+      return fresh;
+    }catch(_){
+      return (await caches.match(req,{ignoreSearch:false})) || (await caches.match(req,{ignoreSearch:true})) || Response.error();
+    }
+  })());
 });

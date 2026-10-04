@@ -195,7 +195,8 @@
       ['classes','users','Classes'],
       ['attendance','attendance','Attendance'],
       ['calendar','calendar','Calendar'],
-      ['reports','report','Reports']
+      ['reports','report','Reports'],
+      ['profile','user','Profile']
     ];
     const hrefFor=panel=>isUnified()?`#${panel}`:panelPages[panel];
     let el=qs('.classcheck-sidebar');
@@ -215,7 +216,7 @@
         <span><b>${teacherName}</b><small>Daily attendance</small></span>
       </a>
       <div class="classcheck-nav-links">
-        ${items.map(([key,ico,label])=>`<a class="nav-item ${active===key?'active':''}" href="${hrefFor(key)}"><span class="nav-icon">${icon(ico)}</span><span>${label}</span></a>`).join('')}
+        ${items.map(([key,ico,label])=>`<a class="nav-item ${key==='profile'?'classcheck-mobile-profile-nav ':''}${active===key?'active':''}" href="${hrefFor(key)}"><span class="nav-icon">${icon(ico)}</span><span>${label}</span></a>`).join('')}
       </div>
       <a class="classcheck-profile-link ${active==='profile'?'active':''}" href="${hrefFor('profile')}"><span class="nav-icon">${icon('user')}</span><span>Teacher Profile</span></a>`;
     hydrateIcons(el);

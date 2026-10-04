@@ -3,8 +3,14 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-  <title>ClassCheck • Classes</title><meta name="theme-color" content="#fff7f8"><link rel="icon" href="assets/classcheck-favicon.svg?v=9" type="image/svg+xml"><style>html,body{margin:0;background:#fff7f8!important}main.app-shell{min-height:100vh;background:#fff7f8!important;opacity:1!important}</style>
-  <link rel="stylesheet" href="css/styles.css?v=9">
+  <title>ClassCheck • Classes</title><meta name="theme-color" content="#7a1730"><link rel="icon" href="assets/classcheck-favicon.svg?v=9" type="image/svg+xml">
+  <link rel="manifest" href="manifest.webmanifest">
+  <link rel="apple-touch-icon" href="assets/icons/classcheck-180.png">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="default">
+  <meta name="apple-mobile-web-app-title" content="ClassCheck"><style>html,body{margin:0;background:#fff7f8!important}main.app-shell{min-height:100vh;background:#fff7f8!important;opacity:1!important}</style>
+  <link rel="stylesheet" href="css/styles.css?v=10.0">
   <link rel="stylesheet" href="css/responsive.css?v=9"><link rel="prefetch" href="attendance.html"><link rel="prefetch" href="calendar.html"><link rel="prefetch" href="reports.html"><link rel="prefetch" href="profile.html">
 </head>
 <body class="classcheck-app">
@@ -23,7 +29,13 @@
       <span class="pill">Shared rosters</span>
       <span class="pill">SF1 ready</span>
     </div>
-    <section id="classList"></section>
+    
+<section class="pwa-install-card pwa-classes-install" aria-label="Install ClassCheck app">
+  <div class="pwa-install-mark" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M12 3v11m0 0 4-4m-4 4-4-4M5 17v2h14v-2"/></svg></div>
+  <div class="pwa-install-copy"><b>Put ClassCheck on your Home Screen</b><span>Install once, then open attendance directly like a regular app.</span><small data-pwa-status>Install from your browser</small></div>
+  <div class="pwa-install-actions"><button class="btn primary block" type="button" data-install-classcheck><span data-install-label>Install ClassCheck</span></button><button class="btn soft block" type="button" data-install-help>Installation guide</button></div>
+</section>
+<section id="classList"></section>
   </main>
 
   <div id="classModal" class="modal hidden">
@@ -103,5 +115,6 @@
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="https://cdn.jsdelivr.net/npm/xlsx-js-style@1.2.0/dist/xlsx.bundle.js" onerror="this.onerror=null;this.src='https://unpkg.com/xlsx-js-style@1.2.0/dist/xlsx.bundle.js'"></script>
   <script src="js/config.js?v=9"></script><script src="js/demo-data.js?v=9"></script><script src="js/storage.js?v=9.4"></script><script src="js/supabase-client.js?v=9"></script><script src="js/bootstrap.js?v=9"></script><script src="js/app.js?v=9"></script><script src="js/classes.js?v=9.5"></script>
+<script src="js/pwa.js?v=10.0"></script>
 </body>
 </html>

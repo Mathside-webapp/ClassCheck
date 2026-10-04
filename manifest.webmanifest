@@ -1,0 +1,52 @@
+{
+  "id": "./",
+  "name": "ClassCheck — Teacher Attendance",
+  "short_name": "ClassCheck",
+  "description": "Teacher attendance, class rosters, calendar tracking, and SF2 reporting in one app.",
+  "start_url": "./index.html",
+  "scope": "./",
+  "display": "standalone",
+  "background_color": "#fff7f8",
+  "theme_color": "#7a1730",
+  "categories": ["education", "productivity"],
+  "icons": [
+    {
+      "src": "assets/icons/classcheck-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "assets/icons/classcheck-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "assets/icons/classcheck-maskable-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
+    }
+  ],
+  "shortcuts": [
+    {
+      "name": "Take Attendance",
+      "short_name": "Attendance",
+      "url": "./app.html#attendance",
+      "icons": [{"src": "assets/icons/classcheck-192.png", "sizes": "192x192", "type": "image/png"}]
+    },
+    {
+      "name": "My Classes",
+      "short_name": "Classes",
+      "url": "./app.html#classes",
+      "icons": [{"src": "assets/icons/classcheck-192.png", "sizes": "192x192", "type": "image/png"}]
+    },
+    {
+      "name": "SF2 Reports",
+      "short_name": "Reports",
+      "url": "./app.html#reports",
+      "icons": [{"src": "assets/icons/classcheck-192.png", "sizes": "192x192", "type": "image/png"}]
+    }
+  ]
+}

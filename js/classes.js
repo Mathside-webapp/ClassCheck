@@ -6,6 +6,7 @@ document.addEventListener('DOMContentLoaded',async()=>{
   const userId=ctx.user.id;
   let state=AppStorage.get();
   let sf1Rows=[];
+  let currentFilter='active';
   const selectedStudentIds=new Set();
   const list=document.getElementById('classList');
   const classModal=document.getElementById('classModal');
@@ -22,13 +23,27 @@ document.addEventListener('DOMContentLoaded',async()=>{
   function roleText(c){const m=membership(c.id);return isAdviser(c)?'Class adviser':(m?`Subject teacher • ${m.subject}`:'Shared class');}
   function currentRosterStudents(classId){return activeStudents(classId).sort((a,b)=>App.studentName(a).localeCompare(App.studentName(b),undefined,{sensitivity:'base'}));}
 
+  function filteredClasses(){
+    if(currentFilter==='archived')return state.classes.filter(c=>c.archived);
+    if(currentFilter==='shared')return state.classes.filter(c=>!c.archived&&!isAdviser(c)&&membership(c.id));
+    return state.classes.filter(c=>!c.archived);
+  }
+
   function render(){
     refreshState();
-    list.innerHTML=state.classes.filter(c=>!c.archived).map(c=>{
+    document.querySelectorAll('[data-class-filter]').forEach(btn=>btn.classList.toggle('active',btn.dataset.classFilter===currentFilter));
+    const rows=filteredClasses();
+    list.innerHTML=rows.map(c=>{
       const count=activeStudents(c.id).length;
-      return `<div class="card class-card" data-id="${c.id}"><div class="class-badge">${c.section_name.slice(0,2).toUpperCase()}</div><div class="class-info"><h3>${c.grade_level} – ${c.section_name}</h3><p>${count} learners • ${roleText(c)}</p></div><button class="btn soft open-roster">Open</button></div>`;
-    }).join('')||'<div class="card empty">No classes yet. Create your advisory class or join one using a code.</div>';
+      const adviser=isAdviser(c);
+      const archived=c.archived;
+      const action=archived&&adviser
+        ? '<button class="btn primary restore-class" type="button">Restore</button>'
+        : `<button class="btn soft open-roster" type="button">${archived?'View':'Open'}</button>`;
+      return `<div class="card class-card ${archived?'is-archived':''}" data-id="${c.id}"><div class="class-badge">${c.section_name.slice(0,2).toUpperCase()}</div><div class="class-info"><h3>${c.grade_level} – ${c.section_name}</h3><p>${count} learners • ${roleText(c)}${archived?' • Archived':''}</p></div>${action}</div>`;
+    }).join('')||`<div class="card empty">${currentFilter==='archived'?'No archived classes.':'No classes here yet.'}</div>`;
     document.querySelectorAll('.open-roster').forEach(btn=>btn.onclick=e=>openRoster(e.target.closest('[data-id]').dataset.id));
+    document.querySelectorAll('.restore-class').forEach(btn=>btn.onclick=e=>setClassArchived(e.target.closest('[data-id]').dataset.id,false));
   }
 
   function updateRosterBulkUI(classId,adviser){
@@ -63,7 +78,7 @@ document.addEventListener('DOMContentLoaded',async()=>{
     if(!ok)return;
     try{
       await App.withLoading(count===1?'Deleting learner…':`Deleting ${count} learners…`,'Removing the selected roster data and related attendance records.',async()=>{
-        const {error}=await supa.from('classcheck_students').delete().eq('class_id',classId).in('id',unique);
+        const {error}=await supa.rpc('classcheck_delete_students',{p_class_id:classId,p_student_ids:unique});
         if(error)throw error;
       },{minimum:320});
       const removed=new Set(unique);
@@ -91,6 +106,10 @@ document.addEventListener('DOMContentLoaded',async()=>{
     const subjectPanel=document.getElementById('subjectTeachersPanel');
     const tools=document.getElementById('adviserRosterTools');
     sharePanel.classList.toggle('hidden',!adviser);subjectPanel.classList.toggle('hidden',!adviser);tools.classList.toggle('hidden',!adviser);
+    const archiveBtn=document.getElementById('archiveClassBtn');
+    const leaveBtn=document.getElementById('leaveClassBtn');
+    if(archiveBtn){archiveBtn.classList.toggle('hidden',!adviser);archiveBtn.textContent=c.archived?'Restore class':'Archive class';archiveBtn.onclick=()=>setClassArchived(id,!c.archived);}
+    if(leaveBtn){leaveBtn.classList.toggle('hidden',adviser||!m);leaveBtn.onclick=()=>leaveClass(id);}
     updateRosterBulkUI(id,adviser);
     if(adviser){
       const {data:code,error:codeError}=await supa.rpc('classcheck_get_join_code',{p_class_id:id});
@@ -108,6 +127,7 @@ document.addEventListener('DOMContentLoaded',async()=>{
 
   document.getElementById('addClassBtn').onclick=()=>classModal.classList.remove('hidden');
   document.getElementById('joinClassBtn').onclick=()=>joinModal.classList.remove('hidden');
+  document.querySelectorAll('[data-class-filter]').forEach(btn=>btn.onclick=()=>{currentFilter=btn.dataset.classFilter||'active';render();});
   document.querySelectorAll('[data-close]').forEach(b=>b.onclick=()=>b.closest('.modal').classList.add('hidden'));
 
   document.getElementById('selectAllStudents').onchange=e=>{
@@ -139,23 +159,12 @@ document.addEventListener('DOMContentLoaded',async()=>{
       const created=await App.withLoading('Creating your class…','Preparing the advisory roster and its share code.',async()=>{
         // Always read the current profile before creating a class. This avoids stale pre-V9 cached state.
         const profile=await Supa.ensureProfile(ctx.user);
-        const row={
-          teacher_id:userId,
-          grade_level:grade,
-          section_name:section,
-          school_year:profile?.school_year||'',
-          adviser_name:profile?.full_name||ctx.user.user_metadata?.full_name||'Teacher',
-          class_color:'#7a1730',
-          archived:false
-        };
-        const {data,error}=await supa.from('classcheck_classes')
-          .insert(row)
-          .select('id,teacher_id,grade_level,section_name,school_year,adviser_name,class_color,archived,enrollment_baseline_male,enrollment_baseline_female,enrollment_baseline_set_at,created_at,updated_at')
-          .single();
+        await Supa.ensureProfile(ctx.user);
+        const {data:classId,error}=await supa.rpc('classcheck_create_class',{p_grade_level:grade,p_section_name:section});
         if(error)throw error;
-        // Force the newly created class into the shared cache before returning to the UI.
         await Supa.loadState(ctx,true);
-        return data;
+        const fresh=AppStorage.get();
+        return fresh.classes.find(c=>c.id===classId)||{id:classId};
       },{minimum:420});
       refreshState();
       classModal.classList.add('hidden');
@@ -212,11 +221,17 @@ document.addEventListener('DOMContentLoaded',async()=>{
     const last=String(fd.get('last')||'').trim().toUpperCase();
     const first=String(fd.get('first')||'').trim();
     if(!last||!first){App.toast('Enter the learner’s first and last name.');if(submit)submit.disabled=false;return;}
-    const baselineSet=c.enrollment_baseline_male!==null&&c.enrollment_baseline_male!==undefined&&c.enrollment_baseline_female!==null&&c.enrollment_baseline_female!==undefined;
-    const row={teacher_id:userId,class_id:id,lrn:String(fd.get('lrn')||'').trim()||null,last_name:last,first_name:first,middle_name:String(fd.get('middle')||'').trim()||null,sex:fd.get('sex'),date_enrolled:baselineSet?App.fmtDate():null,enrollment_status:'Active',archived:false};
     try{
       await App.withLoading('Adding learner…','Saving the learner to this class roster.',async()=>{
-        const {error}=await supa.from('classcheck_students').insert(row);
+        const {error}=await supa.rpc('classcheck_add_student',{
+          p_class_id:id,
+          p_lrn:String(fd.get('lrn')||'').trim()||null,
+          p_last_name:last,
+          p_first_name:first,
+          p_middle_name:String(fd.get('middle')||'').trim()||null,
+          p_name_extension:null,
+          p_sex:String(fd.get('sex')||'')
+        });
         if(error)throw error;
         await Supa.loadState(ctx,true);
       },{minimum:320});
@@ -382,23 +397,59 @@ document.addEventListener('DOMContentLoaded',async()=>{
     const toInsert=sf1Rows.filter(r=>!(r.lrn&&lrnSet.has(r.lrn))&&!nameSet.has(`${r.last_name.toUpperCase()}|${r.first_name.toUpperCase()}|${norm(r.middle_name).toUpperCase()}`)).map(r=>({...r,teacher_id:userId,class_id:classId,date_enrolled:baselineSet?App.fmtDate():null,enrollment_status:'Active',archived:false}));
     if(!toInsert.length){App.toast('All learners in this SF1 are already in the class.');sf1Preview.classList.add('hidden');return;}
     try{
-      const data=await App.withLoading('Importing SF1 roster…',`Adding ${toInsert.length} learners to this class.`,async()=>{const {data,error}=await supa.from('classcheck_students').insert(toInsert).select('*');if(error)throw error;return data||[];},{minimum:520});
-      state.students.push(...data);
-      if(!baselineSet){
-        const rosterNow=activeStudents(classId);
-        const male=rosterNow.filter(s=>s.sex==='Male').length;
-        const female=rosterNow.filter(s=>s.sex==='Female').length;
-        const {data:updatedClass,error:baselineError}=await supa.from('classcheck_classes')
-          .update({enrollment_baseline_male:male,enrollment_baseline_female:female,enrollment_baseline_set_at:new Date().toISOString()})
-          .eq('id',classId).eq('teacher_id',userId)
-          .select('id,teacher_id,grade_level,section_name,school_year,adviser_name,class_color,archived,enrollment_baseline_male,enrollment_baseline_female,enrollment_baseline_set_at,created_at,updated_at').single();
-        if(!baselineError&&updatedClass){
-          const idx=state.classes.findIndex(x=>x.id===classId);if(idx>=0)state.classes[idx]=updatedClass;
-        }else if(baselineError)console.warn('Unable to save SF2 baseline',baselineError);
-      }
-      saveCache();sf1Rows=[];sf1Preview.classList.add('hidden');openRoster(classId);render();App.toast(`${data.length} learners imported from SF1`);
+      const imported=await App.withLoading('Importing SF1 roster…',`Adding ${toInsert.length} learners to this class.`,async()=>{
+        const payload=toInsert.map(({lrn,last_name,first_name,middle_name,name_extension,sex})=>({lrn,last_name,first_name,middle_name,name_extension,sex}));
+        const {data,error}=await supa.rpc('classcheck_import_students',{p_class_id:classId,p_students:payload});
+        if(error)throw error;
+        await Supa.loadState(ctx,true);
+        return Number(data||0);
+      },{minimum:520});
+      refreshState();sf1Rows=[];sf1Preview.classList.add('hidden');openRoster(classId);render();App.toast(`${imported} learners imported from SF1`);
     }catch(error){console.error(error);App.toast('Unable to import the SF1 roster.');}
   };
+
+  async function setClassArchived(id,archived){
+    const c=state.classes.find(x=>x.id===id);
+    if(!c||!isAdviser(c)){App.toast('Only the class adviser can archive or restore this class.');return;}
+    const label=archived?'Archive':'Restore';
+    const ok=await App.confirmAction({
+      title:`${label} this class?`,
+      message:archived?'The class will move to Archived. Learners and attendance records are kept. You can restore it anytime.':'The class will return to your active classes with its learners and attendance history intact.',
+      confirmText:label,danger:false
+    });
+    if(!ok)return;
+    try{
+      await App.withLoading(`${label}ing class…`,'Updating the class without deleting its records.',async()=>{
+        const {error}=await supa.rpc('classcheck_set_class_archived',{p_class_id:id,p_archived:archived});
+        if(error)throw error;
+        await Supa.loadState(ctx,true);
+      },{minimum:300});
+      refreshState();
+      roster.classList.add('hidden');
+      if(!archived)currentFilter='active';
+      render();
+      App.toast(archived?'Class archived':'Class restored');
+    }catch(error){console.error(error);App.toast(error?.message||`Unable to ${archived?'archive':'restore'} this class.`);}
+  }
+
+  async function leaveClass(id){
+    const c=state.classes.find(x=>x.id===id);
+    if(!c||isAdviser(c)){App.toast('The adviser cannot leave their own class.');return;}
+    const ok=await App.confirmAction({
+      title:'Leave this class?',
+      message:'This removes the shared roster from your ClassCheck account. Your own attendance records stay in the class database for the adviser unless the adviser deletes the class.',
+      confirmText:'Leave class',danger:true
+    });
+    if(!ok)return;
+    try{
+      await App.withLoading('Leaving class…','Removing your subject-teacher membership.',async()=>{
+        const {error}=await supa.rpc('classcheck_leave_class',{p_class_id:id});
+        if(error)throw error;
+        await Supa.loadState(ctx,true);
+      },{minimum:300});
+      refreshState();roster.classList.add('hidden');render();App.toast('You left the class');
+    }catch(error){console.error(error);App.toast(error?.message||'Unable to leave this class.');}
+  }
 
   document.getElementById('deleteClassBtn').onclick=async()=>{
     const id=roster.dataset.classId;if(!id)return;
@@ -412,7 +463,7 @@ document.addEventListener('DOMContentLoaded',async()=>{
     if(!ok)return;
     try{
       await App.withLoading('Deleting class…','Removing the roster, shared links, and attendance history for this class.',async()=>{
-        const {error}=await supa.from('classcheck_classes').delete().eq('id',id).eq('teacher_id',userId);if(error)throw error;
+        const {error}=await supa.rpc('classcheck_delete_class',{p_class_id:id});if(error)throw error;
       },{minimum:420});
       state.classes=state.classes.filter(x=>x.id!==id);
       state.students=state.students.filter(s=>s.class_id!==id);

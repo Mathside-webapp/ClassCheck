@@ -756,10 +756,9 @@ ${d.schoolDays}`);
     if(oldMale===male&&oldFemale===female)return{male,female};
     const row={enrollment_baseline_male:male,enrollment_baseline_female:female,enrollment_baseline_set_at:new Date().toISOString()};
     if(!APP_CONFIG.DEMO_MODE){
-      const {data,error}=await supa.from('classcheck_classes').update(row).eq('id',cid)
-        .select('id,teacher_id,enrollment_baseline_male,enrollment_baseline_female,enrollment_baseline_set_at').single();
+      const {error}=await supa.rpc('classcheck_set_sf2_baseline',{p_class_id:cid,p_male:male,p_female:female});
       if(error)throw error;
-      cacheBaseline(cid,data||row);
+      cacheBaseline(cid,row);
     }else cacheBaseline(cid,row);
     if(sf2BaselineStatus)sf2BaselineStatus.innerHTML='<strong>Saved.</strong> This baseline will be reused automatically for the next month.';
     return{male,female};

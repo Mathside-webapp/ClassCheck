@@ -10,7 +10,7 @@
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="default">
   <meta name="apple-mobile-web-app-title" content="ClassCheck"><style>html,body{margin:0;background:#fff7f8!important}main.app-shell{min-height:100vh;background:#fff7f8!important;opacity:1!important}</style>
-  <link rel="stylesheet" href="css/styles.css?v=10.2">
+  <link rel="stylesheet" href="css/styles.css?v=10.5">
   <link rel="stylesheet" href="css/responsive.css?v=10.2"><link rel="prefetch" href="attendance.html"><link rel="prefetch" href="calendar.html"><link rel="prefetch" href="reports.html"><link rel="prefetch" href="profile.html">
 </head>
 <body class="classcheck-app">
@@ -26,9 +26,9 @@
     </header>
 
     <div class="pills centered-pills" aria-label="Class filters">
-      <span class="pill active">Active</span>
-      <span class="pill">Shared rosters</span>
-      <span class="pill">SF1 ready</span>
+      <button class="pill active" type="button" data-class-filter="active">Active</button>
+      <button class="pill" type="button" data-class-filter="shared">Shared rosters</button>
+      <button class="pill" type="button" data-class-filter="archived">Archived</button>
     </div>
     
 <section class="pwa-install-card pwa-classes-install" aria-label="Install ClassCheck app">
@@ -87,6 +87,11 @@
       </div>
       <div class="roster-body student-list"></div>
 
+      <section id="classMembershipActions" class="class-membership-actions">
+        <button id="archiveClassBtn" class="btn soft block hidden" type="button">Archive class</button>
+        <button id="leaveClassBtn" class="btn danger block hidden" type="button">Leave this class</button>
+      </section>
+
       <section id="adviserRosterTools" class="adviser-roster-tools hidden">
         <hr class="sep">
         <div class="roster-tool-head"><h3>Add learners</h3><label id="sf1ImportBtn" for="sf1File" class="btn soft sf1-upload-label"><span data-icon="download"></span><span>Upload SF1</span><input id="sf1File" type="file" accept=".xls,.xlsx,.csv,application/vnd.ms-excel,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet,text/csv"></label></div>
@@ -115,7 +120,7 @@
 
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="https://cdn.jsdelivr.net/npm/xlsx-js-style@1.2.0/dist/xlsx.bundle.js" onerror="this.onerror=null;this.src='https://unpkg.com/xlsx-js-style@1.2.0/dist/xlsx.bundle.js'"></script>
-  <script src="js/config.js?v=10.4"></script><script src="js/demo-data.js?v=9"></script><script src="js/storage.js?v=9.4"></script><script src="js/supabase-client.js?v=9"></script><script src="js/bootstrap.js?v=9"></script><script src="js/app.js?v=10.2"></script><script src="js/classes.js?v=9.5"></script>
+  <script src="js/config.js?v=10.4"></script><script src="js/demo-data.js?v=9"></script><script src="js/storage.js?v=9.4"></script><script src="js/supabase-client.js?v=9"></script><script src="js/bootstrap.js?v=9"></script><script src="js/app.js?v=10.2"></script><script src="js/classes.js?v=10.5"></script>
 <script src="js/pwa.js?v=10.2"></script>
 </body>
 </html>

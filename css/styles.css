@@ -2056,3 +2056,8 @@ body.classcheck-app .modal{z-index:90!important}
   .existing-session-actions{grid-template-columns:1fr}
   .classcheck-login .login-card{border-radius:28px}
 }
+
+/* V10.5 class lifecycle */
+.class-card.is-archived{opacity:.82;background:#faf7f8}.class-card.is-archived .class-badge{filter:grayscale(.35)}
+.class-membership-actions{display:grid;gap:10px;margin:16px 0}.class-membership-actions:empty{display:none}
+.pills button.pill{font:inherit;cursor:pointer}

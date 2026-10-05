@@ -24,15 +24,12 @@
       const supa=Supa.getClient();
       const attendanceOps=pending.filter(x=>x.type==='attendance_upsert');
       const sessionOps=pending.filter(x=>x.type==='session_upsert');
-      if(attendanceOps.length){
-        const {error}=await supa.from('classcheck_attendance_records').upsert(attendanceOps.map(x=>attendanceRow(x.payload)),{onConflict:'class_id,teacher_id,student_id,attendance_date'});
+      if(attendanceOps.length||sessionOps.length){
+        const records=attendanceOps.map(x=>{const r=attendanceRow(x.payload);delete r.teacher_id;return r;});
+        const sessions=sessionOps.map(x=>{const s=sessionRow(x.payload);delete s.teacher_id;return s;});
+        const {error}=await supa.rpc('classcheck_sync_attendance',{p_records:records,p_sessions:sessions});
         if(error)throw error;
-        for(const item of attendanceOps)await OfflineDB.remove('syncQueue',item.id);
-      }
-      if(sessionOps.length){
-        const {error}=await supa.from('classcheck_attendance_sessions').upsert(sessionOps.map(x=>sessionRow(x.payload)),{onConflict:'class_id,teacher_id,attendance_date'});
-        if(error)throw error;
-        for(const item of sessionOps)await OfflineDB.remove('syncQueue',item.id);
+        for(const item of [...attendanceOps,...sessionOps])await OfflineDB.remove('syncQueue',item.id);
       }
       emit({type:'synced',count:0});
     }catch(err){console.error('ClassCheck sync failed',err);emit({type:'failed',count:pending.length});}

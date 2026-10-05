@@ -1,5 +1,5 @@
-/* ClassCheck PWA — V10.4 dedicated backend + dynamic SF2. */
-const CACHE_NAME = 'classcheck-pwa-v10.4-20261005';
+/* ClassCheck PWA — V10.5 verified workflows + archive/leave. */
+const CACHE_NAME = 'classcheck-pwa-v10.5-20261005';
 const CACHE_PREFIX = 'classcheck-pwa-';
 const APP_SHELL = [
   './',
@@ -12,7 +12,7 @@ const APP_SHELL = [
   './reports.html',
   './offline.html',
   './manifest.webmanifest',
-  './css/styles.css?v=10.2',
+  './css/styles.css?v=10.5',
   './css/responsive.css?v=10.2',
   './assets/classcheck-favicon.svg?v=9',
   './assets/icons/classcheck-180.png',
@@ -25,13 +25,13 @@ const APP_SHELL = [
   './js/offline-db.js?v=9',
   './js/supabase-client.js?v=9',
   './js/bootstrap.js?v=9',
-  './js/sync.js?v=9',
+  './js/sync.js?v=10.5',
   './js/app.js?v=10.2',
   './js/auth.js?v=10.2',
-  './js/classes.js?v=9.5',
+  './js/classes.js?v=10.5',
   './js/attendance.js?v=9.3',
   './js/calendar.js?v=9.3',
-  './js/reports.js?v=10.4',
+  './js/reports.js?v=10.5',
   './js/profile.js?v=9.2',
   './js/pwa.js?v=10.2',
   './js/jszip.min.js?v=9.5',

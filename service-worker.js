@@ -1,5 +1,5 @@
-/* ClassCheck PWA — V10.3 dynamic SF2 roster support. */
-const CACHE_NAME = 'classcheck-pwa-v10.3-20261004';
+/* ClassCheck PWA — V10.4 dedicated backend + dynamic SF2. */
+const CACHE_NAME = 'classcheck-pwa-v10.4-20261005';
 const CACHE_PREFIX = 'classcheck-pwa-';
 const APP_SHELL = [
   './',
@@ -19,7 +19,7 @@ const APP_SHELL = [
   './assets/icons/classcheck-192.png',
   './assets/icons/classcheck-512.png',
   './assets/icons/classcheck-maskable-512.png',
-  './js/config.js?v=9',
+  './js/config.js?v=10.4',
   './js/demo-data.js?v=9',
   './js/storage.js?v=9.4',
   './js/offline-db.js?v=9',

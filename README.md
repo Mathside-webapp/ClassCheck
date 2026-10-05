@@ -1,3 +1,7 @@
+# IMPORTANT — V10.4 BACKEND FIX
+
+This package now uses the dedicated ClassCheck Supabase project (`rvzuqzgktdcyzyayftks`). The required ClassCheck schema/RLS/RPC setup has already been applied there. Do not point this build back to the MathHub project.
+
 # ClassCheck — V10.3 Dynamic SF2
 
 ## V10.3 dynamic SF2 roster

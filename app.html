@@ -322,6 +322,7 @@
 <div class="roster-tool-head"><h3>Add learners</h3><label class="btn soft sf1-upload-label" for="sf1File" id="sf1ImportBtn"><span data-icon="download"></span><span>Upload SF1</span><input accept=".xls,.xlsx,.csv,application/vnd.ms-excel,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet,text/csv" id="sf1File" type="file"/></label></div>
 <p class="sf1-import-status" id="sf1ImportStatus">Accepts DepEd SF1 .xls/.xlsx files and CSV learner lists.</p>
 <form class="form-card" id="addStudentForm" style="margin-top:12px">
+<div class="field"><label>LRN <span class="optional-label">(optional)</span></label><input class="input" name="lrn" inputmode="numeric" maxlength="12" pattern="[0-9]{12}" placeholder="Leave blank if unavailable"/></div>
 <div class="field"><label>Last name</label><input class="input" name="last" required=""/></div>
 <div class="field"><label>First name</label><input class="input" name="first" required=""/></div>
 <div class="field"><label>Middle name</label><input class="input" name="middle"/></div>
@@ -330,6 +331,21 @@
 <button class="btn danger block" id="deleteClassBtn" type="button">Delete class permanently</button>
 </form>
 </section>
+</div>
+</div>
+<div class="modal hidden" id="editStudentModal">
+<div class="modal-panel">
+<div class="handle"></div>
+<div class="card-head"><div><h2>Edit learner</h2><p class="modal-meta">Update learner details. LRN may be left blank.</p></div><button aria-label="Close" class="icon-btn" data-close="" data-icon="close"></button></div>
+<form class="form-card" id="editStudentForm">
+<input name="studentId" type="hidden"/>
+<div class="field"><label>LRN <span class="optional-label">(optional)</span></label><input class="input" name="lrn" inputmode="numeric" maxlength="12" pattern="[0-9]{12}" placeholder="Leave blank if unavailable"/></div>
+<div class="field"><label>Last name</label><input class="input" name="last" required=""/></div>
+<div class="field"><label>First name</label><input class="input" name="first" required=""/></div>
+<div class="field"><label>Middle name</label><input class="input" name="middle"/></div>
+<div class="field"><label>Sex</label><select class="input" name="sex"><option>Male</option><option>Female</option></select></div>
+<button class="btn primary block" type="submit">Save changes</button>
+</form>
 </div>
 </div>
 <div class="modal hidden" id="sf1PreviewModal">
@@ -351,7 +367,7 @@
   <script src="js/bootstrap.js?v=9"></script>
   <script src="js/sync.js?v=10.5"></script>
   <script src="js/app.js?v=10.2"></script>
-  <script src="js/classes.js?v=10.6"></script>
+  <script src="js/classes.js?v=10.7"></script>
   <script src="js/attendance.js?v=9"></script>
   <script src="js/calendar.js?v=9"></script>
   <script src="js/jszip.min.js?v=9.5"></script>

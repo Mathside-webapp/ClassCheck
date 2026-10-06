@@ -13,6 +13,8 @@ document.addEventListener('DOMContentLoaded',async()=>{
   const joinModal=document.getElementById('joinClassModal');
   const roster=document.getElementById('rosterModal');
   const sf1Preview=document.getElementById('sf1PreviewModal');
+  const editStudentModal=document.getElementById('editStudentModal');
+  const editStudentForm=document.getElementById('editStudentForm');
 
   function saveCache(){AppStorage.set(state,userId);}
   function refreshState(){state=AppStorage.get();}
@@ -100,7 +102,7 @@ document.addEventListener('DOMContentLoaded',async()=>{
     roster.classList.remove('hidden');roster.dataset.classId=id;
     roster.querySelector('.modal-title').textContent=`${c.grade_level} – ${c.section_name}`;
     document.getElementById('rosterRoleMeta').textContent=adviser?'You are the class adviser.':`Shared roster • ${m?.subject||'Subject teacher'}`;
-    roster.querySelector('.roster-body').innerHTML=students.map(s=>`<div class="student-row ${selectedStudentIds.has(s.id)?'is-selected':''}">${adviser?`<label class="roster-row-check"><input type="checkbox" class="student-select" data-id="${s.id}" ${selectedStudentIds.has(s.id)?'checked':''}><span class="sr-only">Select ${App.studentName(s)}</span></label>`:''}<div class="student-avatar">${s.last_name[0]||'?'}</div><div class="student-main"><b>${App.studentName(s)}</b><small>${s.sex} • ${s.lrn||'No LRN'}</small></div>${adviser?`<button class="btn danger del-student" data-id="${s.id}">Delete</button>`:''}</div>`).join('')||'<div class="empty">No learners yet.</div>';
+    roster.querySelector('.roster-body').innerHTML=students.map(s=>`<div class="student-row ${selectedStudentIds.has(s.id)?'is-selected':''}">${adviser?`<label class="roster-row-check"><input type="checkbox" class="student-select" data-id="${s.id}" ${selectedStudentIds.has(s.id)?'checked':''}><span class="sr-only">Select ${App.studentName(s)}</span></label>`:''}<div class="student-avatar">${s.last_name[0]||'?'}</div><div class="student-main"><b>${App.studentName(s)}</b><small>${s.sex} • ${s.lrn||'No LRN'}</small></div>${adviser?`<div class="student-row-actions"><button class="btn soft edit-student" data-id="${s.id}" type="button">Edit</button><button class="btn danger del-student" data-id="${s.id}" type="button">Delete</button></div>`:''}</div>`).join('')||'<div class="empty">No learners yet.</div>';
 
     const sharePanel=document.getElementById('sharePanel');
     const subjectPanel=document.getElementById('subjectTeachersPanel');
@@ -116,6 +118,7 @@ document.addEventListener('DOMContentLoaded',async()=>{
       document.getElementById('classJoinCode').textContent=codeError?'Unavailable':(code||'------');
       const teachers=subjectTeachers(id);
       document.getElementById('subjectTeachersList').innerHTML=teachers.map(t=>`<div class="shared-teacher-row"><div><b>${t.teacher_name||'Teacher'}</b><small>${t.subject}</small></div><span class="tag">Joined</span></div>`).join('')||'<div class="empty compact-empty">No subject teachers have joined yet.</div>';
+      roster.querySelectorAll('.edit-student').forEach(b=>b.onclick=()=>openEditStudent(b.dataset.id));
       roster.querySelectorAll('.del-student').forEach(b=>b.onclick=()=>deleteStudents(b.dataset.id));
       roster.querySelectorAll('.student-select').forEach(box=>box.onchange=()=>{
         if(box.checked)selectedStudentIds.add(box.dataset.id);else selectedStudentIds.delete(box.dataset.id);
@@ -124,6 +127,71 @@ document.addEventListener('DOMContentLoaded',async()=>{
       });
     }
   }
+
+  function normalizeOptionalLrn(value){
+    const raw=String(value||'').replace(/\D/g,'');
+    if(!raw)return null;
+    if(raw.length!==12)throw new Error('LRN must contain exactly 12 digits, or be left blank.');
+    return raw;
+  }
+
+  function openEditStudent(studentId){
+    refreshState();
+    const classId=roster.dataset.classId;
+    const c=state.classes.find(x=>x.id===classId);
+    if(!isAdviser(c)){App.toast('Only the class adviser can edit learners.');return;}
+    const student=state.students.find(x=>x.id===studentId&&x.class_id===classId&&!x.archived);
+    if(!student){App.toast('Learner not found.');return;}
+    editStudentForm.elements.studentId.value=student.id;
+    editStudentForm.elements.lrn.value=student.lrn||'';
+    editStudentForm.elements.last.value=student.last_name||'';
+    editStudentForm.elements.first.value=student.first_name||'';
+    editStudentForm.elements.middle.value=student.middle_name||'';
+    editStudentForm.elements.sex.value=student.sex||'Male';
+    editStudentModal.classList.remove('hidden');
+    setTimeout(()=>editStudentForm.elements.last?.focus(),50);
+  }
+
+  editStudentForm.onsubmit=async e=>{
+    e.preventDefault();
+    const classId=roster.dataset.classId;
+    const studentId=String(e.target.elements.studentId.value||'').trim();
+    refreshState();
+    const c=state.classes.find(x=>x.id===classId);
+    if(!classId||!studentId||!isAdviser(c)){App.toast('Only the class adviser can edit learners.');return;}
+    const submit=e.target.querySelector('button[type="submit"]');
+    if(submit)submit.disabled=true;
+    try{
+      const lrn=normalizeOptionalLrn(e.target.elements.lrn.value);
+      const last=String(e.target.elements.last.value||'').trim().toUpperCase();
+      const first=String(e.target.elements.first.value||'').trim();
+      const middle=String(e.target.elements.middle.value||'').trim()||null;
+      const sex=String(e.target.elements.sex.value||'');
+      if(!last||!first)throw new Error('First name and last name are required.');
+      await App.withLoading('Saving learner…','Updating the learner details without changing attendance records.',async()=>{
+        const {error}=await supa.rpc('classcheck_update_student',{
+          p_class_id:classId,
+          p_student_id:studentId,
+          p_lrn:lrn,
+          p_last_name:last,
+          p_first_name:first,
+          p_middle_name:middle,
+          p_sex:sex
+        });
+        if(error)throw error;
+        await Supa.loadState(ctx,true);
+      },{minimum:320});
+      refreshState();
+      editStudentModal.classList.add('hidden');
+      await openRoster(classId,false);
+      render();
+      App.toast('Learner updated');
+    }catch(error){
+      console.error('EDIT LEARNER ERROR',error);
+      const message=error?.message||'Unable to update learner.';
+      App.toast(message.includes('duplicate key')?'That LRN is already used by another learner in this class.':message);
+    }finally{if(submit)submit.disabled=false;}
+  };
 
   document.getElementById('addClassBtn').onclick=()=>classModal.classList.remove('hidden');
   document.getElementById('joinClassBtn').onclick=()=>joinModal.classList.remove('hidden');
@@ -221,11 +289,13 @@ document.addEventListener('DOMContentLoaded',async()=>{
     const last=String(fd.get('last')||'').trim().toUpperCase();
     const first=String(fd.get('first')||'').trim();
     if(!last||!first){App.toast('Enter the learner’s first and last name.');if(submit)submit.disabled=false;return;}
+    let lrn=null;
+    try{lrn=normalizeOptionalLrn(fd.get('lrn'));}catch(error){App.toast(error.message);if(submit)submit.disabled=false;return;}
     try{
       await App.withLoading('Adding learner…','Saving the learner to this class roster.',async()=>{
         const {error}=await supa.rpc('classcheck_add_student',{
           p_class_id:id,
-          p_lrn:null,
+          p_lrn:lrn,
           p_last_name:last,
           p_first_name:first,
           p_middle_name:String(fd.get('middle')||'').trim()||null,

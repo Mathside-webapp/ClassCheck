@@ -97,6 +97,7 @@
         <div class="roster-tool-head"><h3>Add learners</h3><label id="sf1ImportBtn" for="sf1File" class="btn soft sf1-upload-label"><span data-icon="download"></span><span>Upload SF1</span><input id="sf1File" type="file" accept=".xls,.xlsx,.csv,application/vnd.ms-excel,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet,text/csv"></label></div>
         <p id="sf1ImportStatus" class="sf1-import-status">Accepts DepEd SF1 .xls/.xlsx files and CSV learner lists.</p>
         <form id="addStudentForm" class="form-card" style="margin-top:12px">
+          <div class="field"><label>LRN <span class="optional-label">(optional)</span></label><input class="input" name="lrn" inputmode="numeric" maxlength="12" pattern="[0-9]{12}" placeholder="Leave blank if unavailable"></div>
           <div class="field"><label>Last name</label><input class="input" name="last" required></div>
           <div class="field"><label>First name</label><input class="input" name="first" required></div>
           <div class="field"><label>Middle name</label><input class="input" name="middle"></div>
@@ -105,6 +106,22 @@
           <button type="button" id="deleteClassBtn" class="btn danger block">Delete class permanently</button>
         </form>
       </section>
+    </div>
+  </div>
+
+  <div id="editStudentModal" class="modal hidden">
+    <div class="modal-panel">
+      <div class="handle"></div>
+      <div class="card-head"><div><h2>Edit learner</h2><p class="modal-meta">Update learner details. LRN may be left blank.</p></div><button data-close class="icon-btn" aria-label="Close" data-icon="close"></button></div>
+      <form id="editStudentForm" class="form-card">
+        <input type="hidden" name="studentId">
+        <div class="field"><label>LRN <span class="optional-label">(optional)</span></label><input class="input" name="lrn" inputmode="numeric" maxlength="12" pattern="[0-9]{12}" placeholder="Leave blank if unavailable"></div>
+        <div class="field"><label>Last name</label><input class="input" name="last" required></div>
+        <div class="field"><label>First name</label><input class="input" name="first" required></div>
+        <div class="field"><label>Middle name</label><input class="input" name="middle"></div>
+        <div class="field"><label>Sex</label><select class="input" name="sex"><option>Male</option><option>Female</option></select></div>
+        <button class="btn primary block" type="submit">Save changes</button>
+      </form>
     </div>
   </div>
 
@@ -119,7 +136,7 @@
 
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="https://cdn.jsdelivr.net/npm/xlsx-js-style@1.2.0/dist/xlsx.bundle.js" onerror="this.onerror=null;this.src='https://unpkg.com/xlsx-js-style@1.2.0/dist/xlsx.bundle.js'"></script>
-  <script src="js/config.js?v=10.4"></script><script src="js/demo-data.js?v=9"></script><script src="js/storage.js?v=9.4"></script><script src="js/supabase-client.js?v=9"></script><script src="js/bootstrap.js?v=9"></script><script src="js/app.js?v=10.2"></script><script src="js/classes.js?v=10.6"></script>
+  <script src="js/config.js?v=10.4"></script><script src="js/demo-data.js?v=9"></script><script src="js/storage.js?v=9.4"></script><script src="js/supabase-client.js?v=9"></script><script src="js/bootstrap.js?v=9"></script><script src="js/app.js?v=10.2"></script><script src="js/classes.js?v=10.7"></script>
 <script src="js/pwa.js?v=10.2"></script>
 </body>
 </html>

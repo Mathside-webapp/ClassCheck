@@ -2061,3 +2061,12 @@ body.classcheck-app .modal{z-index:90!important}
 .class-card.is-archived{opacity:.82;background:#faf7f8}.class-card.is-archived .class-badge{filter:grayscale(.35)}
 .class-membership-actions{display:grid;gap:10px;margin:16px 0}.class-membership-actions:empty{display:none}
 .pills button.pill{font:inherit;cursor:pointer}
+
+/* V10.7 — editable learner roster */
+.optional-label{font-weight:700;color:var(--muted);font-size:.82em}
+.student-row-actions{display:flex;align-items:center;gap:6px;flex:0 0 auto}
+.student-row-actions .btn{padding:7px 10px;min-height:36px;font-size:.76rem}
+@media (max-width:600px){
+  .student-row-actions{flex-direction:column;gap:5px}
+  .student-row-actions .btn{min-width:58px;padding:6px 8px;min-height:32px;font-size:.72rem}
+}

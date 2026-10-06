@@ -1,4 +1,4 @@
-/* ClassCheck PWA — V10.6 manual learner add without LRN. */
+/* ClassCheck PWA — V10.7 editable learners with optional LRN. */
 const CACHE_NAME = 'classcheck-pwa-v10.6-20261006';
 const CACHE_PREFIX = 'classcheck-pwa-';
 const APP_SHELL = [

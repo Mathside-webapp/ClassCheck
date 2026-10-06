@@ -225,7 +225,7 @@ document.addEventListener('DOMContentLoaded',async()=>{
       await App.withLoading('Adding learner…','Saving the learner to this class roster.',async()=>{
         const {error}=await supa.rpc('classcheck_add_student',{
           p_class_id:id,
-          p_lrn:String(fd.get('lrn')||'').trim()||null,
+          p_lrn:null,
           p_last_name:last,
           p_first_name:first,
           p_middle_name:String(fd.get('middle')||'').trim()||null,
@@ -242,7 +242,7 @@ document.addEventListener('DOMContentLoaded',async()=>{
       App.toast('Learner added');
     }catch(error){
       console.error('ADD LEARNER ERROR',error);
-      App.toast(error?.code==='23505'?'That LRN already exists in this class.':(error?.message?`Unable to add learner: ${error.message}`:'Unable to add learner.'));
+      App.toast(error?.message?`Unable to add learner: ${error.message}`:'Unable to add learner.');
     }finally{if(submit)submit.disabled=false;}
   };
 

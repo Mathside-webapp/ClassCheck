@@ -1,5 +1,5 @@
-/* ClassCheck PWA — V10.5 verified workflows + archive/leave. */
-const CACHE_NAME = 'classcheck-pwa-v10.5-20261005';
+/* ClassCheck PWA — V10.6 manual learner add without LRN. */
+const CACHE_NAME = 'classcheck-pwa-v10.6-20261006';
 const CACHE_PREFIX = 'classcheck-pwa-';
 const APP_SHELL = [
   './',
@@ -28,7 +28,7 @@ const APP_SHELL = [
   './js/sync.js?v=10.5',
   './js/app.js?v=10.2',
   './js/auth.js?v=10.2',
-  './js/classes.js?v=10.5',
+  './js/classes.js?v=10.6',
   './js/attendance.js?v=9.3',
   './js/calendar.js?v=9.3',
   './js/reports.js?v=10.5',

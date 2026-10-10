@@ -207,9 +207,6 @@
       document.body.appendChild(el);
     }
     el.innerHTML=`
-      <div class="classcheck-brand classcheck-brand-full">
-        <img src="assets/classcheck-logo-full.png" alt="ClassCheck" class="classcheck-sidebar-full-logo">
-      </div>
       <a class="classcheck-teacher-card ${active==='profile'?'active':''}" href="${hrefFor('profile')}">
         <span class="classcheck-avatar">${teacherInitial}</span>
         <span><b>${teacherName}</b><small>Daily attendance</small></span>

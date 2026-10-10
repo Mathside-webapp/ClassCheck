@@ -1,5 +1,5 @@
 /* ClassCheck PWA — V10.7 editable learners with optional LRN. */
-const CACHE_NAME = 'classcheck-pwa-v11-brand-20261010';
+const CACHE_NAME = 'classcheck-pwa-v12-0-highlighted-hero';
 const CACHE_PREFIX = 'classcheck-pwa-';
 const APP_SHELL = [
   './',
@@ -12,15 +12,15 @@ const APP_SHELL = [
   './reports.html',
   './offline.html',
   './manifest.webmanifest',
-  './css/styles.css?v=11.0',
-  './css/responsive.css?v=11.0',
-  './assets/classcheck-favicon.svg?v=11.2',
-  './assets/classcheck-logo-icon.png',
+  './css/styles.css?v=12.0',
+  './css/responsive.css?v=11.6',
+  './assets/classcheck-tabicon.png?v=11.9',
+  './assets/classcheck-tabicon.png?v=11.9',
   './assets/classcheck-logo-full.png',
-  './assets/icons/classcheck-180.png',
-  './assets/icons/classcheck-192.png',
-  './assets/icons/classcheck-512.png',
-  './assets/icons/classcheck-maskable-512.png',
+  './assets/icons/classcheck-180.png?v=11.9',
+  './assets/icons/classcheck-192.png?v=11.9',
+  './assets/icons/classcheck-512.png?v=11.9',
+  './assets/icons/classcheck-maskable-512.png?v=11.9',
   './js/config.js?v=10.4',
   './js/demo-data.js?v=9',
   './js/storage.js?v=9.4',
@@ -28,7 +28,7 @@ const APP_SHELL = [
   './js/supabase-client.js?v=9',
   './js/bootstrap.js?v=9',
   './js/sync.js?v=10.5',
-  './js/app.js?v=11.0',
+  './js/app.js?v=11.5',
   './js/auth.js?v=10.2',
   './js/classes.js?v=10.6',
   './js/attendance.js?v=9.3',

@@ -1,3 +1,4 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=Poppins:wght@400;500;600;700;800&display=swap');
 :root {
   --maroon: #7a1730;
   --maroon-2: #941f3d;
@@ -2088,4 +2089,216 @@ body.classcheck-app .modal{z-index:90!important}
 @media (max-width:700px){
   .classcheck-topbar-full-logo{width:104px;max-width:32vw}
   .classcheck-sidebar-full-logo{width:148px}
+}
+
+
+/* V11.3: Standalone maroon clipboard emblem (wordmark removed). */
+.classcheck-login-full-logo {
+  width:90px!important; max-width:90px!important; height:90px!important;
+  object-fit:contain!important;
+}
+.classcheck-full-logo-lockup {margin-bottom:18px!important;}
+.classcheck-sidebar-full-logo {
+  width:56px!important; height:56px!important; max-width:56px!important;
+  object-fit:contain!important;
+}
+.classcheck-brand.classcheck-brand-full {padding:0 8px 4px!important;}
+@media (max-width:700px) {
+  .classcheck-login-full-logo {width:76px!important;height:76px!important;}
+  .classcheck-sidebar-full-logo {width:48px!important;height:48px!important;}
+}
+
+
+/* V11.4 Typography refresh: Helvetica for titles/highlights, Poppins for secondary labels, Inter for body */
+html, body, input, select, textarea, button {
+  font-family: 'Inter', system-ui, -apple-system, 'Segoe UI', Roboto, Arial, sans-serif !important;
+}
+
+h1, h2, h3, h4, h5, h6,
+.page-title-stack h1,
+.login-card h1,
+.classcheck-brand-copy b,
+.class-info b,
+.student-main b,
+.stat strong,
+.week-title b,
+.card-head h3,
+.modal-panel h2,
+.quick-card b,
+button.btn,
+.auth-switch-btn,
+.existing-session-copy b,
+.pwa-install-copy b,
+.classcheck-teacher-card b,
+.topbar b,
+strong,
+b {
+  font-family: Helvetica, 'Helvetica Neue', Arial, sans-serif !important;
+}
+
+.eyebrow,
+.field label,
+.section-label,
+.classcheck-brand-copy small,
+.class-info p,
+.student-main small,
+.stat span,
+.sync-badge,
+.tag,
+.topbar small,
+.login-card .demo-note,
+.demo-note,
+.existing-session-copy small,
+.pwa-install-copy small,
+.pwa-install-copy span,
+.card p.small,
+small,
+label,
+.cal-label,
+.report-table th,
+.report-table td small,
+button.nav-item span:last-child {
+  font-family: 'Poppins', 'Inter', system-ui, sans-serif !important;
+}
+
+p, li, td, th, input, select, textarea, .input, .empty, .toast, .student-row, .class-card,
+.report-table td, .modal-panel, .calendar-grid, .week-day, .nav-item, .classcheck-profile-link,
+.classcheck-teacher-card span, .auth-note, .existing-session-copy span {
+  font-family: 'Inter', system-ui, -apple-system, 'Segoe UI', Roboto, Arial, sans-serif !important;
+}
+
+
+/* V11.6 — Move the login and account panels upward after removing the logo.
+   Keep normal document flow; do not use negative margins or translateY. */
+body.classcheck-login .login-wrap {
+  min-height: 100dvh;
+  display: flex !important;
+  flex-direction: column !important;
+  align-items: center !important;
+  justify-content: flex-start !important;
+  padding-top: max(28px, env(safe-area-inset-top)) !important;
+  padding-bottom: max(24px, env(safe-area-inset-bottom)) !important;
+}
+body.classcheck-login .login-card {
+  margin: 0 auto !important;
+}
+@media (max-width: 780px) {
+  body.classcheck-login .login-wrap {
+    padding-top: max(16px, env(safe-area-inset-top)) !important;
+  }
+}
+
+
+/* V11.7 — move teacher panel and nav upward; center login heading block */
+.classcheck-sidebar{
+  padding-top: 8px !important;
+}
+.classcheck-teacher-card{
+  margin: 6px 0 14px !important;
+}
+.classcheck-nav-links{
+  gap: 4px !important;
+}
+.classcheck-profile-link{
+  margin-top: 10px !important;
+}
+body.classcheck-login .login-wrap {
+  padding-top: max(8px, env(safe-area-inset-top)) !important;
+}
+body.classcheck-login .login-card {
+  text-align: center !important;
+}
+.classcheck-login .eyebrow,
+.classcheck-login h1,
+.classcheck-login p,
+.classcheck-login .pwa-install-copy,
+.classcheck-login .pwa-install-copy span,
+.classcheck-login .pwa-install-copy small,
+.classcheck-login .demo-note {
+  text-align: center !important;
+}
+.classcheck-login h1 {
+  margin-left: auto !important;
+  margin-right: auto !important;
+}
+.classcheck-login .login-card > p {
+  margin-left: auto !important;
+  margin-right: auto !important;
+}
+@media (max-width: 780px) {
+  body.classcheck-login .login-wrap {
+    padding-top: max(4px, env(safe-area-inset-top)) !important;
+    padding-left: 16px !important;
+    padding-right: 16px !important;
+  }
+  .classcheck-sidebar {
+    padding-top: 6px !important;
+  }
+  .classcheck-teacher-card {
+    margin: 4px 0 10px !important;
+  }
+}
+
+
+/* V12.0 — Login hero headline: prominent, clean, centered, maroon highlight. */
+body.classcheck-login .login-card > .eyebrow {
+  font-family:'Poppins','Inter',sans-serif!important;
+  text-transform:uppercase!important;
+  letter-spacing:.18em!important;
+  font-size:11px!important;
+  font-weight:700!important;
+  color:#8e4760!important;
+  margin:2px 0 13px!important;
+}
+body.classcheck-login .login-card h1.classcheck-hero-heading {
+  font-family:Helvetica,'Helvetica Neue',Arial,sans-serif!important;
+  color:#25171d!important;
+  font-weight:800!important;
+  font-size:clamp(39px,4.2vw,54px)!important;
+  letter-spacing:-.052em!important;
+  line-height:1.08!important;
+  max-width:100%!important;
+  text-align:center!important;
+  margin:6px auto 18px!important;
+  overflow-wrap:normal!important;
+  text-wrap:balance;
+}
+.classcheck-hero-heading .hero-heading-intro {
+  display:block;
+  font:inherit;
+  color:#25171d;
+}
+.classcheck-hero-heading .hero-heading-accent {
+  display:table;
+  position:relative;
+  margin:4px auto 0;
+  padding:0 3px 5px;
+  width:max-content;
+  max-width:100%;
+  font:inherit;
+  color:#821b3c;
+  background:linear-gradient(to bottom,transparent 71%,rgba(235,183,198,.60) 71%,rgba(235,183,198,.60) 91%,transparent 91%);
+}
+body.classcheck-login .login-card > p#authNote {
+  font-family:'Inter',system-ui,sans-serif!important;
+  font-size:13px!important;
+  line-height:1.55!important;
+  max-width:36ch;
+  margin:0 auto 20px!important;
+  color:#796570!important;
+  text-align:center!important;
+}
+@media (max-width:550px) {
+  body.classcheck-login .login-card h1.classcheck-hero-heading {
+    font-size:clamp(32px,8.6vw,42px)!important;
+    line-height:1.09!important;
+    letter-spacing:-.049em!important;
+  }
+  body.classcheck-login .login-card > .eyebrow {margin-bottom:9px!important;}
+  body.classcheck-login .login-card > p#authNote {margin-bottom:18px!important;}
+}
+@media (max-width:355px) {
+  body.classcheck-login .login-card h1.classcheck-hero-heading {
+    font-size:32px!important;
+  }
 }

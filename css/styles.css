@@ -2070,3 +2070,22 @@ body.classcheck-app .modal{z-index:90!important}
   .student-row-actions{flex-direction:column;gap:5px}
   .student-row-actions .btn{min-width:58px;padding:6px 8px;min-height:32px;font-size:.72rem}
 }
+
+/* Updated ClassCheck logo - preserves the original ClassCheck color theme. */
+.classcheck-logo-mark{background:#fff!important;overflow:hidden;padding:2px!important;border:1px solid #e5e7eb!important;box-shadow:0 2px 8px rgba(4,45,32,.12)!important}
+.classcheck-logo-mark img{width:100%;height:100%;object-fit:contain;display:block;border-radius:inherit}
+.classcheck-logo-tile{background:#fff!important;overflow:hidden;padding:2px;box-shadow:0 3px 10px rgba(0,0,0,.14)!important}
+.classcheck-logo-tile img{width:100%;height:100%;object-fit:contain;display:block;border-radius:7px}
+
+
+/* Corrected full-logo presentation for the generated ClassCheck logo */
+.classcheck-full-logo-lockup{justify-content:flex-start;margin-bottom:18px}
+.classcheck-full-logo{display:block;max-width:100%;height:auto}
+.classcheck-login-full-logo{width:min(230px,75vw)}
+.classcheck-topbar-full-logo{display:block;width:126px;max-width:34vw;height:auto;justify-self:end}
+.classcheck-brand.classcheck-brand-full{display:block;padding:2px 8px 4px}
+.classcheck-sidebar-full-logo{display:block;width:170px;max-width:100%;height:auto;filter:drop-shadow(0 4px 10px rgba(0,0,0,.18))}
+@media (max-width:700px){
+  .classcheck-topbar-full-logo{width:104px;max-width:32vw}
+  .classcheck-sidebar-full-logo{width:148px}
+}

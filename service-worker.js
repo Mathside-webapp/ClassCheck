@@ -1,5 +1,5 @@
 /* ClassCheck PWA — V10.7 editable learners with optional LRN. */
-const CACHE_NAME = 'classcheck-pwa-v10.6-20261006';
+const CACHE_NAME = 'classcheck-pwa-v11-brand-20261010';
 const CACHE_PREFIX = 'classcheck-pwa-';
 const APP_SHELL = [
   './',
@@ -12,9 +12,11 @@ const APP_SHELL = [
   './reports.html',
   './offline.html',
   './manifest.webmanifest',
-  './css/styles.css?v=10.5',
-  './css/responsive.css?v=10.2',
-  './assets/classcheck-favicon.svg?v=9',
+  './css/styles.css?v=11.0',
+  './css/responsive.css?v=11.0',
+  './assets/classcheck-favicon.svg?v=11.2',
+  './assets/classcheck-logo-icon.png',
+  './assets/classcheck-logo-full.png',
   './assets/icons/classcheck-180.png',
   './assets/icons/classcheck-192.png',
   './assets/icons/classcheck-512.png',
@@ -26,7 +28,7 @@ const APP_SHELL = [
   './js/supabase-client.js?v=9',
   './js/bootstrap.js?v=9',
   './js/sync.js?v=10.5',
-  './js/app.js?v=10.2',
+  './js/app.js?v=11.0',
   './js/auth.js?v=10.2',
   './js/classes.js?v=10.6',
   './js/attendance.js?v=9.3',

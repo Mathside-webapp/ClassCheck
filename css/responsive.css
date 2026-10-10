@@ -275,3 +275,13 @@
   .classcheck-mobile-profile-nav{display:flex!important}
   .classcheck-nav-links{grid-template-columns:repeat(5,minmax(0,1fr))!important}
 }
+
+/* ClassCheck brand refresh / mobile header alignment (10 Oct 2026) */
+@media (max-width:780px){
+  body.classcheck-app .page-topbar .page-title-stack {
+    position:relative;left:-12px;
+  }
+}
+@media (max-width:380px){
+  body.classcheck-app .page-topbar .page-title-stack {left:-9px;}
+}

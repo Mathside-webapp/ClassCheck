@@ -10,7 +10,7 @@
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="default">
   <meta name="apple-mobile-web-app-title" content="ClassCheck"><style>html,body{margin:0;background:#fff7f8!important}main.app-shell{min-height:100vh;background:#fff7f8!important;opacity:1!important}</style>
-  <link rel="stylesheet" href="css/styles.css?v=12.0"><link rel="stylesheet" href="css/responsive.css?v=11.6"><link rel="prefetch" href="classes.html"><link rel="prefetch" href="attendance.html"><link rel="prefetch" href="calendar.html"><link rel="prefetch" href="profile.html">
+  <link rel="stylesheet" href="css/styles.css?v=12.5"><link rel="stylesheet" href="css/responsive.css?v=11.6"><link rel="prefetch" href="classes.html"><link rel="prefetch" href="attendance.html"><link rel="prefetch" href="calendar.html"><link rel="prefetch" href="profile.html">
 </head>
 <body class="classcheck-app">
   <main class="app-shell secondary-page reports-page">
@@ -51,23 +51,32 @@
         </div>
 
         <div class="field report-field" id="reportTeacherWrap">
-          <label for="reportTeacher">Attendance source</label>
+          <label for="reportTeacher">Subject / attendance source</label>
           <select id="reportTeacher" class="input"></select>
+          <p id="reportSourceNote" class="report-source-note" aria-live="polite"></p>
         </div>
 
-        <button id="previewBtn" class="btn soft block report-preview-btn">Preview attendance</button>
+        <section id="adviserAccessBar" class="adviser-access-panel hidden" aria-labelledby="adviserAccessTitle">
+  <div class="access-panel-heading">
+    <div><strong id="adviserAccessTitle">Adviser attendance access</strong>
+      <p>Choose which joined teachers may view the attendance you record.</p></div>
+    <span id="adviserAccessCount" class="access-panel-count" aria-live="polite">0 allowed</span>
+  </div>
+  <div id="adviserAccessStrip" class="adviser-access-strip" aria-label="Subject teacher attendance access"></div>
+  <p id="adviserAccessStatus" class="adviser-access-status" aria-live="polite"></p>
+</section>
       </div>
     </section>
 
     <section class="card report-summary-card report-summary-highlight" aria-labelledby="monthlyPreviewTitle">
       <div class="card-head report-summary-head report-summary-head-highlight">
         <div>
-          <h3 id="monthlyPreviewTitle">Monthly Preview</h3>
+          <h3 id="monthlyPreviewTitle">Daily Attendance Preview</h3>
           <p id="reportMeta" style="margin:5px 0 0"></p>
         </div>
         <span id="reportMonthBadge" class="tag report-month-badge">October 2026</span>
       </div>
-      <div class="table-scroll report-table-scroll"><table class="report-table enhanced-report-table"><thead><tr><th>#</th><th>Learner Name</th><th>Present</th><th>Absent</th><th>Late</th><th>Total</th></tr></thead><tbody id="reportBody"></tbody></table></div>
+      <div class="table-scroll report-table-scroll"><table class="report-table enhanced-report-table daily-attendance-table"><thead><tr><th>#</th><th>Learner Name</th><th>Day-by-day attendance</th></tr></thead><tbody id="reportBody"></tbody></table></div>
     </section>
 
     <section class="report-export-actions" aria-label="Report actions">
@@ -128,7 +137,7 @@
 </div>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script><script src="https://cdn.jsdelivr.net/npm/xlsx-js-style@1.2.0/dist/xlsx.bundle.js" onerror="this.onerror=null;this.src='https://unpkg.com/xlsx-js-style@1.2.0/dist/xlsx.bundle.js'"></script><script src="js/config.js?v=10.4"></script><script src="js/demo-data.js?v=9"></script><script src="js/storage.js?v=9.4"></script><script src="js/supabase-client.js?v=9"></script><script src="js/bootstrap.js?v=9"></script><script src="js/offline-db.js?v=9"></script><script src="js/app.js?v=11.5"></script><script src="js/jszip.min.js?v=9.5"></script>
   <script src="js/sf2-template.js?v=9.5"></script>
-  <script src="js/reports.js?v=10.5"></script>
+  <script src="js/reports.js?v=12.5"></script>
 <script src="js/pwa.js?v=10.2"></script>
 </body>
 </html>

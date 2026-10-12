@@ -117,7 +117,25 @@ document.addEventListener('DOMContentLoaded',async()=>{
       const {data:code,error:codeError}=await supa.rpc('classcheck_get_join_code',{p_class_id:id});
       document.getElementById('classJoinCode').textContent=codeError?'Unavailable':(code||'------');
       const teachers=subjectTeachers(id);
-      document.getElementById('subjectTeachersList').innerHTML=teachers.map(t=>`<div class="shared-teacher-row"><div><b>${t.teacher_name||'Teacher'}</b><small>${t.subject}</small></div><span class="tag">Joined</span></div>`).join('')||'<div class="empty compact-empty">No subject teachers have joined yet.</div>';
+      const teacherList=document.getElementById('subjectTeachersList');
+      teacherList.replaceChildren();
+      if(!teachers.length){
+        const empty=document.createElement('div');empty.className='empty compact-empty';
+        empty.textContent='No subject teachers have joined yet.';teacherList.appendChild(empty);
+      }
+      for(const t of teachers){
+        const row=document.createElement('div');row.className='shared-teacher-row';
+        const info=document.createElement('div');info.className='shared-teacher-info';
+        const name=document.createElement('b');name.textContent=t.teacher_name||'Teacher';
+        const subject=document.createElement('small');subject.textContent=t.subject||'Subject';
+        info.append(name,subject);
+        const actions=document.createElement('div');actions.className='shared-teacher-actions';
+        const tag=document.createElement('span');tag.className='tag';tag.textContent='Joined';
+        const remove=document.createElement('button');remove.type='button';remove.className='btn danger';
+        remove.textContent='Remove';remove.setAttribute('aria-label',`Remove ${t.teacher_name||'teacher'} and their attendance in this class`);
+        remove.addEventListener('click',()=>removeSubjectTeacher(id,t,remove));
+        actions.append(tag,remove);row.append(info,actions);teacherList.appendChild(row);
+      }
       roster.querySelectorAll('.edit-student').forEach(b=>b.onclick=()=>openEditStudent(b.dataset.id));
       roster.querySelectorAll('.del-student').forEach(b=>b.onclick=()=>deleteStudents(b.dataset.id));
       roster.querySelectorAll('.student-select').forEach(box=>box.onchange=()=>{
@@ -126,6 +144,28 @@ document.addEventListener('DOMContentLoaded',async()=>{
         updateRosterBulkUI(id,true);
       });
     }
+  }
+
+  async function removeSubjectTeacher(classId,member,button){
+    const c=state.classes.find(x=>x.id===classId);
+    if(!isAdviser(c)){App.toast('Only the adviser can remove subject teachers.');return;}
+    const name=member.teacher_name||'This teacher';
+    const confirmed=await App.confirmAction({
+      title:`Remove ${name}?`,danger:true,confirmText:'Remove and delete attendance',
+      message:`This permanently removes ${name} (${member.subject||'Subject'}) from this class and deletes ALL of their attendance records and saved sessions for this class. Their ClassCheck account and other classes will NOT be deleted. This cannot be undone.`
+    });
+    if(!confirmed)return;
+    if(button)button.disabled=true;
+    try{
+      const {data,error}=await App.withLoading('Removing subject teacher…','Deleting only this teacher’s attendance in this class.',()=>supa.rpc('classcheck_remove_subject_teacher',{p_class_id:classId,p_teacher_id:member.teacher_id}),{minimum:420});
+      if(error)throw error;
+      // Refresh the online roster instead of leaving revoked teachers in cached UI.
+      await Supa.loadState(ctx,true);
+      refreshState();render();
+      await openRoster(classId,false);
+      App.toast(`${name} removed. ${data?.records_deleted??0} attendance records deleted.`);
+    }catch(error){console.error(error);App.toast(error?.message||'Could not remove teacher.');}
+    finally{if(button)button.disabled=false;}
   }
 
   function normalizeOptionalLrn(value){
@@ -254,7 +294,7 @@ document.addEventListener('DOMContentLoaded',async()=>{
     const code=String(fd.get('code')||'').trim().toUpperCase().replace(/\s+/g,'');
     const subject=String(fd.get('subject')||'').trim();
     if(code.length!==6){App.toast('Enter the 6-character class code.');if(submit)submit.disabled=false;return;}
-    if(!subject){App.toast('Enter the subject you teach.');if(submit)submit.disabled=false;return;}
+    if(subject.length<2||subject.length>80){App.toast('Enter a subject name between 2 and 80 characters.');if(submit)submit.disabled=false;return;}
     try{
       await App.withLoading('Joining class…','Linking the shared roster to your subject.',async()=>{
         // Ensure this account has a current ClassCheck profile before joining.

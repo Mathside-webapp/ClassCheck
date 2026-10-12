@@ -14,7 +14,7 @@
   <meta name="apple-mobile-web-app-status-bar-style" content="default">
   <meta name="apple-mobile-web-app-title" content="ClassCheck">
   <style>html,body{margin:0;background:#fff7f8!important}main.app-shell{min-height:100vh;background:#fff7f8!important;opacity:1!important}</style>
-  <link rel="stylesheet" href="css/styles.css?v=12.0">
+  <link rel="stylesheet" href="css/styles.css?v=12.5">
   <link rel="stylesheet" href="css/responsive.css?v=11.6">
 </head>
 <body class="classcheck-app attendance-screen" data-classcheck-unified="true">
@@ -163,21 +163,30 @@
 </div>
 </div>
 <div class="field report-field" id="reportTeacherWrap">
-<label for="reportTeacher">Attendance source</label>
+<label for="reportTeacher">Subject / attendance source</label>
 <select class="input" id="reportTeacher"></select>
+          <p id="reportSourceNote" class="report-source-note" aria-live="polite"></p>
 </div>
-<button class="btn soft block report-preview-btn" id="previewBtn">Preview attendance</button>
+<section id="adviserAccessBar" class="adviser-access-panel hidden" aria-labelledby="adviserAccessTitle">
+  <div class="access-panel-heading">
+    <div><strong id="adviserAccessTitle">Adviser attendance access</strong>
+      <p>Choose which joined teachers may view the attendance you record.</p></div>
+    <span id="adviserAccessCount" class="access-panel-count" aria-live="polite">0 allowed</span>
+  </div>
+  <div id="adviserAccessStrip" class="adviser-access-strip" aria-label="Subject teacher attendance access"></div>
+  <p id="adviserAccessStatus" class="adviser-access-status" aria-live="polite"></p>
+</section>
 </div>
 </section>
 <section aria-labelledby="monthlyPreviewTitle" class="card report-summary-card report-summary-highlight">
 <div class="card-head report-summary-head report-summary-head-highlight">
 <div>
-<h3 id="monthlyPreviewTitle">Monthly Preview</h3>
+<h3 id="monthlyPreviewTitle">Daily Attendance Preview</h3>
 <p id="reportMeta" style="margin:5px 0 0"></p>
 </div>
 <span class="tag report-month-badge" id="reportMonthBadge">October 2026</span>
 </div>
-<div class="table-scroll report-table-scroll"><table class="report-table enhanced-report-table"><thead><tr><th>#</th><th>Learner Name</th><th>Present</th><th>Absent</th><th>Late</th><th>Total</th></tr></thead><tbody id="reportBody"></tbody></table></div>
+<div class="table-scroll report-table-scroll"><table class="report-table enhanced-report-table daily-attendance-table"><thead><tr><th>#</th><th>Learner Name</th><th>Day-by-day attendance</th></tr></thead><tbody id="reportBody"></tbody></table></div>
 </section>
 <section aria-label="Report actions" class="report-export-actions">
 <button class="btn primary" id="sf2Btn"><span data-icon="report"></span>Generate SF2</button>
@@ -259,6 +268,31 @@
 <div class="field"><label>Position</label><input class="input" name="position"/></div>
 <button class="btn primary block" type="submit">Save profile</button><button class="btn ghost block" id="signOutBtn" type="button">Log out</button>
 </form>
+<section class="cc-danger-zone" aria-labelledby="deleteAccountHeading">
+  <h3 id="deleteAccountHeading">Account & data</h3>
+  <p>You can permanently delete your ClassCheck account and its Supabase data. This is irreversible. Other teachers cannot delete your account.</p>
+  <button class="btn danger cc-delete-account-btn" type="button" id="deleteMyAccountBtn">Delete my account</button>
+</section>
+<div class="cc-account-dialog" id="deleteAccountDialog" hidden role="dialog" aria-modal="true" aria-labelledby="deleteAccountDialogTitle">
+  <div class="cc-account-dialog-card">
+    <h2 id="deleteAccountDialogTitle">Permanently delete account?</h2>
+    <p class="cc-danger-note">Warning: This permanently removes your account and stored ClassCheck data. It cannot be undone.</p>
+    <ul>
+      <li>Your account, profile, attendance, and saved sessions will be deleted.</li>
+      <li>If you are an adviser, your owned classes, student rosters, and attendance from all teachers in those classes will also be deleted.</li>
+      <li>If you are a subject teacher, your class memberships and your attendance will be deleted.</li>
+    </ul>
+    <form id="deleteAccountForm">
+      <label for="deleteAccountPassword">Confirm your current account password</label>
+      <input class="input" type="password" id="deleteAccountPassword" autocomplete="current-password" required placeholder="Your password">
+      <label for="deleteAccountPhrase">Type DELETE MY ACCOUNT to confirm</label>
+      <input class="input" id="deleteAccountPhrase" autocomplete="off" spellcheck="false" required placeholder="DELETE MY ACCOUNT">
+      <p class="join-subject-help" id="deleteAccountFormStatus" role="status" aria-live="polite"></p>
+      <div class="cc-account-dialog-actions"><button type="button" class="btn soft" id="cancelDeleteAccountBtn">Cancel</button><button type="submit" class="btn danger" id="confirmDeleteAccountBtn" disabled>Delete permanently</button></div>
+    </form>
+  </div>
+</div>
+
 <section class="pwa-install-card" aria-label="Install ClassCheck app">
   <div class="pwa-install-mark" aria-hidden="true">
     <svg viewBox="0 0 24 24"><path d="M12 3v11m0 0 4-4m-4 4-4-4M5 17v2h14v-2"/></svg>
@@ -294,7 +328,7 @@
 <p class="modal-copy">Enter the adviser’s class code, then choose the subject you teach. The roster is shared; your attendance stays separate.</p>
 <form class="form-card" id="joinClassForm">
 <div class="field"><label>Class code</label><input autocomplete="off" class="input code-input" maxlength="6" name="code" placeholder="ABC234" required=""/></div>
-<div class="field"><label>Your subject</label><input class="input" list="subjectOptions" name="subject" placeholder="e.g. Science" required=""/></div>
+<div class="field"><label>Your subject</label><input class="input" list="subjectOptions" name="subject" minlength="2" maxlength="80" placeholder="Choose or type any subject" required=""/><p class="join-subject-help">Select a suggestion or type another subject.</p></div>
 <datalist id="subjectOptions"><option value="English"><option value="Filipino"><option value="Mathematics"><option value="Science"><option value="Araling Panlipunan"><option value="MAPEH"><option value="TLE"><option value="Values Education"><option value="ESP"><option value="Research"><option value="General Mathematics"><option value="Statistics and Probability"></option></option></option></option></option></option></option></option></option></option></option></option></datalist>
 <button class="btn primary block" type="submit">Join class</button>
 </form>
@@ -368,13 +402,13 @@
   <script src="js/bootstrap.js?v=9"></script>
   <script src="js/sync.js?v=10.5"></script>
   <script src="js/app.js?v=11.5"></script>
-  <script src="js/classes.js?v=10.7"></script>
+  <script src="js/classes.js?v=12.4"></script>
   <script src="js/attendance.js?v=9"></script>
   <script src="js/calendar.js?v=9"></script>
   <script src="js/jszip.min.js?v=9.5"></script>
   <script src="js/sf2-template.js?v=9.5"></script>
-  <script src="js/reports.js?v=10.5"></script>
-  <script src="js/profile.js?v=9.2"></script>
+  <script src="js/reports.js?v=12.5"></script>
+  <script src="js/profile.js?v=12.4"></script>
 <script src="js/pwa.js?v=10.2"></script>
 </body>
 </html>

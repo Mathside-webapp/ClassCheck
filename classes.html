@@ -11,7 +11,7 @@
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="default">
   <meta name="apple-mobile-web-app-title" content="ClassCheck"><style>html,body{margin:0;background:#fff7f8!important}main.app-shell{min-height:100vh;background:#fff7f8!important;opacity:1!important}</style>
-  <link rel="stylesheet" href="css/styles.css?v=12.0">
+  <link rel="stylesheet" href="css/styles.css?v=12.5">
   <link rel="stylesheet" href="css/responsive.css?v=11.6"><link rel="prefetch" href="attendance.html"><link rel="prefetch" href="calendar.html"><link rel="prefetch" href="reports.html"><link rel="prefetch" href="profile.html">
 </head>
 <body class="classcheck-app">
@@ -59,7 +59,7 @@
       <p class="modal-copy">Enter the adviser’s class code, then choose the subject you teach. The roster is shared; your attendance stays separate.</p>
       <form id="joinClassForm" class="form-card">
         <div class="field"><label>Class code</label><input class="input code-input" name="code" maxlength="6" autocomplete="off" required placeholder="ABC234"></div>
-        <div class="field"><label>Your subject</label><input class="input" name="subject" list="subjectOptions" required placeholder="e.g. Science"></div>
+        <div class="field"><label>Your subject</label><input class="input" name="subject" list="subjectOptions" minlength="2" maxlength="80" required placeholder="Choose or type any subject" autocomplete="off"><p class="join-subject-help">Select a suggested subject or type your own (e.g. Computer Programming).</p></div>
         <datalist id="subjectOptions"><option value="English"><option value="Filipino"><option value="Mathematics"><option value="Science"><option value="Araling Panlipunan"><option value="MAPEH"><option value="TLE"><option value="Values Education"><option value="ESP"><option value="Research"><option value="General Mathematics"><option value="Statistics and Probability"></datalist>
         <button class="btn primary block" type="submit">Join class</button>
       </form>
@@ -137,7 +137,7 @@
 
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="https://cdn.jsdelivr.net/npm/xlsx-js-style@1.2.0/dist/xlsx.bundle.js" onerror="this.onerror=null;this.src='https://unpkg.com/xlsx-js-style@1.2.0/dist/xlsx.bundle.js'"></script>
-  <script src="js/config.js?v=10.4"></script><script src="js/demo-data.js?v=9"></script><script src="js/storage.js?v=9.4"></script><script src="js/supabase-client.js?v=9"></script><script src="js/bootstrap.js?v=9"></script><script src="js/app.js?v=11.5"></script><script src="js/classes.js?v=10.7"></script>
+  <script src="js/config.js?v=10.4"></script><script src="js/demo-data.js?v=9"></script><script src="js/storage.js?v=9.4"></script><script src="js/supabase-client.js?v=9"></script><script src="js/bootstrap.js?v=9"></script><script src="js/app.js?v=11.5"></script><script src="js/classes.js?v=12.4"></script>
 <script src="js/pwa.js?v=10.2"></script>
 </body>
 </html>

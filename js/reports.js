@@ -40,21 +40,176 @@ document.addEventListener('DOMContentLoaded',async()=>{
   }
   populateClasses();
   function membership(classId,teacherId=userId){return (state.classTeachers||[]).find(m=>m.class_id===classId&&m.teacher_id===teacherId);}
+  function isAdviserOfCurrentClass(){
+    const c=state.classes.find(x=>x.id===select.value);
+    return !!c&&c.teacher_id===userId;
+  }
+  // Adviser-controlled permission grants are fetched from Supabase, not trusted from localStorage.
+  let adviserAccess={cid:null,loaded:false,granted:new Set(),pending:new Set(),error:''};
+  const accessPanel=document.getElementById('adviserAccessBar');
+  const accessStrip=document.getElementById('adviserAccessStrip');
+  const accessCount=document.getElementById('adviserAccessCount');
+  const accessStatus=document.getElementById('adviserAccessStatus');
+  function resetAdviserAccess(){adviserAccess={cid:null,loaded:false,granted:new Set(),pending:new Set(),error:''};}
+  function allowedToViewAdviser(cid){return adviserAccess.cid===cid&&adviserAccess.loaded&&adviserAccess.granted.has(userId);}
   function sourcesForClass(cid){
     const c=state.classes.find(x=>x.id===cid);if(!c)return[];
-    if(c.teacher_id===userId){
-      return [{teacher_id:userId,teacher_name:state.profile.full_name||c.adviser_name||'Adviser',subject:'Advisory',label:'Adviser attendance'}].concat(
-        (state.classTeachers||[]).filter(m=>m.class_id===cid).map(m=>({...m,label:`${m.subject} • ${m.teacher_name||'Teacher'}`}))
-      );
+    // Both the owner and joined subject teachers can inspect every attendance source
+    // for their shared class. Editing attendance remains teacher-specific elsewhere.
+    const members=(state.classTeachers||[]).filter(m=>m.class_id===cid);
+    const isAdviser=c.teacher_id===userId;
+    if(!isAdviser&&!members.some(m=>m.teacher_id===userId))return[];
+    const adviser={teacher_id:c.teacher_id,teacher_name:c.teacher_id===userId?(state.profile.full_name||c.adviser_name||'Adviser'):(c.adviser_name||'Class adviser'),subject:'Advisory',label:'Adviser attendance'};
+    const joined=members.filter(m=>m.teacher_id!==c.teacher_id)
+      .sort((a,b)=>(a.subject||'').localeCompare(b.subject||'')||(a.teacher_name||'').localeCompare(b.teacher_name||''))
+      .map(m=>({...m,label:`${m.teacher_id===userId?'My attendance • ':''}${m.subject||'Subject'} • ${m.teacher_name||'Teacher'}`}));
+    return (isAdviser||allowedToViewAdviser(cid))?[adviser,...joined]:joined;
+  }
+  const sf2Btn=document.getElementById('sf2Btn');
+  const sourceNote=document.getElementById('reportSourceNote');
+  function currentSource(){const sources=sourcesForClass(select.value);return sources.find(s=>s.teacher_id===teacherSelect.value)||sources[0]||null;}
+  function canGenerateSf2(){return isAdviserOfCurrentClass()&&currentSource()?.teacher_id===userId;}
+  function updateSourcePermissions(){
+    const allowed=canGenerateSf2();
+    sf2Btn?.classList.toggle('hidden',!allowed);
+    if(sourceNote){
+      const source=currentSource();
+      if(!source){sourceNote.textContent='No attendance source is available. Join this class or refresh while online.';}
+      else if(allowed){sourceNote.textContent='Official adviser source selected. SF2 is available. To compare attendance, choose a joined subject teacher.';}
+      else if(isAdviserOfCurrentClass()){sourceNote.textContent='Viewing another teacher’s attendance (read-only). Return to Adviser attendance to create SF2.';}
+      else if(source.teacher_id===userId){sourceNote.textContent='Your subject attendance. Adviser attendance is available only if the adviser grants access. SF2 belongs to the adviser.';}
+      else{sourceNote.textContent='Shared class attendance (read-only). Only the class adviser can create SF2.';}
     }
-    const m=membership(cid);return m?[{...m,label:`My attendance • ${m.subject}`}]:[];
   }
   function renderSources(){
+    const previous=teacherSelect.value;
     const sources=sourcesForClass(select.value);
-    teacherSelect.innerHTML=sources.map(s=>`<option value="${s.teacher_id}" data-subject="${s.subject}">${s.label}</option>`).join('');
+    teacherSelect.replaceChildren();
+    for(const source of sources){
+      const option=document.createElement('option');
+      option.value=source.teacher_id;option.dataset.subject=source.subject||'';option.textContent=source.label;
+      teacherSelect.appendChild(option);
+    }
+    if(sources.some(item=>item.teacher_id===previous))teacherSelect.value=previous;
+    updateSourcePermissions();
+    renderAccessControl();
   }
-  function currentSource(){const sources=sourcesForClass(select.value);return sources.find(s=>s.teacher_id===teacherSelect.value)||sources[0]||null;}
 
+  // A swipeable/drag-scroll access bar, shown only to the class adviser.
+  function renderAccessControl(){
+    if(!accessPanel||!accessStrip)return;
+    const cid=select.value;
+    const owned=isAdviserOfCurrentClass();
+    accessPanel.classList.toggle('hidden',!owned);
+    if(!owned)return;
+    const members=(state.classTeachers||[]).filter(m=>m.class_id===cid&&m.teacher_id!==userId)
+      .sort((a,b)=>(a.subject||'').localeCompare(b.subject||'')||(a.teacher_name||'').localeCompare(b.teacher_name||''));
+    const loaded=adviserAccess.cid===cid&&adviserAccess.loaded;
+    const count=members.filter(m=>adviserAccess.granted.has(m.teacher_id)).length;
+    if(accessCount)accessCount.textContent=loaded?`${count} of ${members.length} allowed`:'Loading access…';
+    if(accessStatus){
+      accessStatus.textContent=adviserAccess.error||(!navigator.onLine?'Connect to the internet to change access.':
+        !members.length?'No joined subject teachers yet. Invite a teacher from My Classes.':
+        !loaded?'Checking saved permissions…':'Access changes save automatically. Other subjects remain shared.');
+    }
+    accessStrip.replaceChildren();
+    if(!members.length){
+      const empty=document.createElement('span');empty.className='adviser-access-empty';empty.textContent='Subject teachers will appear here after joining.';accessStrip.appendChild(empty);return;
+    }
+    for(const m of members){
+      const enabled=loaded&&adviserAccess.granted.has(m.teacher_id);
+      const pending=adviserAccess.pending.has(m.teacher_id);
+      const nameText=m.teacher_name||'Teacher';
+      const subjectText=m.subject||'Subject';
+      const initials=nameText.trim().split(/\s+/).slice(0,2).map(word=>word.charAt(0)).join('').toUpperCase();
+      const card=document.createElement('button');card.type='button';
+      card.className=`cc-access-card ${enabled?'is-allowed':'is-blocked'}`;
+      card.setAttribute('role','switch');card.setAttribute('aria-checked',String(enabled));
+      card.setAttribute('aria-label',`${nameText}, ${subjectText}: ${enabled?'Allowed':'Blocked'}. Activate to ${enabled?'block':'allow'} access to adviser attendance.`);
+      card.title=`${nameText} • ${subjectText}`;
+      card.disabled=!loaded||pending||!navigator.onLine||APP_CONFIG.DEMO_MODE;
+      const head=document.createElement('span');head.className='cc-access-card-head';
+      const avatar=document.createElement('span');avatar.className='cc-access-avatar';avatar.textContent=initials||'T';avatar.setAttribute('aria-hidden','true');
+      const person=document.createElement('span');person.className='cc-access-person';
+      const name=document.createElement('b');name.textContent=nameText;
+      const subject=document.createElement('small');subject.textContent=subjectText;
+      person.append(name,subject);head.append(avatar,person);
+      const foot=document.createElement('span');foot.className='cc-access-card-foot';
+      const status=document.createElement('span');status.className='cc-access-state';status.textContent=pending?'Saving…':enabled?'Allowed':'Blocked';
+      const track=document.createElement('span');track.className='cc-access-switch';track.setAttribute('aria-hidden','true');
+      const thumb=document.createElement('span');thumb.className='cc-access-switch-thumb';track.appendChild(thumb);
+      foot.append(status,track);card.append(head,foot);
+      card.addEventListener('click',()=>saveTeacherAccess(cid,m.teacher_id,!enabled));
+      accessStrip.appendChild(card);
+    }
+  }
+  async function saveTeacherAccess(cid,teacherId,allowed){
+    if(!isAdviserOfCurrentClass()||cid!==select.value||!adviserAccess.loaded||adviserAccess.pending.has(teacherId))return;
+    adviserAccess.pending.add(teacherId);renderAccessControl();
+    try{
+      const {error}=await supa.rpc('classcheck_set_adviser_attendance_access',
+        {p_class_id:cid,p_teacher_id:teacherId,p_allowed:allowed});
+      if(error)throw error;
+      if(cid!==select.value)return;
+      if(allowed)adviserAccess.granted.add(teacherId);else adviserAccess.granted.delete(teacherId);
+      adviserAccess.error='';
+      const member=(state.classTeachers||[]).find(m=>m.class_id===cid&&m.teacher_id===teacherId);
+      App.toast(`${member?.teacher_name||'Teacher'} ${allowed?'can now view':'can no longer view'} adviser attendance.`);
+    }catch(error){console.error('Failed to update adviser attendance permission:',error);
+      if(cid===select.value){adviserAccess.error=error?.message||'Could not save permission; try again.';App.toast('Could not save access. Check your connection and V12.3 SQL.');}
+    }finally{adviserAccess.pending.delete(teacherId);if(cid===select.value)renderAccessControl();}
+  }
+  async function loadAdviserAccess(cid,sequence){
+    if(!cid||APP_CONFIG.DEMO_MODE||!navigator.onLine){renderAccessControl();return;}
+    const {data,error}=await supa.from('classcheck_adviser_attendance_access')
+      .select('teacher_id').eq('class_id',cid);
+    if(sequence!==teacherRefreshSequence||cid!==select.value)return;
+    if(error){
+      adviserAccess={cid,loaded:false,granted:new Set(),pending:new Set(),error:'Cannot load access controls. Run the V12.3 SQL in ClassCheck Supabase.'};
+      console.warn('Access permission refresh failed',error);
+    }else{
+      adviserAccess={cid,loaded:true,granted:new Set((data||[]).map(x=>x.teacher_id)),pending:new Set(),error:''};
+    }
+    renderSources();
+  }
+  // Check live adviser grant immediately before each external adviser preview/export.
+  async function requireAdviserAccessForRead(cid,source){
+    const c=state.classes.find(x=>x.id===cid);
+    if(!c||c.teacher_id===userId||source.teacher_id!==c.teacher_id)return;
+    if(!navigator.onLine)throw new Error('Connect to the internet to view adviser attendance.');
+    const {data,error}=await supa.from('classcheck_adviser_attendance_access')
+      .select('teacher_id').eq('class_id',cid).eq('teacher_id',userId).maybeSingle();
+    if(error)throw new Error('Unable to verify adviser attendance permission.');
+    if(!data){
+      adviserAccess.granted.delete(userId);renderSources();
+      throw new Error('The adviser has not allowed you to view this attendance.');
+    }
+  }
+  let teacherRefreshSequence=0;
+  async function refreshSharedSources(){
+    const cid=select.value;
+    if(!cid||!state.classes.some(c=>c.id===cid)||APP_CONFIG.DEMO_MODE||!navigator.onLine)return;
+    const sequence=++teacherRefreshSequence;
+    if(sourceNote)sourceNote.textContent='Refreshing shared attendance sources…';
+    // Refresh all class memberships for any authorized adviser or joined teacher.
+    // V12.2 SQL grants participant-scoped SELECT access without modifying write permissions.
+    const {data,error}=await supa.from('classcheck_class_teachers')
+      .select('class_id,teacher_id,teacher_name,subject,joined_at').eq('class_id',cid).order('joined_at',{ascending:true});
+    if(sequence!==teacherRefreshSequence||cid!==select.value)return;
+    if(error){
+      console.warn('Unable to refresh subject teachers',error);
+      if(sourceNote)sourceNote.textContent='Could not refresh attendance sources. Run the V12.2 SQL update in ClassCheck Supabase and reopen Reports.';
+      return;
+    }
+    const cached=AppStorage.get();
+    cached.classTeachers=(cached.classTeachers||[]).filter(m=>m.class_id!==cid).concat(data||[]);
+    AppStorage.set(cached,userId);
+    state=cached;
+    await loadAdviserAccess(cid,sequence);
+    if(sequence!==teacherRefreshSequence||cid!==select.value)return;
+    renderSources();
+    await preview();
+  }
   const monthNames=['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
   const monthLong=['January','February','March','April','May','June','July','August','September','October','November','December'];
   const now=new Date();let selectedYear=now.getFullYear(),selectedMonthIndex=now.getMonth(),drawerYear=selectedYear;
@@ -79,6 +234,7 @@ document.addEventListener('DOMContentLoaded',async()=>{
     return day!==0&&day!==6;
   }
   async function getRecords(cid,prefix,teacherId){
+    if(teacherId!==userId&&!APP_CONFIG.DEMO_MODE&&!navigator.onLine)throw new Error('Connect to the internet to view another teacher’s attendance.');
     const local=teacherId===userId?(await OfflineDB.all('attendance')).filter(r=>r.teacher_id===teacherId&&r.class_id===cid&&r.attendance_date.startsWith(prefix)&&isSchoolWeekday(r.attendance_date)):[];
     const map=new Map(local.map(r=>[`${r.teacher_id}_${r.class_id}_${r.student_id}_${r.attendance_date}`,r]));
     if(navigator.onLine&&!APP_CONFIG.DEMO_MODE){
@@ -86,12 +242,14 @@ document.addEventListener('DOMContentLoaded',async()=>{
         .select('teacher_id,class_id,student_id,attendance_date,status,note,subject,client_updated_at,updated_at')
         .eq('teacher_id',teacherId).eq('class_id',cid).gte('attendance_date',`${prefix}-01`).lt('attendance_date',nextMonth(prefix));
       if(!error){for(const r of data||[]){if(!isSchoolWeekday(r.attendance_date))continue;const key=`${r.teacher_id}_${r.class_id}_${r.student_id}_${r.attendance_date}`;if(!map.has(key))map.set(key,{...r,key});}}
+      else if(teacherId!==userId)throw new Error('Unable to load shared attendance. Check V12.2 permissions and your connection.');
       else console.warn('Report refresh failed',error);
     }
     return [...map.values()];
   }
 
   async function getCompletedSessionDates(cid,prefix,teacherId){
+    if(teacherId!==userId&&!APP_CONFIG.DEMO_MODE&&!navigator.onLine)throw new Error('Connect to the internet to view another teacher’s attendance.');
     const dates=new Set();
     if(teacherId===userId){
       const local=await OfflineDB.all('sessions');
@@ -105,7 +263,8 @@ document.addEventListener('DOMContentLoaded',async()=>{
         .select('attendance_date,session_status')
         .eq('teacher_id',teacherId).eq('class_id',cid).eq('session_status','completed')
         .gte('attendance_date',`${prefix}-01`).lt('attendance_date',nextMonth(prefix));
-      if(!error)for(const row of data||[])if(row.attendance_date&&isSchoolWeekday(row.attendance_date))dates.add(row.attendance_date);
+      if(error&&teacherId!==userId)throw new Error('Unable to load shared attendance sessions. Check V12.2 permissions.');
+      if(!error){for(const row of data||[])if(row.attendance_date&&isSchoolWeekday(row.attendance_date))dates.add(row.attendance_date);}
       else console.warn('Completed-session refresh failed',error);
     }
     return [...dates].sort();
@@ -144,6 +303,7 @@ document.addEventListener('DOMContentLoaded',async()=>{
     state=AppStorage.get();
     const cid=select.value,prefix=monthInput.value,c=state.classes.find(x=>x.id===cid),source=currentSource();
     if(!c||!source)throw new Error('Choose a class and attendance source first.');
+    await requireAdviserAccessForRead(cid,source);
     const students=sortStudents(state.students.filter(s=>s.class_id===cid&&!s.archived));
     const [rawRecords,completedSessionDates]=await Promise.all([
       getRecords(cid,prefix,source.teacher_id),
@@ -184,18 +344,43 @@ document.addEventListener('DOMContentLoaded',async()=>{
     };
   }
 
+  // Daily register: report only explicit saved marks. A school day with no saved mark
+  // is NOT the same as a Present status, even if the attendance screen defaults to Present.
+  const daySymbols={present:'P',absent:'A',late:'L'};
+  const dayNames=['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
+  function safeHtml(value){return String(value??'').replace(/[&<>"']/g,ch=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[ch]));}
+  function dayStatus(d,student,date){
+    const mark=d.byStudent.get(student.id)?.get(date)?.status;
+    return Object.hasOwn(daySymbols,mark)?daySymbols[mark]:'—';
+  }
+  function dailyRows(d){return d.students.map((student,index)=>({
+    index:index+1,name:App.studentName(student),sex:student.sex,
+    marks:d.calendarDays.map(day=>dayStatus(d,student,day.date))
+  }));}
+  let previewSerial=0;
   async function preview(){
+    const serial=++previewSerial;
+    const thead=document.querySelector('.report-table thead');
+    const tbody=document.getElementById('reportBody');
+    const meta=document.getElementById('reportMeta');
+    if(!thead||!tbody)return;
+    tbody.innerHTML='<tr><td>Loading daily attendance…</td></tr>';
     try{
       const d=await collectReportData();
-      const rows=d.students.map((s,index)=>{
-        const c=statusCounts(d.records.filter(x=>x.student_id===s.id));
-        const absent=c.absent;
-        const present=Math.max(0,d.schoolDays-absent); // blank and L both count as present in SF2
-        return{n:index+1,name:App.studentName(s),present,absent,late:c.late,total:d.schoolDays};
-      });
-      document.getElementById('reportBody').innerHTML=rows.map(r=>`<tr><td>${r.n}</td><td>${r.name}</td><td class="num positive">${r.present}</td><td class="num negative">${r.absent}</td><td class="num warning">${r.late}</td><td class="num total">${r.total}</td></tr>`).join('')||'<tr><td colspan="6">No learners.</td></tr>';
-      document.getElementById('reportMeta').textContent=`${d.source.subject} • ${d.source.teacher_name||'Teacher'} • ${d.students.length} learners • ${d.records.length} attendance entries`;
-    }catch(error){document.getElementById('reportBody').innerHTML='<tr><td colspan="6">Choose a class.</td></tr>';}
+      if(serial!==previewSerial)return;
+      const days=d.calendarDays;
+      const header=`<tr><th scope="col">#</th><th scope="col">Learner Name</th>${days.map(day=>`<th scope="col" title="${safeHtml(day.date)}">${day.day}<small>${dayNames[day.dow]}</small></th>`).join('')}</tr>`;
+      thead.innerHTML=header;
+      const rows=dailyRows(d);
+      tbody.innerHTML=rows.map(row=>`<tr><td class="daily-row-num">${row.index}</td><td class="daily-learner">${safeHtml(row.name)}</td>${row.marks.map((mark,i)=>`<td class="daily-mark daily-mark-${mark==='P'?'present':mark==='A'?'absent':mark==='L'?'late':'empty'}" title="${safeHtml(days[i].date)}: ${mark==='P'?'Present':mark==='A'?'Absent':mark==='L'?'Late':'Not Recorded'}">${mark}</td>`).join('')}</tr>`).join('')||`<tr><td colspan="${2+days.length}">No learners in this class.</td></tr>`;
+      meta.textContent=`${d.source.subject} • ${d.source.teacher_name||'Teacher'} • ${rows.length} learners • ${days.length} weekdays | P = Present · A = Absent · L = Late · — = Not Recorded`;
+    }catch(error){
+      if(serial!==previewSerial)return;
+      console.warn('Daily attendance preview failed',error);
+      thead.innerHTML='<tr><th>Daily attendance</th></tr>';
+      tbody.innerHTML=`<tr><td>${safeHtml(error?.message||'Unable to load attendance. Check your connection and permissions.')}</td></tr>`;
+      meta.textContent='';
+    }
   }
 
   function setCell(ws,address,value,style){const cell=ws[address]||{t:typeof value==='number'?'n':'s',v:value};cell.v=value;cell.t=typeof value==='number'?'n':'s';if(style)cell.s=style;ws[address]=cell;}
@@ -649,45 +834,45 @@ ${d.schoolDays}`);
 
   async function buildAttendanceWorkbook(d){
     if(!window.XLSX)throw new Error('Excel library is not available.');
-    const summary=[
-      ['CLASSCHECK ATTENDANCE EXPORT'],
-      [`School: ${safe(d.profile.school_name)}`],
-      [`Class: ${safe(d.c.grade_level)} – ${safe(d.c.section_name)}`],
-      [`Month: ${monthText(d.bounds.year,d.bounds.month-1)}`],
-      [`Attendance Source: ${safe(d.source.subject)} • ${safe(d.source.teacher_name)}`],
-      [`School Days (Mon-Fri): ${d.schoolDays}`],
+    const days=d.calendarDays;
+    const width=2+days.length;
+    const classTitle=`${safe(d.c.grade_level)} – ${safe(d.c.section_name)}`;
+    const sourceTitle=`${safe(d.source.subject)} • ${safe(d.source.teacher_name)}`;
+    const register=[
+      ['CLASSCHECK | DAILY ATTENDANCE REGISTER'],
+      [`Class: ${classTitle}   |   Month: ${monthText(d.bounds.year,d.bounds.month-1)}`],
+      [`Attendance source: ${sourceTitle}`],
+      ['P = Present    A = Absent    L = Late    — = Not Recorded (no saved mark)'],
+      ['Monday–Friday only • Blank/unsaved dates are not counted as present'],
       [],
-      ['#','Learner','Sex','Present (incl. Late)','Absent','Late','School Days','Attendance Rate']
+      ['#','LEARNER NAME',...days.map(day=>`${String(day.day).padStart(2,'0')} ${dayNames[day.dow]}`)]
     ];
-    d.students.forEach((student,index)=>{
-      const c=statusCounts(d.records.filter(r=>r.student_id===student.id));
-      const absent=c.absent;
-      const present=Math.max(0,d.schoolDays-absent);
-      const total=d.schoolDays;
-      summary.push([index+1,App.studentName(student),student.sex,present,absent,c.late,total,total?present/total:0]);
-    });
-    const ws=XLSX.utils.aoa_to_sheet(summary);
-    ws['!merges']=[
-      {s:{r:0,c:0},e:{r:0,c:7}},
-      {s:{r:1,c:0},e:{r:1,c:7}},
-      {s:{r:2,c:0},e:{r:2,c:7}},
-      {s:{r:3,c:0},e:{r:3,c:7}},
-      {s:{r:4,c:0},e:{r:4,c:7}},
-      {s:{r:5,c:0},e:{r:5,c:7}}
-    ];
-    ws['!cols']=[{wch:5},{wch:36},{wch:10},{wch:20},{wch:10},{wch:10},{wch:12},{wch:16}];
-    styleRange(ws,`A1:H${summary.length}`,{font:{name:'Arial',sz:10,color:{rgb:INK}},alignment:{vertical:'center'},border:maroonBorder});
-    styleRange(ws,'A1:H1',{fill:{patternType:'solid',fgColor:{rgb:MAROON}},font:{bold:true,color:{rgb:WHITE},sz:15},alignment:{horizontal:'center',vertical:'center'},border:maroonBorder});
-    styleRange(ws,'A2:H6',{fill:{patternType:'solid',fgColor:{rgb:BLUSH_LIGHT}},font:{bold:true,color:{rgb:MAROON_DARK}},border:maroonBorder});
-    styleRange(ws,'A8:H8',{fill:{patternType:'solid',fgColor:{rgb:MAROON_DARK}},font:{bold:true,color:{rgb:WHITE}},alignment:{horizontal:'center',vertical:'center'},border:maroonBorder});
-    for(let r=9;r<=summary.length;r++){
-      styleRange(ws,`A${r}:H${r}`,{fill:{patternType:'solid',fgColor:{rgb:r%2===0?'FFFFFF':'FFF7F8'}},border:maroonBorder});
-      if(ws[`H${r}`])ws[`H${r}`].s={...(ws[`H${r}`].s||{}),numFmt:'0.00%'};
+    dailyRows(d).forEach(row=>register.push([row.index,row.name,...row.marks]));
+    const ws=XLSX.utils.aoa_to_sheet(register);
+    ws['!merges']=[0,1,2,3,4].map(r=>({s:{r,c:0},e:{r,c:width-1}}));
+    ws['!cols']=[{wch:6},{wch:40},...days.map(()=>({wch:9}))];
+    ws['!rows']=[{hpt:29},{hpt:23},{hpt:23},{hpt:22},{hpt:22},{hpt:10},{hpt:34},...d.students.map(()=>({hpt:23}))];
+    const right=XLSX.utils.encode_col(width-1);
+    const endRow=register.length;
+    styleRange(ws,`A1:${right}${endRow}`,{font:{name:'Arial',sz:10,color:{rgb:INK}},alignment:{vertical:'center'},border:maroonBorder});
+    styleRange(ws,`A1:${right}1`,{fill:{patternType:'solid',fgColor:{rgb:MAROON}},font:{name:'Arial',bold:true,sz:15,color:{rgb:WHITE}},alignment:{horizontal:'center',vertical:'center'},border:maroonBorder});
+    styleRange(ws,`A2:${right}5`,{fill:{patternType:'solid',fgColor:{rgb:BLUSH_LIGHT}},font:{name:'Arial',bold:true,sz:10,color:{rgb:MAROON_DARK}},border:maroonBorder});
+    styleRange(ws,`A7:${right}7`,{fill:{patternType:'solid',fgColor:{rgb:MAROON_DARK}},font:{bold:true,color:{rgb:WHITE},sz:9},alignment:{horizontal:'center',vertical:'center',wrapText:true},border:maroonBorder});
+    for(let i=0;i<d.students.length;i++){
+      const row=8+i;
+      const tone=i%2===0?'FFFFFF':'FFF7F8';
+      styleRange(ws,`A${row}:${right}${row}`,{fill:{patternType:'solid',fgColor:{rgb:tone}},border:maroonBorder});
+      for(let day=0;day<days.length;day++){
+        const addr=XLSX.utils.encode_cell({r:row-1,c:day+2});
+        const cell=ws[addr]||{t:'s',v:'—'};
+        const isAbsent=cell.v==='A',isLate=cell.v==='L',isPresent=cell.v==='P';
+        cell.s={...(cell.s||{}),font:{name:'Arial',bold:true,sz:10,color:{rgb:isAbsent?'B42339':isLate?'925C00':isPresent?'126B43':'90838A'}},fill:{patternType:'solid',fgColor:{rgb:isAbsent?'FCE8EC':isLate?'FFF3D7':isPresent?'E8F4EC':tone}},alignment:{horizontal:'center',vertical:'center'},border:maroonBorder};
+        ws[addr]=cell;
+      }
     }
-    ws['!autofilter']={ref:`A8:H${summary.length}`};
-
+    ws['!autofilter']={ref:`A7:${right}${endRow}`};
     const wb=XLSX.utils.book_new();
-    XLSX.utils.book_append_sheet(wb,ws,'Attendance Summary');
+    XLSX.utils.book_append_sheet(wb,ws,'Daily Attendance');
     return wb;
   }
 
@@ -836,10 +1021,12 @@ ${d.schoolDays}`);
   }
 
   async function generateSf2(manual){
+    if(!canGenerateSf2()){App.toast('Only the adviser can generate SF2 using Adviser attendance.');return;}
     try{
       let d,blob,filename;
       await App.withLoading('Generating SF2…','Refreshing the Teacher Profile and adding attendance data to the original SF2 form.',async()=>{
         d=applySf2Details(await collectReportData(),manual);
+        if(d.c.teacher_id!==userId||d.source.teacher_id!==userId)throw new Error('SF2 requires your own advisory attendance.');
         d=await refreshSf2Identity(d);
         const wb=await buildSf2WorkbookExact(d);blob=await sf2WorkbookBlobExact(wb);filename=`SF2_${filePart(d.c.grade_level)}_${filePart(d.c.section_name)}_${d.prefix}.xlsx`;
       },{minimum:420});
@@ -848,20 +1035,20 @@ ${d.schoolDays}`);
     }catch(error){console.error(error);App.toast(error?.message||'Unable to generate SF2.');}
   }
 
-  document.getElementById('previewBtn').onclick=preview;
-  select.onchange=()=>{renderSources();preview();};
-  teacherSelect.onchange=preview;
+  select.onchange=()=>{teacherRefreshSequence++;resetAdviserAccess();renderSources();preview();refreshSharedSources();};
+  teacherSelect.onchange=()=>{updateSourcePermissions();preview();};
 
   document.getElementById('excelBtn').onclick=async()=>{
     try{
-      await App.withLoading('Creating Excel export…','Building the styled attendance workbook with maroon borders and class details.',async()=>{
-        const d=await collectReportData();const wb=await buildAttendanceWorkbook(d);const blob=workbookBlob(wb);downloadBlob(blob,`Attendance_${filePart(d.c.section_name)}_${filePart(d.source.subject)}_${d.prefix}.xlsx`);
+      await App.withLoading('Creating daily attendance Excel…','Exporting each student’s saved attendance for every school day.',async()=>{
+        const d=await collectReportData();const wb=await buildAttendanceWorkbook(d);const blob=workbookBlob(wb);downloadBlob(blob,`DailyAttendance_${filePart(d.c.section_name)}_${filePart(d.source.subject)}_${d.prefix}.xlsx`);
       },{minimum:320});
       App.toast('Excel attendance export downloaded');
     }catch(error){console.error(error);App.toast(error?.message||'Unable to export Excel.');}
   };
 
   document.getElementById('sf2Btn').onclick=async()=>{
+    if(!canGenerateSf2()){App.toast('SF2 is adviser-only. Select Adviser attendance to continue.');return;}
     if(!select.value||!monthInput.value){App.toast('Choose a class and month first.');return;}
     resetSf2Details();
     try{
@@ -884,6 +1071,7 @@ ${d.schoolDays}`);
     input.value=String(cleanCount(input.value));updateSf2DetailCount(input.dataset.sf2Kind);
   }));
   sf2DetailsGenerate?.addEventListener('click',async()=>{
+    if(!canGenerateSf2()){App.toast('SF2 is only available for the class adviser’s attendance.');return;}
     try{
       sf2DetailsGenerate.disabled=true;
       await persistSf2BaselineFromModal();
@@ -905,6 +1093,6 @@ ${d.schoolDays}`);
   sf2CloseBtn?.addEventListener('click',()=>sf2Modal?.classList.add('hidden'));
   sf2Modal?.addEventListener('click',e=>{if(e.target===sf2Modal)sf2Modal.classList.add('hidden');});
 
-  document.addEventListener('classcheck:panelchange',e=>{if(e.detail?.panel==='reports'){state=AppStorage.get();populateClasses();renderSources();preview();}});
-  renderSources();syncMonthUI();preview();
+  document.addEventListener('classcheck:panelchange',e=>{if(e.detail?.panel==='reports'){state=AppStorage.get();populateClasses();resetAdviserAccess();renderSources();preview();refreshSharedSources();}});
+  renderSources();syncMonthUI();preview();refreshSharedSources();
 });

@@ -1,5 +1,5 @@
 /* ClassCheck PWA — V10.7 editable learners with optional LRN. */
-const CACHE_NAME = 'classcheck-pwa-v12-0-highlighted-hero';
+const CACHE_NAME = 'classcheck-pwa-v12-5-clear-permissions';
 const CACHE_PREFIX = 'classcheck-pwa-';
 const APP_SHELL = [
   './',
@@ -12,7 +12,7 @@ const APP_SHELL = [
   './reports.html',
   './offline.html',
   './manifest.webmanifest',
-  './css/styles.css?v=12.0',
+  './css/styles.css?v=12.5',
   './css/responsive.css?v=11.6',
   './assets/classcheck-tabicon.png?v=11.9',
   './assets/classcheck-tabicon.png?v=11.9',
@@ -33,8 +33,8 @@ const APP_SHELL = [
   './js/classes.js?v=10.6',
   './js/attendance.js?v=9.3',
   './js/calendar.js?v=9.3',
-  './js/reports.js?v=10.5',
-  './js/profile.js?v=9.2',
+  './js/reports.js?v=12.5',
+  './js/profile.js?v=12.4',
   './js/pwa.js?v=10.2',
   './js/jszip.min.js?v=9.5',
   './js/sf2-template.js?v=9.5',

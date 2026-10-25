@@ -36,7 +36,7 @@
     {
       "name": "Take Attendance",
       "short_name": "Attendance",
-      "url": "./app.html#attendance",
+      "url": "./app.html#dashboard",
       "icons": [
         {
           "src": "assets/icons/classcheck-192.png",

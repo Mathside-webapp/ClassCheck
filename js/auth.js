@@ -45,7 +45,7 @@
         const ctx=await Supa.requireTeacher();
         await Supa.loadState(ctx,true);
       },{minimum:380});
-      App.navigate('attendance.html');
+      App.navigate('dashboard.html');
     }
 
     // Mathside/EduCore-style public entry: the browser link keeps this login/install
@@ -60,7 +60,7 @@
           }
           let displayName='';
           try{
-            const profile=await Supa.ensureProfile(session.user);
+            const profile=navigator.onLine?await Supa.ensureProfile(session.user):AppStorage.get().profile;
             displayName=profile?.full_name||'';
           }catch(err){console.warn('Could not load ClassCheck profile name.',err)}
           showExistingSession(session,displayName);
@@ -119,7 +119,7 @@
           const ctx=await Supa.requireTeacher();
           await Supa.loadState(ctx,true);
         },{minimum:380});
-        App.navigate('attendance.html');
+        App.navigate('dashboard.html');
       }catch(err){console.error(err);App.toast(err?.message||'Unable to sign in. Check your email, password, and connection.');}
       finally{btn.disabled=false;btn.textContent=original;}
     });
@@ -147,7 +147,7 @@
           }
           return data;
         },{minimum:520});
-        if(result.session){App.navigate('attendance.html');}
+        if(result.session){App.navigate('dashboard.html');}
         else{
           authNote.textContent='Account created. Check your email to confirm the account, then sign in.';
           mode('signin');

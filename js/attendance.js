@@ -42,6 +42,7 @@ document.addEventListener('DOMContentLoaded',async()=>{
   let displayMonth=new Date(`${selectedDate}T12:00:00`);
   displayMonth.setDate(1);
   let records={};
+  let attendanceLoading=0;
   function subjectForClass(classId){
     const c=state.classes.find(x=>x.id===classId);
     if(!c)return 'Advisory';
@@ -61,6 +62,8 @@ document.addEventListener('DOMContentLoaded',async()=>{
     }else if(type==='synced'){
       syncBadge.classList.add('synced');
       syncBadge.textContent='✓ All synced';
+    }else if(type==='failed'){
+      syncBadge.textContent=`Sync failed • ${count} waiting`;
     }else if(type==='demo'){
       syncBadge.textContent='Demo • saved on device';
     }else{
@@ -172,6 +175,8 @@ document.addEventListener('DOMContentLoaded',async()=>{
   }
 
   async function load(){
+    attendanceLoading++;
+    try {
     records={};
     const c=activeClasses.find(x=>x.id===selectedClassId);
     if(title) title.textContent=c?`${c.grade_level} – ${c.section_name}`:'Attendance';
@@ -200,6 +205,7 @@ document.addEventListener('DOMContentLoaded',async()=>{
     const saved=await OfflineDB.attendanceFor(selectedClassId,selectedDate,userId);
     saved.forEach(r=>records[r.student_id]=r);
     renderStudents();
+    } finally {attendanceLoading--;}
   }
 
   function statusLabel(status){
@@ -210,7 +216,7 @@ document.addEventListener('DOMContentLoaded',async()=>{
 
   function renderStudents(){
     const students=state.students
-      .filter(s=>s.class_id===selectedClassId)
+      .filter(s=>s.class_id===selectedClassId&&!s.archived)
       .sort((a,b)=>App.studentName(a).localeCompare(App.studentName(b)));
 
     if(!students.length){
@@ -232,12 +238,12 @@ document.addEventListener('DOMContentLoaded',async()=>{
     list.innerHTML=groups.filter(group=>group.students.length).map(group=>{
       const rows=group.students.map(s=>{
         learnerNumber+=1;
-        const st=records[s.id]?.status||'present';
+        const st=records[s.id]?.status||'unmarked';
         const radios=['present','absent','late'].map(status=>`<label class="status-radio ${status} ${st===status?'checked':''}"><input type="radio" name="status-${s.id}" value="${status}" ${st===status?'checked':''}><span class="radio-dot"></span><span>${statusLabel(status)}</span></label>`).join('');
         return `<article class="student-row ${st}" data-id="${s.id}">
           <div class="student-avatar">${learnerNumber}</div>
-          <div class="student-main"><b>${App.studentName(s)}</b></div>
-          <div class="status-radio-group" role="radiogroup" aria-label="Attendance for ${App.studentName(s)}">${radios}</div>
+          <div class="student-main"><b>${App.escapeHtml(App.studentName(s))}</b></div>
+          <div class="status-radio-group" role="radiogroup" aria-label="Attendance for ${App.escapeHtml(App.studentName(s))}">${radios}</div>
         </article>`;
       }).join('');
       return `<section class="learner-group learner-group-${group.key}" aria-labelledby="learner-group-${group.key}">
@@ -252,7 +258,7 @@ document.addEventListener('DOMContentLoaded',async()=>{
     list.querySelectorAll('input[type="radio"]').forEach(input=>input.onchange=async e=>{
       if(!e.target.checked)return;
       const row=e.target.closest('.student-row');
-      await save(row.dataset.id,e.target.value);
+      try{await save(row.dataset.id,e.target.value);}catch(err){App.toast('Could not save on this device: '+err.message);renderStudents();}
     });
     updateSummary(students.length);
   }
@@ -261,7 +267,8 @@ document.addEventListener('DOMContentLoaded',async()=>{
     const statuses=Object.values(records).map(r=>r.status);
     const absent=statuses.filter(s=>s==='absent').length;
     const late=statuses.filter(s=>s==='late').length;
-    summary.textContent=`${total-absent} present • ${absent} absent • ${late} late`;
+    const present=statuses.filter(s=>s==='present').length;
+    summary.textContent=`${present} present • ${absent} absent • ${late} late • ${total-statuses.length} unmarked`;
   }
 
   async function save(studentId,status){
@@ -281,9 +288,8 @@ document.addEventListener('DOMContentLoaded',async()=>{
       client_updated_at:new Date().toISOString(),
       updated_at:new Date().toISOString()
     };
-    records[studentId]=rec;
-    await OfflineDB.put('attendance',rec);
     await SyncManagerApp.queueAttendance(rec);
+    records[studentId]=rec;
     setSync(navigator.onLine?'saved-local':'offline',(await OfflineDB.all('syncQueue')).length);
     renderStudents();
   }
@@ -342,22 +348,22 @@ document.addEventListener('DOMContentLoaded',async()=>{
       return;
     }
     const students=state.students.filter(s=>s.class_id===selectedClassId&&!s.archived);
+    if(students.some(s=>!records[s.id])){App.toast('Mark every learner before completing attendance. Unscanned learners remain unmarked.');return;}
     const now=new Date().toISOString();
     for(const s of students){
       const rec=records[s.id]||{
         key:`${userId}_${selectedClassId}_${s.id}_${selectedDate}`,teacher_id:userId,class_id:selectedClassId,student_id:s.id,attendance_date:selectedDate,status:'present',subject:subjectForClass(selectedClassId),note:null,client_updated_at:now
       };
       records[s.id]=rec;
-      await OfflineDB.put('attendance',rec);
       await SyncManagerApp.queueAttendance(rec);
     }
     const key=`${userId}_${selectedClassId}_${selectedDate}`;
     const session={key,teacher_id:userId,class_id:selectedClassId,attendance_date:selectedDate,session_status:'completed',status:'completed',subject:subjectForClass(selectedClassId),notes:null,client_updated_at:now,updated_at:now};
-    await OfflineDB.put('sessions',session);
     await SyncManagerApp.queueSession(session);
     await SyncManagerApp.flush();
     renderStudents();
-    App.toast(navigator.onLine?'Attendance completed and synced.':'Attendance completed offline. It will sync when connected.');
+    const pending=(await OfflineDB.all('syncQueue')).some(x=>x.payload.teacher_id===userId);
+    App.toast(pending?'Attendance saved on device. Sync pending.':'Attendance completed and synced.');
   };
 
 
@@ -379,6 +385,18 @@ document.addEventListener('DOMContentLoaded',async()=>{
     renderClasses();renderDates();await load();
   });
 
+  window.ClassCheckAttendance={
+    context:()=>({classId:selectedClassId,date:selectedDate,userId}),
+    scan:async(studentId,status)=>{
+      if(attendanceLoading)throw new Error("Attendance is loading. Scan again in a moment.");
+      if(!["present","late"].includes(status))throw new Error("Invalid scan status.");
+      const student=state.students.find(s=>s.id===studentId&&s.class_id===selectedClassId&&!s.archived);
+      if(!student)throw new Error('This QR does not belong to a learner in the selected class.');
+      if(isWeekendDate(selectedDate))throw new Error('Weekend attendance is disabled.');
+      if(records[studentId])return {student,duplicate:true};
+      await save(studentId,status);return {student,duplicate:false};
+    }
+  };
   renderClasses();
   renderDates();
   await load();

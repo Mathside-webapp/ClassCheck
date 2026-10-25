@@ -10,9 +10,14 @@
     return client;
   }
   async function getSession(){
+    if(!navigator.onLine){
+      const saved=JSON.parse(localStorage.getItem('classcheck_offline_user')||'null');
+      if(saved && AppStorage.meta().owner_id===saved.id)return {user:saved,offline:true};
+    }
     const supa=getClient();
     const {data,error}=await supa.auth.getSession();
     if(error)throw error;
+    if(data.session)localStorage.setItem('classcheck_offline_user',JSON.stringify({id:data.session.user.id,email:data.session.user.email}));
     return data.session||null;
   }
   async function requireTeacher(){
@@ -36,6 +41,10 @@
   async function loadState(ctx,force=false){
     if(APP_CONFIG.DEMO_MODE)return AppStorage.get();
     const userId=ctx.user.id;
+    if(!navigator.onLine){
+      if(AppStorage.meta().owner_id===userId)return AppStorage.get();
+      throw new Error('Connect once to download this account’s classes.');
+    }
     if(!force&&AppStorage.isFresh(userId))return AppStorage.get();
     const supa=getClient();
     try{
@@ -55,17 +64,20 @@
     }catch(err){
       console.error('ClassCheck bootstrap failed',err);
       const cached=AppStorage.get();
-      if(!navigator.onLine&&cached)return cached;
+      if(AppStorage.meta().owner_id===userId&&cached)return cached;
       throw err;
     }
   }
   async function signOut(options={}){
     const redirect=options.redirect!==false;
+    const uid=(await getSession())?.user?.id;
+    if(window.OfflineDB && (await OfflineDB.all('syncQueue')).some(x=>x.payload.teacher_id===uid))throw new Error('Sync pending attendance before signing out.');
     if(APP_CONFIG.DEMO_MODE){if(redirect)(window.App?.navigate?App.navigate('index.html'):location.href='index.html');return;}
     const supa=getClient();
     const {error}=await supa.auth.signOut({scope:'local'});
     if(error)throw error;
     sessionStorage.removeItem('classcheck_teacher_name');
+    localStorage.removeItem('classcheck_offline_user');
     AppStorage.reset();
     if(redirect)(window.App?.navigate?App.navigate('index.html'):location.href='index.html');
   }

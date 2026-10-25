@@ -1,4 +1,5 @@
 (function(){
+  function escapeHtml(value){return String(value??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));}
   function qs(s,p=document){return p.querySelector(s)}
   function qsa(s,p=document){return [...p.querySelectorAll(s)]}
   function fmtDate(d=new Date()){
@@ -122,7 +123,7 @@
       setTimeout(()=>ok.focus(),30);
     });
   }
-  const panelPages={classes:'classes.html',attendance:'attendance.html',calendar:'calendar.html',reports:'reports.html',profile:'profile.html'};
+  const panelPages={dashboard:'dashboard.html',classes:'classes.html',attendance:'attendance.html',calendar:'calendar.html',reports:'reports.html',profile:'profile.html'};
   const pagePanels=Object.fromEntries(Object.entries(panelPages).map(([panel,page])=>[page,panel]));
   function isUnified(){return document.body?.dataset?.classcheckUnified==='true'}
   function routeParams(){
@@ -192,6 +193,7 @@
     const teacherName=state?.profile?.full_name||sessionStorage.getItem('classcheck_teacher_name')||'Teacher';
     const teacherInitial=(teacherName.trim()[0]||'T').toUpperCase();
     const items=[
+      ['dashboard','home','Home'],
       ['classes','users','Classes'],
       ['attendance','attendance','Attendance'],
       ['calendar','calendar','Calendar'],
@@ -208,8 +210,8 @@
     }
     el.innerHTML=`
       <a class="classcheck-teacher-card ${active==='profile'?'active':''}" href="${hrefFor('profile')}">
-        <span class="classcheck-avatar">${teacherInitial}</span>
-        <span><b>${teacherName}</b><small>Daily attendance</small></span>
+        <span class="classcheck-avatar">${escapeHtml(teacherInitial)}</span>
+        <span><b>${escapeHtml(teacherName)}</b><small>Daily attendance</small></span>
       </a>
       <div class="classcheck-nav-links">
         ${items.map(([key,ico,label])=>`<a class="nav-item ${key==='profile'?'classcheck-mobile-profile-nav ':''}${active===key?'active':''}" href="${hrefFor(key)}"><span class="nav-icon">${icon(ico)}</span><span>${label}</span></a>`).join('')}
@@ -223,18 +225,18 @@
     hydrateIcons(document);
     installNavigationTransitions();
     if(isUnified()){
-      const raw=(location.hash||'#attendance').replace(/^#/,'');
+      const raw=(location.hash||'#dashboard').replace(/^#/,'');
       const panel=raw.split('?')[0];
       const params=new URLSearchParams(raw.includes('?')?raw.slice(raw.indexOf('?')+1):'');
-      showPanel(panelPages[panel]?panel:'attendance',{params,historyMode:'replace'});
+      showPanel(panelPages[panel]?panel:'dashboard',{params,historyMode:'replace'});
       window.addEventListener('popstate',()=>{
-        const next=(location.hash||'#attendance').replace(/^#/,'');
+        const next=(location.hash||'#dashboard').replace(/^#/,'');
         const p=next.split('?')[0];
         const ps=new URLSearchParams(next.includes('?')?next.slice(next.indexOf('?')+1):'');
-        showPanel(panelPages[p]?p:'attendance',{params:ps,historyMode:'none'});
+        showPanel(panelPages[p]?p:'dashboard',{params:ps,historyMode:'none'});
       });
     }
     document.body.classList.add('cc-page-ready');
   });
-  window.App={qs,qsa,fmtDate,longDate,studentName,toast,nav,icon,hydrateIcons,sleep,startLoading,stopLoading,withLoading,confirmAction,navigate,isUnified,routeParams,showPanel};
+  window.App={escapeHtml,qs,qsa,fmtDate,longDate,studentName,toast,nav,icon,hydrateIcons,sleep,startLoading,stopLoading,withLoading,confirmAction,navigate,isUnified,routeParams,showPanel};
 })();

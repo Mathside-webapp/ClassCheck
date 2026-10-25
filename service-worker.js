@@ -1,44 +1,47 @@
 /* ClassCheck PWA — V10.7 editable learners with optional LRN. */
-const CACHE_NAME = 'classcheck-pwa-v12-5-clear-permissions';
+const CACHE_NAME = 'classcheck-pwa-v13-1-centered-qr';
 const CACHE_PREFIX = 'classcheck-pwa-';
 const APP_SHELL = [
-  './',
-  './index.html',
-  './app.html',
-  './attendance.html',
-  './calendar.html',
-  './classes.html',
-  './profile.html',
-  './reports.html',
-  './offline.html',
-  './manifest.webmanifest',
-  './css/styles.css?v=12.5',
-  './css/responsive.css?v=11.6',
-  './assets/classcheck-tabicon.png?v=11.9',
-  './assets/classcheck-tabicon.png?v=11.9',
-  './assets/classcheck-logo-full.png',
-  './assets/icons/classcheck-180.png?v=11.9',
-  './assets/icons/classcheck-192.png?v=11.9',
-  './assets/icons/classcheck-512.png?v=11.9',
-  './assets/icons/classcheck-maskable-512.png?v=11.9',
-  './js/config.js?v=10.4',
-  './js/demo-data.js?v=9',
-  './js/storage.js?v=9.4',
-  './js/offline-db.js?v=9',
-  './js/supabase-client.js?v=9',
-  './js/bootstrap.js?v=9',
-  './js/sync.js?v=10.5',
-  './js/app.js?v=11.5',
-  './js/auth.js?v=10.2',
-  './js/classes.js?v=10.6',
-  './js/attendance.js?v=9.3',
-  './js/calendar.js?v=9.3',
-  './js/reports.js?v=12.5',
-  './js/profile.js?v=12.4',
-  './js/pwa.js?v=10.2',
-  './js/jszip.min.js?v=9.5',
-  './js/sf2-template.js?v=9.5',
-  './assets/templates/SF2_SOURCE_TEMPLATE.xlsx'
+  "./",
+  "./app.html",
+  "./assets/classcheck-tabicon.png?v=11.9",
+  "./assets/icons/classcheck-180.png?v=11.9",
+  "./assets/templates/SF2_SOURCE_TEMPLATE.xlsx",
+  "./attendance.html",
+  "./calendar.html",
+  "./classes.html",
+  "./css/dashboard.css",
+  "./css/responsive.css?v=11.6",
+  "./css/styles.css?v=12.5",
+  "./dashboard.html",
+  "./index.html",
+  "./js/app.js?v=11.5",
+  "./js/attendance.js?v=9",
+  "./js/auth.js?v=10.2",
+  "./js/bootstrap.js?v=9",
+  "./js/calendar.js?v=9",
+  "./js/classes.js?v=12.4",
+  "./js/config.js?v=10.4",
+  "./js/dashboard.js",
+  "./js/demo-data.js?v=9",
+  "./js/jszip.min.js?v=9.5",
+  "./js/offline-db.js?v=9",
+  "./js/profile.js?v=12.4",
+  "./js/pwa.js?v=10.2",
+  "./js/qr-attendance.js",
+  "./js/reports.js?v=12.5",
+  "./js/sf2-template.js?v=9.5",
+  "./js/storage.js?v=9.4",
+  "./js/supabase-client.js?v=9",
+  "./js/sync.js?v=10.5",
+  "./js/vendor/jsQR.js",
+  "./js/vendor/qrcode.js",
+  "./js/vendor/supabase.js",
+  "./js/vendor/xlsx.js",
+  "./manifest.webmanifest",
+  "./offline.html",
+  "./profile.html",
+  "./reports.html"
 ];
 
 self.addEventListener('install', event => {
@@ -78,6 +81,8 @@ self.addEventListener('fetch', event => {
   }
 
   event.respondWith((async()=>{
+    const cached=await caches.match(req,{ignoreSearch:false});
+    if(cached)return cached;
     try{
       const fresh=await fetch(req);
       if(fresh?.ok){const cache=await caches.open(CACHE_NAME);cache.put(req,fresh.clone());}

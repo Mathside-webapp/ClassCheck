@@ -25,5 +25,5 @@
   function meta(){try{return JSON.parse(localStorage.getItem(META))||{}}catch{return {}}}
   function isFresh(ownerId,maxAge=(APP_CONFIG.CACHE_TTL_MS||300000)){const m=meta();return !!ownerId&&m.owner_id===ownerId&&Date.now()-(m.synced_at||0)<maxAge;}
   function reset(){localStorage.removeItem(KEY);localStorage.removeItem(META);seed();}
-  window.AppStorage={get,set,seed,reset,touch,isFresh,empty};
+  window.AppStorage={get,set,meta,seed,reset,touch,isFresh,empty};
 })();

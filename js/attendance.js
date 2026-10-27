@@ -44,6 +44,7 @@ document.addEventListener('DOMContentLoaded',async()=>{
   let records={};
   let attendanceLoading=0;
   let loadVersion=0;
+  let storageError=null;
   function subjectForClass(classId){
     const c=state.classes.find(x=>x.id===classId);
     if(!c)return 'Advisory';
@@ -55,7 +56,11 @@ document.addEventListener('DOMContentLoaded',async()=>{
 
   function setSync(type,count=0){
     syncBadge.className='sync-badge';
-    if(type==='offline'){
+    if(type==='storage-error' || storageError || SyncManagerApp.storageError()){
+      syncBadge.classList.add('offline');
+      syncBadge.textContent='Device save failed';
+      syncBadge.title=storageError||SyncManagerApp.storageError()||'Device storage is unavailable';
+    }else if(type==='offline'){
       syncBadge.classList.add('offline');
       syncBadge.textContent=`Offline • ${count} waiting`;
     }else if(type==='syncing'){
@@ -193,6 +198,7 @@ document.addEventListener('DOMContentLoaded',async()=>{
         summary.textContent='0 present • 0 absent • 0 late';
         return;
       }
+      if(typeof window.OfflineDB?.saveQueued!=='function')throw new Error('Offline storage update is incomplete. Reopen ClassCheck while online.');
       const saved=await OfflineDB.attendanceFor(classId,date,userId);
       if(version!==loadVersion)return;
       saved.forEach(r=>records[r.student_id]=r);
@@ -203,6 +209,7 @@ document.addEventListener('DOMContentLoaded',async()=>{
       console.error('Unable to open locally saved attendance',err);
       if(version===loadVersion){
         list.innerHTML='<div class="empty">Device storage is unavailable. Check browser storage permissions, then try again.</div>';
+        storageError=err.message;setSync('storage-error');
         App.toast('Could not read attendance stored on this device.');
       }
     }finally{attendanceLoading--;}
@@ -301,7 +308,12 @@ document.addEventListener('DOMContentLoaded',async()=>{
       row.classList.remove('unmarked','present','absent','late');
       row.classList.add(value);
       row.querySelectorAll('.status-radio').forEach(label=>label.classList.toggle('checked',label.querySelector('input')?.checked));
-      try{await save(row.dataset.id,value);}catch(err){App.toast('Could not save on this device: '+err.message);await load();}
+      try{await save(row.dataset.id,value);}catch(err){
+        storageError=err.message;setSync('storage-error');
+        App.toast('Could not save on this device: '+err.message);
+        // Revert the optimistic radio selection to the last COMMITTED value.
+        renderStudents();
+      }
     });
     updateSummary(students.length);
   }
@@ -332,6 +344,7 @@ document.addEventListener('DOMContentLoaded',async()=>{
       updated_at:new Date().toISOString()
     };
     await SyncManagerApp.queueAttendance(rec);
+    storageError=null;
     // Do not replace the entire list after each tap: touch controls stay usable.
     if(selectedClassId===rec.class_id&&selectedDate===rec.attendance_date){
       records[studentId]=rec;
@@ -397,6 +410,7 @@ document.addEventListener('DOMContentLoaded',async()=>{
     const students=state.students.filter(s=>s.class_id===selectedClassId&&!s.archived);
     if(students.some(s=>!records[s.id])){App.toast('Mark every learner before completing attendance. Unscanned learners remain unmarked.');return;}
     const now=new Date().toISOString();
+    try{
     for(const s of students){
       const rec=records[s.id]||{
         key:`${userId}_${selectedClassId}_${s.id}_${selectedDate}`,teacher_id:userId,class_id:selectedClassId,student_id:s.id,attendance_date:selectedDate,status:'present',subject:subjectForClass(selectedClassId),note:null,client_updated_at:now
@@ -412,6 +426,10 @@ document.addEventListener('DOMContentLoaded',async()=>{
     renderStudents();
     const pending=(await OfflineDB.all('syncQueue')).some(x=>x.payload.teacher_id===userId);
     App.toast(pending?'Attendance saved on device. Sync pending.':'Attendance completed and synced.');
+    }catch(err){
+      storageError=err.message;setSync('storage-error');
+      App.toast('Attendance completion could not be saved on this device. Please retry.');
+    }
   };
 
 

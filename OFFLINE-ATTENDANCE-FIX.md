@@ -19,3 +19,14 @@ No SQL changes are needed for this fix if your existing ClassCheck migrations ar
 - Dashboard explains automatic sync; manual retry is only offered on a failed upload.
 - **Do not clear Chrome site data while offline attendance is waiting to sync.**
 - Supabase must already have the `sql/08-dashboard-offline-sync.sql` RPC installed and permission grants applied.
+
+
+## V13.4 — Fix `OfflineDB.saveQueued is not a function`
+- Root cause: the previous update loaded `js/sync.js?v=13.3` but still requested the **old** `js/offline-db.js?v=9`. An old service worker could serve an offline-db module without `saveQueued()`.
+- All HTML entry points and the service worker now request `js/offline-db.js?v=13.4`, matching the atomic queue API.
+- Added storage compatibility checks. The Attendance and Dashboard sync badges do **not** show successful saving when local storage is incompatible or fails.
+- A failed radio-button save rolls the visual selection back to the last committed attendance mark; a failed Finish action shows an error.
+- Updated the PWA cache name and update-reload key to make the deployed app pull the new scripts.
+- Auto-sync still uploads pending records on reconnect, foreground, and retry, only after confirmed local writes.
+
+**Deployment:** Replace the existing GitHub Pages files with the contents of this `ClassCheck-main` folder, preserving paths. Open the site once while online and refresh so the service worker and new offline-db.js are installed. Do not clear browser data: that may contain unsynced attendance. Previously tapped marks that failed with the `saveQueued` error must be marked again, since those attempts were not committed.

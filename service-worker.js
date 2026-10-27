@@ -1,5 +1,5 @@
 /* ClassCheck PWA — V10.7 editable learners with optional LRN. */
-const CACHE_NAME = 'classcheck-pwa-v13-3-auto-sync-storage';
+const CACHE_NAME = 'classcheck-pwa-v13-4-safe-queue';
 const CACHE_PREFIX = 'classcheck-pwa-';
 const APP_SHELL = [
   "./",
@@ -16,24 +16,24 @@ const APP_SHELL = [
   "./dashboard.html",
   "./index.html",
   "./js/app.js?v=11.5",
-  "./js/attendance.js?v=13.3",
+  "./js/attendance.js?v=13.4",
   "./js/auth.js?v=13.3",
   "./js/bootstrap.js?v=9",
   "./js/calendar.js?v=9",
   "./js/classes.js?v=12.4",
   "./js/config.js?v=10.4",
-  "./js/dashboard.js?v=13.3",
+  "./js/dashboard.js?v=13.4",
   "./js/demo-data.js?v=9",
   "./js/jszip.min.js?v=9.5",
-  "./js/offline-db.js?v=9",
+  "./js/offline-db.js?v=13.4",
   "./js/profile.js?v=12.4",
-  "./js/pwa.js?v=13.3",
+  "./js/pwa.js?v=13.4",
   "./js/qr-attendance.js",
   "./js/reports.js?v=12.5",
   "./js/sf2-template.js?v=9.5",
   "./js/storage.js?v=13.3",
   "./js/supabase-client.js?v=13.3",
-  "./js/sync.js?v=13.3",
+  "./js/sync.js?v=13.4",
   "./js/vendor/jsQR.js",
   "./js/vendor/qrcode.js",
   "./js/vendor/supabase.js",
@@ -81,14 +81,14 @@ self.addEventListener('fetch', event => {
   }
 
   event.respondWith((async()=>{
-    const cached=await caches.match(req,{ignoreSearch:false});
+    const cached=await caches.open(CACHE_NAME).then(cache=>cache.match(req));
     if(cached)return cached;
     try{
       const fresh=await fetch(req);
       if(fresh?.ok){const cache=await caches.open(CACHE_NAME);cache.put(req,fresh.clone());}
       return fresh;
     }catch(_){
-      return (await caches.match(req,{ignoreSearch:false})) || (await caches.match(req,{ignoreSearch:true})) || Response.error();
+      return (await caches.open(CACHE_NAME).then(cache=>cache.match(req))) || Response.error();
     }
   })());
 });

@@ -1,21 +1,45 @@
 (function(){
   let timer=null;let syncing=false;const listeners=[];
+  let lastStorageError=null;
+  function requireStorage(){
+    if(!window.OfflineDB || ['saveQueued','acknowledge','all','attendanceFor','get','put'].some(name=>typeof OfflineDB[name]!=='function')){
+      throw new Error('ClassCheck offline storage needs an update. Reopen ClassCheck while connected; do not clear device data.');
+    }
+  }
+  function storageError(){return lastStorageError;}
+  function reportStorageError(error){
+    lastStorageError=error?.message||String(error);
+    emit({type:'storage-error',message:lastStorageError});
+  }
   function emit(state){listeners.forEach(fn=>fn(state));}
   function onState(fn){listeners.push(fn);}
   function revisionId(){return globalThis.crypto?.randomUUID?.()||`${Date.now()}-${Math.random().toString(36).slice(2)}`;}
   async function queueAttendance(record){
     const op={id:`attendance_${record.teacher_id}_${record.class_id}_${record.student_id}_${record.attendance_date}`,type:'attendance_upsert',payload:record,status:'pending',revision:revisionId(),updated_at:new Date().toISOString()};
-    await OfflineDB.saveQueued('attendance',record,op);emit({type:'saved-local'});schedule();
+    await persist('attendance',record,op);
   }
   async function queueSession(session){
     const op={id:`session_${session.teacher_id}_${session.class_id}_${session.attendance_date}`,type:'session_upsert',payload:session,status:'pending',revision:revisionId(),updated_at:new Date().toISOString()};
-    await OfflineDB.saveQueued('sessions',session,op);emit({type:'saved-local'});schedule();
+    await persist('sessions',session,op);
+  }
+  async function persist(store,record,op){
+    try{
+      requireStorage();
+      // Both the attendance row and its pending upload are written in ONE
+      // IndexedDB transaction. Never mark a row as saved before commit.
+      await OfflineDB.saveQueued(store,record,op);
+      lastStorageError=null;
+      emit({type:'saved-local'});
+      schedule();
+    }catch(error){reportStorageError(error);throw error;}
   }
   function schedule(){clearTimeout(timer);timer=setTimeout(()=>flush().catch(console.error),1200);}
   function attendanceRow(r){return {teacher_id:r.teacher_id,class_id:r.class_id,student_id:r.student_id,attendance_date:r.attendance_date,status:r.status,note:r.note||null,subject:r.subject||'Advisory',client_updated_at:r.client_updated_at||new Date().toISOString()};}
   function sessionRow(s){return {teacher_id:s.teacher_id,class_id:s.class_id,attendance_date:s.attendance_date,session_status:s.session_status||'completed',notes:s.notes||null,subject:s.subject||'Advisory',client_updated_at:s.client_updated_at||new Date().toISOString()};}
   async function flush(){
     if(syncing)return;
+    try{requireStorage();}catch(error){reportStorageError(error);return;}
+    if(lastStorageError){emit({type:'storage-error',message:lastStorageError});return;}
     const uid=window.AppBoot?.getContext()?.user?.id;
     if(!uid)return;
     syncing=true;
@@ -60,6 +84,7 @@
   function syncInBackground(){flush().catch(err=>console.warn('Automatic attendance sync unavailable',err));}
   setInterval(()=>{if(navigator.onLine)syncInBackground();},30000);
   document.addEventListener('DOMContentLoaded',()=>{
+    try{requireStorage();}catch(error){reportStorageError(error);}
     if(window.AppBoot?.ready)AppBoot.ready().then(syncInBackground).catch(()=>{});
   });
   document.addEventListener('visibilitychange',()=>{if(!document.hidden)syncInBackground();});
@@ -73,5 +98,5 @@
       emit({type:'offline',count:items.filter(x=>!uid||x.payload?.teacher_id===uid).length});
     }catch(err){console.warn('Cannot read offline sync queue',err);}
   });
-  window.SyncManagerApp={queueAttendance,queueSession,flush,onState};
+  window.SyncManagerApp={queueAttendance,queueSession,flush,onState,storageError};
 })();

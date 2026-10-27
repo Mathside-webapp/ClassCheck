@@ -21,24 +21,27 @@ document.addEventListener('DOMContentLoaded',async()=>{
   }
   let lastState='';
   async function syncStatus(){
-    let pending=0;
+    let pending=0,queueReadable=true;
     try{pending=(await OfflineDB.all('syncQueue')).filter(x=>x.payload?.teacher_id===ctx.user.id).length;}
-    catch(err){console.error('Cannot inspect device attendance queue',err);}
+    catch(err){queueReadable=false;console.error('Cannot inspect device attendance queue',err);}
     const el=document.getElementById('dashSyncText');
     const hint=document.getElementById('dashSyncHint');
     const retry=document.getElementById('dashSyncRetry');
     if(!el)return;
-    el.textContent=!navigator.onLine
+    const storageProblem=SyncManagerApp.storageError() || typeof window.OfflineDB?.saveQueued!=='function' || !queueReadable;
+    el.textContent=storageProblem ? 'Device storage unavailable — changes may not be saved'
+      :!navigator.onLine
       ? `Offline • ${pending} change${pending===1?'':'s'} saved on device`
       :lastState==='syncing' ? `Automatically syncing ${pending} change${pending===1?'':'s'}…`
       :lastState==='failed'&&pending ? `${pending} change${pending===1?'':'s'} not synced yet`
       :pending ? `${pending} change${pending===1?'':'s'} saved • waiting to sync`
       :'✓ All saved attendance synced';
-    if(hint)hint.textContent=!navigator.onLine
+    if(hint)hint.textContent=storageProblem ? 'Reopen ClassCheck online to get the latest app. Do not clear site data.'
+      :!navigator.onLine
       ? 'Changes will upload automatically after you reconnect and open ClassCheck.'
       :pending ? 'ClassCheck will keep retrying automatically. You can continue taking attendance.'
       :'Attendance is saved locally first, with automatic cloud syncing.';
-    if(retry)retry.hidden=!(navigator.onLine&&pending&&lastState==='failed');
+    if(retry)retry.hidden=storageProblem||!(navigator.onLine&&pending&&lastState==='failed');
   }
   document.getElementById('dashSyncRetry').onclick=()=>SyncManagerApp.flush().catch(console.error);
   SyncManagerApp.onState(s=>{lastState=s.type;syncStatus().catch(console.error);});

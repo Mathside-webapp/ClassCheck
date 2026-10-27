@@ -2,12 +2,13 @@
   let timer=null;let syncing=false;const listeners=[];
   function emit(state){listeners.forEach(fn=>fn(state));}
   function onState(fn){listeners.push(fn);}
+  function revisionId(){return globalThis.crypto?.randomUUID?.()||`${Date.now()}-${Math.random().toString(36).slice(2)}`;}
   async function queueAttendance(record){
-    const op={id:`attendance_${record.teacher_id}_${record.class_id}_${record.student_id}_${record.attendance_date}`,type:'attendance_upsert',payload:record,status:'pending',revision:crypto.randomUUID(),updated_at:new Date().toISOString()};
+    const op={id:`attendance_${record.teacher_id}_${record.class_id}_${record.student_id}_${record.attendance_date}`,type:'attendance_upsert',payload:record,status:'pending',revision:revisionId(),updated_at:new Date().toISOString()};
     await OfflineDB.saveQueued('attendance',record,op);emit({type:'saved-local'});schedule();
   }
   async function queueSession(session){
-    const op={id:`session_${session.teacher_id}_${session.class_id}_${session.attendance_date}`,type:'session_upsert',payload:session,status:'pending',revision:crypto.randomUUID(),updated_at:new Date().toISOString()};
+    const op={id:`session_${session.teacher_id}_${session.class_id}_${session.attendance_date}`,type:'session_upsert',payload:session,status:'pending',revision:revisionId(),updated_at:new Date().toISOString()};
     await OfflineDB.saveQueued('sessions',session,op);emit({type:'saved-local'});schedule();
   }
   function schedule(){clearTimeout(timer);timer=setTimeout(()=>flush().catch(console.error),1200);}
@@ -33,8 +34,18 @@
       if(attendanceOps.length||sessionOps.length){
         const records=attendanceOps.map(x=>{const r=attendanceRow(x.payload);delete r.teacher_id;return r;});
         const sessions=sessionOps.map(x=>{const s=sessionRow(x.payload);delete s.teacher_id;return s;});
-        const {error}=await supa.rpc('classcheck_sync_attendance',{p_records:records,p_sessions:sessions});
-        if(error)throw error;
+        const controller=new AbortController();
+        let timeout;
+        try{
+          let request=supa.rpc('classcheck_sync_attendance',{p_records:records,p_sessions:sessions});
+          if(typeof request.abortSignal==='function')request=request.abortSignal(controller.signal);
+          const {error}=await Promise.race([
+            request,
+            new Promise((_,reject)=>{timeout=setTimeout(()=>{controller.abort();reject(new Error('Sync timed out. Your device records are safe and will retry.'));},9000);})
+          ]);
+          if(error)throw error;
+        }finally{clearTimeout(timeout);}
+
         for(const item of [...attendanceOps,...sessionOps])await OfflineDB.acknowledge(item);
       }
       const remaining=(await OfflineDB.all('syncQueue')).filter(x=>x.payload.teacher_id===uid).length;

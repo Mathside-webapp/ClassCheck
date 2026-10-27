@@ -43,6 +43,7 @@ document.addEventListener('DOMContentLoaded',async()=>{
   displayMonth.setDate(1);
   let records={};
   let attendanceLoading=0;
+  let loadVersion=0;
   function subjectForClass(classId){
     const c=state.classes.find(x=>x.id===classId);
     if(!c)return 'Advisory';
@@ -174,38 +175,76 @@ document.addEventListener('DOMContentLoaded',async()=>{
     });
   }
 
+  // Local-first: tapping a radio option must never wait on a cloud request.
   async function load(){
+    const version=++loadVersion;
+    const classId=selectedClassId;
+    const date=selectedDate;
     attendanceLoading++;
-    try {
-    records={};
-    const c=activeClasses.find(x=>x.id===selectedClassId);
-    if(title) title.textContent=c?`${c.grade_level} – ${c.section_name}`:'Attendance';
-    const subject=subjectForClass(selectedClassId);
-    const subjectBadge=document.getElementById('attendanceSubjectBadge');
-    if(subjectBadge)subjectBadge.textContent=subject;
-    selectedDateText.textContent=App.longDate(selectedDate);
-    if(!selectedClassId){
-      list.innerHTML='<div class="empty">Create a class first to take attendance.</div>';
-      summary.textContent='0 present • 0 absent • 0 late';
-      return;
-    }
+    try{
+      records={};
+      const c=activeClasses.find(x=>x.id===classId);
+      if(title)title.textContent=c?`${c.grade_level} – ${c.section_name}`:'Attendance';
+      const subjectBadge=document.getElementById('attendanceSubjectBadge');
+      if(subjectBadge)subjectBadge.textContent=subjectForClass(classId);
+      selectedDateText.textContent=App.longDate(date);
+      if(!classId){
+        list.innerHTML='<div class="empty">Create a class first to take attendance.</div>';
+        summary.textContent='0 present • 0 absent • 0 late';
+        return;
+      }
+      const saved=await OfflineDB.attendanceFor(classId,date,userId);
+      if(version!==loadVersion)return;
+      saved.forEach(r=>records[r.student_id]=r);
+      renderStudents();
+      const pending=(await OfflineDB.all('syncQueue')).filter(x=>x.payload?.teacher_id===userId).length;
+      if(version===loadVersion)setSync(navigator.onLine?(pending?'saved-local':'synced'):'offline',pending);
+    }catch(err){
+      console.error('Unable to open locally saved attendance',err);
+      if(version===loadVersion){
+        list.innerHTML='<div class="empty">Device storage is unavailable. Check browser storage permissions, then try again.</div>';
+        App.toast('Could not read attendance stored on this device.');
+      }
+    }finally{attendanceLoading--;}
     if(navigator.onLine&&!APP_CONFIG.DEMO_MODE){
-      const {data,error}=await supa.from('classcheck_attendance_records')
-.select('teacher_id,class_id,student_id,attendance_date,status,note,subject,client_updated_at,updated_at')
-        .eq('teacher_id',userId).eq('class_id',selectedClassId).eq('attendance_date',selectedDate);
-      if(!error){
-        const pendingIds=new Set((await OfflineDB.all('syncQueue')).filter(x=>x.type==='attendance_upsert'&&x.status==='pending').map(x=>x.id));
-        for(const r of data||[]){
-          const local={...r,key:`${r.teacher_id}_${r.class_id}_${r.student_id}_${r.attendance_date}`};
-          const queueId=`attendance_${r.teacher_id}_${r.class_id}_${r.student_id}_${r.attendance_date}`;
-          if(!pendingIds.has(queueId))await OfflineDB.put('attendance',local);
-        }
-      }else console.warn('Unable to refresh attendance from Supabase',error);
+      // Fire and forget. Even a hung or unavailable Supabase endpoint cannot
+      // prevent offline selections or make the attendance screen unresponsive.
+      refreshFromCloud(classId,date,version).catch(err=>console.warn('Attendance cloud refresh unavailable',err));
     }
-    const saved=await OfflineDB.attendanceFor(selectedClassId,selectedDate,userId);
-    saved.forEach(r=>records[r.student_id]=r);
+  }
+
+  async function refreshFromCloud(classId,date,version){
+    let timer;
+    const cloudQuery=supa.from('classcheck_attendance_records')
+      .select('teacher_id,class_id,student_id,attendance_date,status,note,subject,client_updated_at,updated_at')
+      .eq('teacher_id',userId).eq('class_id',classId).eq('attendance_date',date);
+    const result=await Promise.race([
+      cloudQuery,
+      new Promise((_,reject)=>{timer=setTimeout(()=>reject(new Error('Cloud attendance request timed out')),5000);})
+    ]).finally(()=>clearTimeout(timer));
+    if(result.error)throw result.error;
+    if(version!==loadVersion)return;
+    const pendingIds=new Set((await OfflineDB.all('syncQueue'))
+      .filter(x=>x.type==='attendance_upsert'&&x.payload?.teacher_id===userId)
+      .map(x=>x.id));
+    for(const r of result.data||[]){
+      if(version!==loadVersion)return;
+      const key=`${r.teacher_id}_${r.class_id}_${r.student_id}_${r.attendance_date}`;
+      const queueId=`attendance_${key}`;
+      if(pendingIds.has(queueId))continue;
+      const existing=await OfflineDB.get('attendance',key);
+      if(existing?.client_updated_at&&Date.parse(existing.client_updated_at)>Date.parse(r.client_updated_at||r.updated_at||0))continue;
+      // A new mark could have been queued while IndexedDB was being read.
+      if(await OfflineDB.get('syncQueue',queueId))continue;
+      await OfflineDB.put('attendance',{...r,key});
+    }
+    if(version!==loadVersion)return;
+    const saved=await OfflineDB.attendanceFor(classId,date,userId);
+    if(version!==loadVersion)return;
+    const upToDate={};
+    saved.forEach(r=>upToDate[r.student_id]=r);
+    records=upToDate;
     renderStudents();
-    } finally {attendanceLoading--;}
   }
 
   function statusLabel(status){
@@ -258,7 +297,11 @@ document.addEventListener('DOMContentLoaded',async()=>{
     list.querySelectorAll('input[type="radio"]').forEach(input=>input.onchange=async e=>{
       if(!e.target.checked)return;
       const row=e.target.closest('.student-row');
-      try{await save(row.dataset.id,e.target.value);}catch(err){App.toast('Could not save on this device: '+err.message);renderStudents();}
+      const value=e.target.value;
+      row.classList.remove('unmarked','present','absent','late');
+      row.classList.add(value);
+      row.querySelectorAll('.status-radio').forEach(label=>label.classList.toggle('checked',label.querySelector('input')?.checked));
+      try{await save(row.dataset.id,value);}catch(err){App.toast('Could not save on this device: '+err.message);await load();}
     });
     updateSummary(students.length);
   }
@@ -289,9 +332,13 @@ document.addEventListener('DOMContentLoaded',async()=>{
       updated_at:new Date().toISOString()
     };
     await SyncManagerApp.queueAttendance(rec);
-    records[studentId]=rec;
-    setSync(navigator.onLine?'saved-local':'offline',(await OfflineDB.all('syncQueue')).length);
-    renderStudents();
+    // Do not replace the entire list after each tap: touch controls stay usable.
+    if(selectedClassId===rec.class_id&&selectedDate===rec.attendance_date){
+      records[studentId]=rec;
+      updateSummary(state.students.filter(s=>s.class_id===selectedClassId&&!s.archived).length);
+    }
+    const count=(await OfflineDB.all('syncQueue')).filter(x=>x.payload?.teacher_id===userId).length;
+    setSync(navigator.onLine?'saved-local':'offline',count);
   }
 
   document.getElementById('prevMonthBtn').onclick=()=>{
@@ -360,7 +407,8 @@ document.addEventListener('DOMContentLoaded',async()=>{
     const key=`${userId}_${selectedClassId}_${selectedDate}`;
     const session={key,teacher_id:userId,class_id:selectedClassId,attendance_date:selectedDate,session_status:'completed',status:'completed',subject:subjectForClass(selectedClassId),notes:null,client_updated_at:now,updated_at:now};
     await SyncManagerApp.queueSession(session);
-    await SyncManagerApp.flush();
+    // Completion is local-first too; cloud sync runs separately without blocking.
+    SyncManagerApp.flush().catch(err=>console.warn('Background sync unavailable',err));
     renderStudents();
     const pending=(await OfflineDB.all('syncQueue')).some(x=>x.payload.teacher_id===userId);
     App.toast(pending?'Attendance saved on device. Sync pending.':'Attendance completed and synced.');

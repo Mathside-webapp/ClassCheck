@@ -1,5 +1,5 @@
 /* ClassCheck PWA — V10.7 editable learners with optional LRN. */
-const CACHE_NAME = 'classcheck-pwa-v13-1-centered-qr';
+const CACHE_NAME = 'classcheck-pwa-v13-2-offline-attendance';
 const CACHE_PREFIX = 'classcheck-pwa-';
 const APP_SHELL = [
   "./",
@@ -16,8 +16,8 @@ const APP_SHELL = [
   "./dashboard.html",
   "./index.html",
   "./js/app.js?v=11.5",
-  "./js/attendance.js?v=9",
-  "./js/auth.js?v=10.2",
+  "./js/attendance.js?v=13.2",
+  "./js/auth.js?v=13.2",
   "./js/bootstrap.js?v=9",
   "./js/calendar.js?v=9",
   "./js/classes.js?v=12.4",
@@ -27,13 +27,13 @@ const APP_SHELL = [
   "./js/jszip.min.js?v=9.5",
   "./js/offline-db.js?v=9",
   "./js/profile.js?v=12.4",
-  "./js/pwa.js?v=10.2",
+  "./js/pwa.js?v=13.2",
   "./js/qr-attendance.js",
   "./js/reports.js?v=12.5",
   "./js/sf2-template.js?v=9.5",
   "./js/storage.js?v=9.4",
-  "./js/supabase-client.js?v=9",
-  "./js/sync.js?v=10.5",
+  "./js/supabase-client.js?v=13.2",
+  "./js/sync.js?v=13.2",
   "./js/vendor/jsQR.js",
   "./js/vendor/qrcode.js",
   "./js/vendor/supabase.js",

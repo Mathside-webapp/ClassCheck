@@ -43,7 +43,7 @@
       if(!session) throw new Error('Your ClassCheck session has expired. Please sign in again.');
       await App.withLoading('Opening ClassCheck…','Loading your classes and attendance.',async()=>{
         const ctx=await Supa.requireTeacher();
-        await Supa.loadState(ctx,true);
+        await Supa.loadState(ctx,!ctx.offline&&navigator.onLine);
       },{minimum:380});
       App.navigate('dashboard.html');
     }
@@ -117,7 +117,7 @@
           const {error}=await supa.auth.signInWithPassword({email,password});
           if(error)throw error;
           const ctx=await Supa.requireTeacher();
-          await Supa.loadState(ctx,true);
+          await Supa.loadState(ctx,!ctx.offline&&navigator.onLine);
         },{minimum:380});
         App.navigate('dashboard.html');
       }catch(err){console.error(err);App.toast(err?.message||'Unable to sign in. Check your email, password, and connection.');}
@@ -143,7 +143,7 @@
           if(data.session){
             await Supa.ensureProfile(data.user,fullName);
             const ctx={user:data.user,teacherProfile:null};
-            await Supa.loadState(ctx,true);
+            await Supa.loadState(ctx,!ctx.offline&&navigator.onLine);
           }
           return data;
         },{minimum:520});

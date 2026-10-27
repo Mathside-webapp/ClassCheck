@@ -9,12 +9,20 @@
     });
     return client;
   }
+  // An older service worker may temporarily serve a pre-update storage module.
+  // Read the existing cache metadata safely instead of crashing the entire app.
+  // Never use a roster unless its cached owner matches the signed-in teacher.
+  function cacheMeta(){
+    if(typeof window.AppStorage?.meta==='function')return window.AppStorage.meta()||{};
+    try{return JSON.parse(localStorage.getItem('classcheck_state_meta_v5')||'{}')||{};}
+    catch{return {};}
+  }
   // Browsers sometimes report `online` while Wi-Fi has no usable Internet.
   // Use a previous device session ONLY for the matching cached classroom account.
   function cachedOfflineSession(){
     try{
       const saved=JSON.parse(localStorage.getItem('classcheck_offline_user')||'null');
-      if(saved?.id&&AppStorage.meta().owner_id===saved.id){
+      if(saved?.id&&cacheMeta().owner_id===saved.id){
         return {user:saved,offline:true};
       }
     }catch(err){console.warn('Stored offline login is unavailable',err);}
@@ -62,12 +70,12 @@
   async function loadState(ctx,force=false){
     if(APP_CONFIG.DEMO_MODE)return AppStorage.get();
     const userId=ctx.user.id;
-    const cached=AppStorage.meta().owner_id===userId?AppStorage.get():null;
+    const cached=cacheMeta().owner_id===userId?AppStorage.get():null;
     if(!navigator.onLine||ctx.offline){
       if(cached)return cached;
       throw new Error('Connect once to download this account’s classes and learner roster.');
     }
-    if(!force&&cached&&AppStorage.isFresh(userId))return cached;
+    if(!force&&cached&&typeof AppStorage.isFresh==='function'&&AppStorage.isFresh(userId))return cached;
     const supa=getClient();
     try{
       // Never strand an already-downloaded roster behind a disconnected API call.

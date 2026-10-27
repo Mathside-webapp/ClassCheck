@@ -20,7 +20,7 @@
     if(!uid)return;
     syncing=true;
     try {
-    const pending=(await OfflineDB.all('syncQueue')).filter(x=>x.status==='pending'&&x.payload.teacher_id===uid);
+    const pending=(await OfflineDB.all('syncQueue')).filter(x=>x.status==='pending'&&x.payload?.teacher_id===uid);
     if(!pending.length){emit({type:'synced',count:0});return;}
     if(!navigator.onLine){emit({type:'offline',count:pending.length});return;}
     if(APP_CONFIG.DEMO_MODE){emit({type:'demo',count:pending.length});return;}
@@ -48,15 +48,30 @@
 
         for(const item of [...attendanceOps,...sessionOps])await OfflineDB.acknowledge(item);
       }
-      const remaining=(await OfflineDB.all('syncQueue')).filter(x=>x.payload.teacher_id===uid).length;
+      const remaining=(await OfflineDB.all('syncQueue')).filter(x=>x.payload?.teacher_id===uid).length;
       emit({type:remaining?'saved-local':'synced',count:remaining});
       if(remaining)schedule();
     }catch(err){console.error('ClassCheck sync failed',err);emit({type:'failed',count:pending.length});}
     } finally{syncing=false;}
   }
-  setInterval(()=>{if(navigator.onLine)flush().catch(console.error);},30000);
-  document.addEventListener('visibilitychange',()=>{if(!document.hidden)flush().catch(console.error);});
-  window.addEventListener('online',()=>flush().catch(console.error));
-  window.addEventListener('offline',async()=>emit({type:'offline',count:(await OfflineDB.all('syncQueue')).length}));
+  // No user action is required: catch pending work when the app first opens,
+  // when the device reconnects, and whenever the teacher returns to the tab.
+  // A periodic retry also handles unreliable networks that never fire 'online'.
+  function syncInBackground(){flush().catch(err=>console.warn('Automatic attendance sync unavailable',err));}
+  setInterval(()=>{if(navigator.onLine)syncInBackground();},30000);
+  document.addEventListener('DOMContentLoaded',()=>{
+    if(window.AppBoot?.ready)AppBoot.ready().then(syncInBackground).catch(()=>{});
+  });
+  document.addEventListener('visibilitychange',()=>{if(!document.hidden)syncInBackground();});
+  window.addEventListener('pageshow',syncInBackground);
+  window.addEventListener('focus',syncInBackground);
+  window.addEventListener('online',syncInBackground);
+  window.addEventListener('offline',async()=>{
+    try{
+      const uid=window.AppBoot?.getContext()?.user?.id;
+      const items=await OfflineDB.all('syncQueue');
+      emit({type:'offline',count:items.filter(x=>!uid||x.payload?.teacher_id===uid).length});
+    }catch(err){console.warn('Cannot read offline sync queue',err);}
+  });
   window.SyncManagerApp={queueAttendance,queueSession,flush,onState};
 })();

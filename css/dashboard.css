@@ -13,3 +13,7 @@ body.classcheck-app .dash-hero p{color:#f2dce3!important}
 body.classcheck-app .dash-hero .btn.primary{background:#fff!important;color:#721d34!important;border-color:#fff!important}
 body.classcheck-app .dash-hero .btn.ghost{background:transparent!important;color:#fff!important;border-color:#bf7e91!important}
 @media(min-width:781px){.classcheck-nav-links .classcheck-mobile-profile-nav{display:none!important}}
+
+/* V13.3: clear local-first/automatic cloud-sync state; only show retry on failure. */
+.dash-sync>span small{display:block;color:#785d66;font-size:11px;line-height:1.5;margin:4px 0 0 14px;font-weight:400}
+.dash-sync button[hidden]{display:none!important}

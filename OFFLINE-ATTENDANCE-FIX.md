@@ -10,3 +10,12 @@
 Changes: local-first attendance rendering, bounded Supabase bootstrap and background attendance fetch, offline account fallback when Internet is unreachable but `navigator.onLine` is true, non-blocking completion sync, and robust revision IDs.
 
 No SQL changes are needed for this fix if your existing ClassCheck migrations are installed.
+
+
+## V13.3 — Automatic synchronization and storage compatibility
+- Fixed a dashboard crash caused by calling `AppStorage.meta()` when an older cached storage script is still running. The account-ownership check remains required.
+- A new service-worker cache and cache-busted script references prevent old scripts from being reused after updating.
+- Attendance saves locally immediately, and the app auto-syncs on login/startup, network reconnection, window focus, resume, and recurring retry.
+- Dashboard explains automatic sync; manual retry is only offered on a failed upload.
+- **Do not clear Chrome site data while offline attendance is waiting to sync.**
+- Supabase must already have the `sql/08-dashboard-offline-sync.sql` RPC installed and permission grants applied.

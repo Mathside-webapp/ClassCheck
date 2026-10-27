@@ -20,9 +20,27 @@ document.addEventListener('DOMContentLoaded',async()=>{
     await syncStatus();
   }
   let lastState='';
-  async function syncStatus(){const pending=(await OfflineDB.all('syncQueue')).filter(x=>x.payload.teacher_id===ctx.user.id).length;document.getElementById('dashSyncText').textContent=lastState==='syncing'?'Syncing attendance…':!navigator.onLine?`Offline · ${pending} changes waiting`:lastState==='failed'?`${pending} changes pending · sync failed`:pending?`${pending} changes waiting to sync`:'Attendance queue is up to date';}
-  document.getElementById('dashSyncNow').onclick=async()=>{try{await SyncManagerApp.flush();await syncStatus();}catch(e){App.toast(e.message);}};
-  document.getElementById('dashKeepOffline').onclick=async()=>{const granted=await navigator.storage?.persist?.();App.toast(granted?'Persistent device storage enabled.':'Your browser manages storage. Keep a backup and do not clear site data.');};
+  async function syncStatus(){
+    let pending=0;
+    try{pending=(await OfflineDB.all('syncQueue')).filter(x=>x.payload?.teacher_id===ctx.user.id).length;}
+    catch(err){console.error('Cannot inspect device attendance queue',err);}
+    const el=document.getElementById('dashSyncText');
+    const hint=document.getElementById('dashSyncHint');
+    const retry=document.getElementById('dashSyncRetry');
+    if(!el)return;
+    el.textContent=!navigator.onLine
+      ? `Offline • ${pending} change${pending===1?'':'s'} saved on device`
+      :lastState==='syncing' ? `Automatically syncing ${pending} change${pending===1?'':'s'}…`
+      :lastState==='failed'&&pending ? `${pending} change${pending===1?'':'s'} not synced yet`
+      :pending ? `${pending} change${pending===1?'':'s'} saved • waiting to sync`
+      :'✓ All saved attendance synced';
+    if(hint)hint.textContent=!navigator.onLine
+      ? 'Changes will upload automatically after you reconnect and open ClassCheck.'
+      :pending ? 'ClassCheck will keep retrying automatically. You can continue taking attendance.'
+      :'Attendance is saved locally first, with automatic cloud syncing.';
+    if(retry)retry.hidden=!(navigator.onLine&&pending&&lastState==='failed');
+  }
+  document.getElementById('dashSyncRetry').onclick=()=>SyncManagerApp.flush().catch(console.error);
   SyncManagerApp.onState(s=>{lastState=s.type;syncStatus().catch(console.error);});
   document.addEventListener('classcheck:panelchange',e=>{if(e.detail.panel==='dashboard')render().catch(console.error);});
   await render();

@@ -199,7 +199,7 @@
     toast('ClassCheck was installed successfully.');
   });
 
-  if('serviceWorker' in navigator && (location.protocol==='https:' || location.hostname==='localhost' || location.hostname==='127.0.0.1')){
+  if(!window.Capacitor?.isNativePlatform?.() && 'serviceWorker' in navigator && (location.protocol==='https:' || location.hostname==='localhost' || location.hostname==='127.0.0.1')){
     navigator.serviceWorker.addEventListener('controllerchange',()=>{
       if(reloadingForUpdate)return;
       if(sessionStorage.getItem('classcheck_sw_reloaded_13_4')==='1')return;

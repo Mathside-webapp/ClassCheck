@@ -1,5 +1,5 @@
 /* ClassCheck PWA — V10.7 editable learners with optional LRN. */
-const CACHE_NAME = 'classcheck-pwa-v13-4-safe-queue';
+const CACHE_NAME = 'classcheck-pwa-v14-default-present';
 const CACHE_PREFIX = 'classcheck-pwa-';
 const APP_SHELL = [
   "./",
@@ -10,13 +10,13 @@ const APP_SHELL = [
   "./attendance.html",
   "./calendar.html",
   "./classes.html",
-  "./css/dashboard.css?v=13.3",
+  "./css/dashboard.css?v=14.0",
   "./css/responsive.css?v=11.6",
   "./css/styles.css?v=12.5",
   "./dashboard.html",
   "./index.html",
   "./js/app.js?v=11.5",
-  "./js/attendance.js?v=13.4",
+  "./js/attendance.js?v=14.0",
   "./js/auth.js?v=13.3",
   "./js/bootstrap.js?v=9",
   "./js/calendar.js?v=9",
@@ -27,7 +27,7 @@ const APP_SHELL = [
   "./js/jszip.min.js?v=9.5",
   "./js/offline-db.js?v=13.4",
   "./js/profile.js?v=12.4",
-  "./js/pwa.js?v=13.4",
+  "./js/pwa.js?v=14.0",
   "./js/qr-attendance.js",
   "./js/reports.js?v=12.5",
   "./js/sf2-template.js?v=9.5",

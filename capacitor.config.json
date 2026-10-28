@@ -1,0 +1,9 @@
+{
+  "appId": "com.classcheck.teacher",
+  "appName": "ClassCheck",
+  "webDir": "www",
+  "backgroundColor": "#fff7f8",
+  "android": {
+    "allowMixedContent": false
+  }
+}

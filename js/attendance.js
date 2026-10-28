@@ -284,7 +284,8 @@ document.addEventListener('DOMContentLoaded',async()=>{
     list.innerHTML=groups.filter(group=>group.students.length).map(group=>{
       const rows=group.students.map(s=>{
         learnerNumber+=1;
-        const st=records[s.id]?.status||'unmarked';
+        // No saved exception means Present. Do not upload a default until Finish.
+        const st=records[s.id]?.status||'present';
         const radios=['present','absent','late'].map(status=>`<label class="status-radio ${status} ${st===status?'checked':''}"><input type="radio" name="status-${s.id}" value="${status}" ${st===status?'checked':''}><span class="radio-dot"></span><span>${statusLabel(status)}</span></label>`).join('');
         return `<article class="student-row ${st}" data-id="${s.id}">
           <div class="student-avatar">${learnerNumber}</div>
@@ -308,22 +309,27 @@ document.addEventListener('DOMContentLoaded',async()=>{
       row.classList.remove('unmarked','present','absent','late');
       row.classList.add(value);
       row.querySelectorAll('.status-radio').forEach(label=>label.classList.toggle('checked',label.querySelector('input')?.checked));
-      try{await save(row.dataset.id,value);}catch(err){
+      const task=save(row.dataset.id,value);
+      savingTasks.add(task);
+      try{await task;}catch(err){
         storageError=err.message;setSync('storage-error');
         App.toast('Could not save on this device: '+err.message);
         // Revert the optimistic radio selection to the last COMMITTED value.
         renderStudents();
-      }
+      }finally{savingTasks.delete(task);}
     });
     updateSummary(students.length);
   }
 
   function updateSummary(total){
-    const statuses=Object.values(records).map(r=>r.status);
-    const absent=statuses.filter(s=>s==='absent').length;
-    const late=statuses.filter(s=>s==='late').length;
-    const present=statuses.filter(s=>s==='present').length;
-    summary.textContent=`${present} present • ${absent} absent • ${late} late • ${total-statuses.length} unmarked`;
+    // Count only learners in this class, not records from another date/class.
+    // A missing record represents Present until the full register is completed.
+    const learnerIds=new Set(state.students.filter(s=>s.class_id===selectedClassId&&!s.archived).map(s=>s.id));
+    const current=Object.entries(records).filter(([id])=>learnerIds.has(id));
+    const absent=current.filter(([,r])=>r.status==='absent').length;
+    const late=current.filter(([,r])=>r.status==='late').length;
+    const present=Math.max(0,total-absent-late);
+    summary.textContent=`${present} present • ${absent} absent • ${late} late`;
   }
 
   async function save(studentId,status){
@@ -401,14 +407,28 @@ document.addEventListener('DOMContentLoaded',async()=>{
     }
   });
 
+  let finishing=false;
+  const savingTasks=new Set();
   document.getElementById('finishBtn').onclick=async()=>{
+    if(finishing)return;
+    finishing=true;
+    const finishButton=document.getElementById('finishBtn');
+    finishButton.disabled=true;
+    try{
+      // A tap followed immediately by Finish must not race the device write.
+      const pendingResults=await Promise.allSettled([...savingTasks]);
+      if(pendingResults.some(result=>result.status==='rejected')){
+        App.toast('A mark could not be saved. Please retry the change before finishing.');
+        return;
+      }
     if(!selectedClassId)return;
     if(isWeekendDate(selectedDate)){
       App.toast('Saturday and Sunday attendance is not allowed.');
       return;
     }
     const students=state.students.filter(s=>s.class_id===selectedClassId&&!s.archived);
-    if(students.some(s=>!records[s.id])){App.toast('Mark every learner before completing attendance. Unscanned learners remain unmarked.');return;}
+    // Every learner is Present unless a saved Absent or Late exception exists.
+    // Finish writes the entire register, including untouched Present learners.
     const now=new Date().toISOString();
     try{
     for(const s of students){
@@ -430,6 +450,7 @@ document.addEventListener('DOMContentLoaded',async()=>{
       storageError=err.message;setSync('storage-error');
       App.toast('Attendance completion could not be saved on this device. Please retry.');
     }
+    }finally{finishing=false;finishButton.disabled=false;}
   };
 
 

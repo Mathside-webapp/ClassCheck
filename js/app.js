@@ -10,7 +10,7 @@
   }
   function longDate(date){return new Date(date+'T12:00:00').toLocaleDateString(undefined,{weekday:'long',month:'long',day:'numeric',year:'numeric'})}
   function studentName(s){return `${s.last_name}, ${s.first_name}${s.name_extension?' '+s.name_extension:''}${s.middle_name?' '+s.middle_name:''}`}
-  function toast(msg){let el=qs('.toast');if(el)el.remove();el=document.createElement('div');el.className='toast';el.textContent=msg;document.body.appendChild(el);setTimeout(()=>el.remove(),2400)}
+  function toast(msg){let el=qs('.toast');if(el)el.remove();el=document.createElement('div');el.className='toast';el.setAttribute('role','status');el.textContent=msg;document.body.appendChild(el);setTimeout(()=>el.remove(),2400)}
   function sleep(ms){return new Promise(resolve=>setTimeout(resolve,ms))}
 
   const icons={
@@ -209,14 +209,16 @@
       document.body.appendChild(el);
     }
     el.innerHTML=`
+      <a class="cc-brand" href="${hrefFor('dashboard')}" aria-label="ClassCheck home"><span class="cc-brand-icon">${icon('clipboard-check')}</span><span>ClassCheck<small>YOUR EVERYDAY CLASSROOM</small></span></a>
+      <p class="cc-nav-caption">WORKSPACE</p>
       <a class="classcheck-teacher-card ${active==='profile'?'active':''}" href="${hrefFor('profile')}">
         <span class="classcheck-avatar">${escapeHtml(teacherInitial)}</span>
         <span><b>${escapeHtml(teacherName)}</b><small>Daily attendance</small></span>
       </a>
       <div class="classcheck-nav-links">
-        ${items.map(([key,ico,label])=>`<a class="nav-item ${key==='profile'?'classcheck-mobile-profile-nav ':''}${active===key?'active':''}" href="${hrefFor(key)}"><span class="nav-icon">${icon(ico)}</span><span>${label}</span></a>`).join('')}
+        ${items.map(([key,ico,label])=>`<a class="nav-item ${key==='profile'?'classcheck-mobile-profile-nav ':''}${active===key?'active':''}" href="${hrefFor(key)}" ${active===key?'aria-current="page"':''}><span class="nav-icon">${icon(ico)}</span><span>${label}</span></a>`).join('')}
       </div>
-      <a class="classcheck-profile-link ${active==='profile'?'active':''}" href="${hrefFor('profile')}"><span class="nav-icon">${icon('user')}</span><span>Teacher Profile</span></a>`;
+      <a class="classcheck-profile-link ${active==='profile'?'active':''}" href="${hrefFor('profile')}"><span class="nav-icon">${icon('user')}</span><span>Teacher Profile</span></a><div class="cc-sidebar-note">A little check.<br><b>A big difference.</b><span>Every learner counts.</span></div>`;
     hydrateIcons(el);
   }
 

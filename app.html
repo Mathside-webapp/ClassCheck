@@ -1,5 +1,5 @@
 <!doctype html>
-<html>
+<html lang="en">
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
@@ -7,17 +7,11 @@
   <meta name="theme-color" content="#7a1730">
   <link rel="icon" href="assets/classcheck-tabicon.png?v=11.9" type="image/png">
   <link rel="shortcut icon" href="assets/classcheck-tabicon.png?v=11.9" type="image/png">
-  <link rel="manifest" href="manifest.webmanifest">
-  <link rel="apple-touch-icon" href="assets/icons/classcheck-180.png?v=11.9">
-  <meta name="mobile-web-app-capable" content="yes">
-  <meta name="apple-mobile-web-app-capable" content="yes">
-  <meta name="apple-mobile-web-app-status-bar-style" content="default">
-  <meta name="apple-mobile-web-app-title" content="ClassCheck">
   <style>html,body{margin:0;background:#fff7f8!important}main.app-shell{min-height:100vh;background:#fff7f8!important;opacity:1!important}</style>
-  <link rel="stylesheet" href="css/styles.css?v=12.5">
+  <link rel="stylesheet" href="css/styles.css?v=14.2">
   <link rel="stylesheet" href="css/responsive.css?v=11.6">
   <link rel="stylesheet" href="css/dashboard.css?v=14.0">
-</head>
+<link rel="stylesheet" href="css/redesign.css?v=15.0"></head>
 <body class="classcheck-app attendance-screen" data-classcheck-unified="true">
 <div class="cc-app-panel" data-app-panel="dashboard" hidden><main class="app-shell dash-shell"><div id="dashboardContent"><p>Loading your dashboard…</p></div><div class="dash-sync" role="status" aria-live="polite"><span><i></i><b id="dashSyncText">Checking saved attendance…</b><small id="dashSyncHint">Attendance saves on your device first and syncs automatically.</small></span><button id="dashSyncRetry" type="button" hidden>Retry sync</button></div></main></div>
   <div class="cc-app-panel" data-app-panel="classes" hidden>
@@ -27,7 +21,7 @@
 <div class="page-title-stack"><h1>My Classes</h1></div>
 <div class="class-header-actions">
 <button class="btn soft compact-action" id="joinClassBtn" type="button">Join class</button>
-<button class="btn soft compact-action pwa-header-install" type="button" data-install-classcheck aria-label="Install ClassCheck"><span data-icon="download"></span><span data-install-label>Install</span></button>
+
 <button aria-label="Create class" class="icon-btn" data-icon="plus" id="addClassBtn"></button>
 </div>
 </header>
@@ -36,11 +30,7 @@
 <span class="pill">Shared rosters</span>
 <span class="pill">SF1 ready</span>
 </div>
-<section class="pwa-install-card pwa-classes-install" aria-label="Install ClassCheck app">
-  <div class="pwa-install-mark" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M12 3v11m0 0 4-4m-4 4-4-4M5 17v2h14v-2"/></svg></div>
-  <div class="pwa-install-copy"><b>Put ClassCheck on your Home Screen</b><span>Install once, then open attendance directly like a regular app.</span><small data-pwa-status>Install from your browser</small></div>
-  <div class="pwa-install-actions"><button class="btn primary block" type="button" data-install-classcheck><span data-install-label>Install ClassCheck</span></button><button class="btn soft block" type="button" data-install-help>Installation guide</button></div>
-</section>
+
 <section id="classList"></section>
 </main>
   </div>
@@ -259,20 +249,20 @@
 
 </header>
 <form class="card form-card" id="profileForm">
-<div class="field"><label>Full name</label><input class="input" name="full_name"/></div>
-<div class="field"><label>School name</label><input class="input" name="school_name"/></div>
-<div class="field"><label>School head name</label><input class="input" name="school_head_name" placeholder="Printed name of the school head"/></div>
-<div class="field"><label>School ID</label><input class="input" name="school_id"/></div>
-<div class="field"><label>School year</label><input class="input" name="school_year"/></div>
-<div class="field"><label>Region</label><input class="input" name="region"/></div>
-<div class="field"><label>Division</label><input class="input" name="division"/></div>
-<div class="field"><label>District</label><input class="input" name="district"/></div>
-<div class="field"><label>Position</label><input class="input" name="position"/></div>
+<div class="field"><label for="cc-field-1">Full name</label><input class="input" name="full_name"/ id="cc-field-1"></div>
+<div class="field"><label for="cc-field-2">School name</label><input class="input" name="school_name"/ id="cc-field-2"></div>
+<div class="field"><label for="cc-field-3">School head name</label><input class="input" name="school_head_name" placeholder="Printed name of the school head"/ id="cc-field-3"></div>
+<div class="field"><label for="cc-field-4">School ID</label><input class="input" name="school_id"/ id="cc-field-4"></div>
+<div class="field"><label for="cc-field-5">School year</label><input class="input" name="school_year"/ id="cc-field-5"></div>
+<div class="field"><label for="cc-field-6">Region</label><input class="input" name="region"/ id="cc-field-6"></div>
+<div class="field"><label for="cc-field-7">Division</label><input class="input" name="division"/ id="cc-field-7"></div>
+<div class="field"><label for="cc-field-8">District</label><input class="input" name="district"/ id="cc-field-8"></div>
+<div class="field"><label for="cc-field-9">Position</label><input class="input" name="position"/ id="cc-field-9"></div>
 <button class="btn primary block" type="submit">Save profile</button><button class="btn ghost block" id="signOutBtn" type="button">Log out</button>
 </form>
 <section class="cc-danger-zone" aria-labelledby="deleteAccountHeading">
   <h3 id="deleteAccountHeading">Account & data</h3>
-  <p>You can permanently delete your ClassCheck account and its Supabase data. This is irreversible. Other teachers cannot delete your account.</p>
+  <p>You can permanently delete your ClassCheck account and its saved data. This is irreversible. Other teachers cannot delete your account.</p>
   <button class="btn danger cc-delete-account-btn" type="button" id="deleteMyAccountBtn">Delete my account</button>
 </section>
 <div class="cc-account-dialog" id="deleteAccountDialog" hidden role="dialog" aria-modal="true" aria-labelledby="deleteAccountDialogTitle">
@@ -295,20 +285,7 @@
   </div>
 </div>
 
-<section class="pwa-install-card" aria-label="Install ClassCheck app">
-  <div class="pwa-install-mark" aria-hidden="true">
-    <svg viewBox="0 0 24 24"><path d="M12 3v11m0 0 4-4m-4 4-4-4M5 17v2h14v-2"/></svg>
-  </div>
-  <div class="pwa-install-copy">
-    <b>Install ClassCheck on your device</b>
-    <span>Open attendance faster from your Home Screen or desktop.</span>
-    <small data-pwa-status>Install from your browser</small>
-  </div>
-  <div class="pwa-install-actions">
-    <button class="btn primary block" type="button" data-install-classcheck><span data-install-label>Install ClassCheck</span></button>
-    <button class="btn soft block" type="button" data-install-help>How to install</button>
-  </div>
-</section>
+
 </main>
   </div>
 
@@ -317,8 +294,8 @@
 <div class="handle"></div>
 <div class="card-head"><h2>New class</h2><button aria-label="Close" class="icon-btn" data-close="" data-icon="close"></button></div>
 <form class="form-card" id="classForm">
-<div class="field"><label>Grade level</label><select class="input" name="grade"><option>Grade 7</option><option>Grade 8</option><option>Grade 9</option><option selected="">Grade 10</option><option>Grade 11</option><option>Grade 12</option></select></div>
-<div class="field"><label>Section</label><input class="input" name="section" placeholder="e.g. Beryl" required=""/></div>
+<div class="field"><label for="cc-field-10">Grade level</label><select class="input" name="grade" id="cc-field-10"><option>Grade 7</option><option>Grade 8</option><option>Grade 9</option><option selected="">Grade 10</option><option>Grade 11</option><option>Grade 12</option></select></div>
+<div class="field"><label for="cc-field-11">Section</label><input class="input" name="section" placeholder="e.g. Beryl" required=""/ id="cc-field-11"></div>
 <button class="btn primary block" type="submit">Create class</button>
 </form>
 </div>
@@ -329,8 +306,8 @@
 <div class="card-head"><h2>Join a class</h2><button aria-label="Close" class="icon-btn" data-close="" data-icon="close"></button></div>
 <p class="modal-copy">Enter the adviser’s class code, then choose the subject you teach. The roster is shared; your attendance stays separate.</p>
 <form class="form-card" id="joinClassForm">
-<div class="field"><label>Class code</label><input autocomplete="off" class="input code-input" maxlength="6" name="code" placeholder="ABC234" required=""/></div>
-<div class="field"><label>Your subject</label><input class="input" list="subjectOptions" name="subject" minlength="2" maxlength="80" placeholder="Choose or type any subject" required=""/><p class="join-subject-help">Select a suggestion or type another subject.</p></div>
+<div class="field"><label for="cc-field-12">Class code</label><input autocomplete="off" class="input code-input" maxlength="6" name="code" placeholder="ABC234" required=""/ id="cc-field-12"></div>
+<div class="field"><label for="cc-field-13">Your subject</label><input class="input" list="subjectOptions" name="subject" minlength="2" maxlength="80" placeholder="Choose or type any subject" required=""/ id="cc-field-13"><p class="join-subject-help">Select a suggestion or type another subject.</p></div>
 <datalist id="subjectOptions"><option value="English"><option value="Filipino"><option value="Mathematics"><option value="Science"><option value="Araling Panlipunan"><option value="MAPEH"><option value="TLE"><option value="Values Education"><option value="ESP"><option value="Research"><option value="General Mathematics"><option value="Statistics and Probability"></option></option></option></option></option></option></option></option></option></option></option></option></datalist>
 <button class="btn primary block" type="submit">Join class</button>
 </form>
@@ -360,10 +337,10 @@
 <p class="sf1-import-status" id="sf1ImportStatus">Accepts DepEd SF1 .xls/.xlsx files and CSV learner lists.</p>
 <form class="form-card" id="addStudentForm" style="margin-top:12px">
 <div class="field"><label>LRN <span class="optional-label">(optional)</span></label><input class="input" name="lrn" inputmode="numeric" maxlength="12" pattern="[0-9]{12}" placeholder="Leave blank if unavailable"/></div>
-<div class="field"><label>Last name</label><input class="input" name="last" required=""/></div>
-<div class="field"><label>First name</label><input class="input" name="first" required=""/></div>
-<div class="field"><label>Middle name</label><input class="input" name="middle"/></div>
-<div class="field"><label>Sex</label><select class="input" name="sex"><option>Male</option><option>Female</option></select></div>
+<div class="field"><label for="cc-field-14">Last name</label><input class="input" name="last" required=""/ id="cc-field-14"></div>
+<div class="field"><label for="cc-field-15">First name</label><input class="input" name="first" required=""/ id="cc-field-15"></div>
+<div class="field"><label for="cc-field-16">Middle name</label><input class="input" name="middle"/ id="cc-field-16"></div>
+<div class="field"><label for="cc-field-17">Sex</label><select class="input" name="sex" id="cc-field-17"><option>Male</option><option>Female</option></select></div>
 <button class="btn primary block" type="submit">Add learner</button>
 <button class="btn danger block" id="deleteClassBtn" type="button">Delete class permanently</button>
 </form>
@@ -377,10 +354,10 @@
 <form class="form-card" id="editStudentForm">
 <input name="studentId" type="hidden"/>
 <div class="field"><label>LRN <span class="optional-label">(optional)</span></label><input class="input" name="lrn" inputmode="numeric" maxlength="12" pattern="[0-9]{12}" placeholder="Leave blank if unavailable"/></div>
-<div class="field"><label>Last name</label><input class="input" name="last" required=""/></div>
-<div class="field"><label>First name</label><input class="input" name="first" required=""/></div>
-<div class="field"><label>Middle name</label><input class="input" name="middle"/></div>
-<div class="field"><label>Sex</label><select class="input" name="sex"><option>Male</option><option>Female</option></select></div>
+<div class="field"><label for="cc-field-18">Last name</label><input class="input" name="last" required=""/ id="cc-field-18"></div>
+<div class="field"><label for="cc-field-19">First name</label><input class="input" name="first" required=""/ id="cc-field-19"></div>
+<div class="field"><label for="cc-field-20">Middle name</label><input class="input" name="middle"/ id="cc-field-20"></div>
+<div class="field"><label for="cc-field-21">Sex</label><select class="input" name="sex" id="cc-field-21"><option>Male</option><option>Female</option></select></div>
 <button class="btn primary block" type="submit">Save changes</button>
 </form>
 </div>
@@ -400,10 +377,10 @@
   <script src="js/demo-data.js?v=9"></script>
   <script src="js/storage.js?v=13.3"></script>
   <script src="js/offline-db.js?v=13.4"></script>
-  <script src="js/supabase-client.js?v=13.3"></script>
+  <script src="js/supabase-client.js?v=14.1"></script>
   <script src="js/bootstrap.js?v=9"></script>
-  <script src="js/sync.js?v=13.4"></script>
-  <script src="js/app.js?v=11.5"></script>
+  <script src="js/sync.js?v=14.1"></script>
+  <script src="js/app.js?v=15.0"></script>
   <script src="js/classes.js?v=12.4"></script>
   <script src="js/attendance.js?v=14.0"></script>
   <script src="js/calendar.js?v=9"></script>
@@ -411,7 +388,7 @@
   <script src="js/sf2-template.js?v=9.5"></script>
   <script src="js/reports.js?v=12.5"></script>
   <script src="js/profile.js?v=12.4"></script>
-<script src="js/pwa.js?v=14.0"></script>
-<script src="js/vendor/qrcode.js"></script><script src="js/vendor/jsQR.js"></script><script src="js/qr-attendance.js"></script><script src="js/dashboard.js?v=13.4"></script>
+<script src="js/retire-web-install.js?v=14.2"></script>
+<script src="js/vendor/qrcode.js"></script><script src="js/vendor/jsQR.js"></script><script src="js/qr-attendance.js"></script><script src="js/dashboard.js?v=15.0"></script>
 </body>
 </html>

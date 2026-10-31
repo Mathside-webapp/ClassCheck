@@ -15,6 +15,7 @@ assert.match(css,/grid-template-columns:repeat\(2,minmax\(0,1fr\)\)/,'QR buttons
 assert.match(qr,/attendanceQR.*attendanceCards/,'both QR controls remain');
 assert.match(sync,/OfflineDB.saveQueued/,'atomic device attendance + queue write remains');
 assert.match(sync,/window.addEventListener\('online'/,'automatic sync on reconnect remains');
-assert.match(sw,/classcheck-pwa-v14-default-present/,'service worker cache has bumped');
+assert.match(sw,/registration.unregister/,'legacy service worker retires itself');
+assert.doesNotMatch(sw,/addEventListener\('fetch'/,'no offline fetch interception remains');
 assert.ok(existsSync(new URL('../.github/workflows/build-android-apk.yml',import.meta.url)));
 console.log('PASS: Present default, finish, QR, local queue, reconnect sync and APK workflow.');

@@ -1,19 +1,13 @@
 <!doctype html>
-<html>
+<html lang="en">
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
   <title>ClassCheck • Classes</title><meta name="theme-color" content="#7a1730"><link rel="icon" href="assets/classcheck-tabicon.png?v=11.9" type="image/png">
-  <link rel="shortcut icon" href="assets/classcheck-tabicon.png?v=11.9" type="image/png">
-  <link rel="manifest" href="manifest.webmanifest">
-  <link rel="apple-touch-icon" href="assets/icons/classcheck-180.png?v=11.9">
-  <meta name="mobile-web-app-capable" content="yes">
-  <meta name="apple-mobile-web-app-capable" content="yes">
-  <meta name="apple-mobile-web-app-status-bar-style" content="default">
-  <meta name="apple-mobile-web-app-title" content="ClassCheck"><style>html,body{margin:0;background:#fff7f8!important}main.app-shell{min-height:100vh;background:#fff7f8!important;opacity:1!important}</style>
-  <link rel="stylesheet" href="css/styles.css?v=12.5">
+  <link rel="shortcut icon" href="assets/classcheck-tabicon.png?v=11.9" type="image/png"><style>html,body{margin:0;background:#fff7f8!important}main.app-shell{min-height:100vh;background:#fff7f8!important;opacity:1!important}</style>
+  <link rel="stylesheet" href="css/styles.css?v=14.2">
   <link rel="stylesheet" href="css/responsive.css?v=11.6"><link rel="prefetch" href="attendance.html"><link rel="prefetch" href="calendar.html"><link rel="prefetch" href="reports.html"><link rel="prefetch" href="profile.html">
-<link rel="stylesheet" href="css/dashboard.css?v=14.0"></head>
+<link rel="stylesheet" href="css/dashboard.css?v=14.0"><link rel="stylesheet" href="css/redesign.css?v=15.0"></head>
 <body class="classcheck-app">
   <main class="app-shell secondary-page">
     <header class="topbar page-topbar">
@@ -21,7 +15,7 @@
       <div class="page-title-stack"><h1>My Classes</h1></div>
       <div class="class-header-actions">
         <button id="joinClassBtn" class="btn soft compact-action" type="button">Join class</button>
-<button class="btn soft compact-action pwa-header-install" type="button" data-install-classcheck aria-label="Install ClassCheck"><span data-icon="download"></span><span data-install-label>Install</span></button>
+
         <button id="addClassBtn" class="icon-btn" aria-label="Create class" data-icon="plus"></button>
       </div>
     </header>
@@ -32,11 +26,7 @@
       <button class="pill" type="button" data-class-filter="archived">Archived</button>
     </div>
     
-<section class="pwa-install-card pwa-classes-install" aria-label="Install ClassCheck app">
-  <div class="pwa-install-mark" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M12 3v11m0 0 4-4m-4 4-4-4M5 17v2h14v-2"/></svg></div>
-  <div class="pwa-install-copy"><b>Put ClassCheck on your Home Screen</b><span>Install once, then open attendance directly like a regular app.</span><small data-pwa-status>Install from your browser</small></div>
-  <div class="pwa-install-actions"><button class="btn primary block" type="button" data-install-classcheck><span data-install-label>Install ClassCheck</span></button><button class="btn soft block" type="button" data-install-help>Installation guide</button></div>
-</section>
+
 <section id="classList"></section>
   </main>
 
@@ -45,8 +35,8 @@
       <div class="handle"></div>
       <div class="card-head"><h2>New class</h2><button data-close class="icon-btn" aria-label="Close" data-icon="close"></button></div>
       <form id="classForm" class="form-card">
-        <div class="field"><label>Grade level</label><select class="input" name="grade"><option>Grade 7</option><option>Grade 8</option><option>Grade 9</option><option selected>Grade 10</option><option>Grade 11</option><option>Grade 12</option></select></div>
-        <div class="field"><label>Section</label><input class="input" name="section" required placeholder="e.g. Beryl"></div>
+        <div class="field"><label for="cc-field-1">Grade level</label><select class="input" name="grade" id="cc-field-1"><option>Grade 7</option><option>Grade 8</option><option>Grade 9</option><option selected>Grade 10</option><option>Grade 11</option><option>Grade 12</option></select></div>
+        <div class="field"><label for="cc-field-2">Section</label><input class="input" name="section" required placeholder="e.g. Beryl" id="cc-field-2"></div>
         <button class="btn primary block" type="submit">Create class</button>
       </form>
     </div>
@@ -58,8 +48,8 @@
       <div class="card-head"><h2>Join a class</h2><button data-close class="icon-btn" aria-label="Close" data-icon="close"></button></div>
       <p class="modal-copy">Enter the adviser’s class code, then choose the subject you teach. The roster is shared; your attendance stays separate.</p>
       <form id="joinClassForm" class="form-card">
-        <div class="field"><label>Class code</label><input class="input code-input" name="code" maxlength="6" autocomplete="off" required placeholder="ABC234"></div>
-        <div class="field"><label>Your subject</label><input class="input" name="subject" list="subjectOptions" minlength="2" maxlength="80" required placeholder="Choose or type any subject" autocomplete="off"><p class="join-subject-help">Select a suggested subject or type your own (e.g. Computer Programming).</p></div>
+        <div class="field"><label for="cc-field-3">Class code</label><input class="input code-input" name="code" maxlength="6" autocomplete="off" required placeholder="ABC234" id="cc-field-3"></div>
+        <div class="field"><label for="cc-field-4">Your subject</label><input class="input" name="subject" list="subjectOptions" minlength="2" maxlength="80" required placeholder="Choose or type any subject" autocomplete="off" id="cc-field-4"><p class="join-subject-help">Select a suggested subject or type your own (e.g. Computer Programming).</p></div>
         <datalist id="subjectOptions"><option value="English"><option value="Filipino"><option value="Mathematics"><option value="Science"><option value="Araling Panlipunan"><option value="MAPEH"><option value="TLE"><option value="Values Education"><option value="ESP"><option value="Research"><option value="General Mathematics"><option value="Statistics and Probability"></datalist>
         <button class="btn primary block" type="submit">Join class</button>
       </form>
@@ -99,10 +89,10 @@
         <p id="sf1ImportStatus" class="sf1-import-status">Accepts DepEd SF1 .xls/.xlsx files and CSV learner lists.</p>
         <form id="addStudentForm" class="form-card" style="margin-top:12px">
           <div class="field"><label>LRN <span class="optional-label">(optional)</span></label><input class="input" name="lrn" inputmode="numeric" maxlength="12" pattern="[0-9]{12}" placeholder="Leave blank if unavailable"></div>
-          <div class="field"><label>Last name</label><input class="input" name="last" required></div>
-          <div class="field"><label>First name</label><input class="input" name="first" required></div>
-          <div class="field"><label>Middle name</label><input class="input" name="middle"></div>
-          <div class="field"><label>Sex</label><select class="input" name="sex"><option>Male</option><option>Female</option></select></div>
+          <div class="field"><label for="cc-field-5">Last name</label><input class="input" name="last" required id="cc-field-5"></div>
+          <div class="field"><label for="cc-field-6">First name</label><input class="input" name="first" required id="cc-field-6"></div>
+          <div class="field"><label for="cc-field-7">Middle name</label><input class="input" name="middle" id="cc-field-7"></div>
+          <div class="field"><label for="cc-field-8">Sex</label><select class="input" name="sex" id="cc-field-8"><option>Male</option><option>Female</option></select></div>
           <button class="btn primary block" type="submit">Add learner</button>
           <button type="button" id="deleteClassBtn" class="btn danger block">Delete class permanently</button>
         </form>
@@ -117,10 +107,10 @@
       <form id="editStudentForm" class="form-card">
         <input type="hidden" name="studentId">
         <div class="field"><label>LRN <span class="optional-label">(optional)</span></label><input class="input" name="lrn" inputmode="numeric" maxlength="12" pattern="[0-9]{12}" placeholder="Leave blank if unavailable"></div>
-        <div class="field"><label>Last name</label><input class="input" name="last" required></div>
-        <div class="field"><label>First name</label><input class="input" name="first" required></div>
-        <div class="field"><label>Middle name</label><input class="input" name="middle"></div>
-        <div class="field"><label>Sex</label><select class="input" name="sex"><option>Male</option><option>Female</option></select></div>
+        <div class="field"><label for="cc-field-9">Last name</label><input class="input" name="last" required id="cc-field-9"></div>
+        <div class="field"><label for="cc-field-10">First name</label><input class="input" name="first" required id="cc-field-10"></div>
+        <div class="field"><label for="cc-field-11">Middle name</label><input class="input" name="middle" id="cc-field-11"></div>
+        <div class="field"><label for="cc-field-12">Sex</label><select class="input" name="sex" id="cc-field-12"><option>Male</option><option>Female</option></select></div>
         <button class="btn primary block" type="submit">Save changes</button>
       </form>
     </div>
@@ -137,7 +127,7 @@
 
   <script src="js/vendor/supabase.js"></script>
   <script src="js/vendor/xlsx.js"></script>
-  <script src="js/config.js?v=10.4"></script><script src="js/demo-data.js?v=9"></script><script src="js/storage.js?v=13.3"></script><script src="js/supabase-client.js?v=13.3"></script><script src="js/bootstrap.js?v=9"></script><script src="js/app.js?v=11.5"></script><script src="js/classes.js?v=12.4"></script>
-<script src="js/pwa.js?v=14.0"></script>
+  <script src="js/config.js?v=10.4"></script><script src="js/demo-data.js?v=9"></script><script src="js/storage.js?v=13.3"></script><script src="js/supabase-client.js?v=14.1"></script><script src="js/bootstrap.js?v=9"></script><script src="js/app.js?v=15.0"></script><script src="js/classes.js?v=12.4"></script>
+<script src="js/retire-web-install.js?v=14.2"></script>
 </body>
 </html>

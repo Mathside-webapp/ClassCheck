@@ -1,13 +1,13 @@
 {
   "name": "classcheck-offline-android",
-  "version": "14.0.0",
+  "version": "15.0.0",
   "private": true,
   "description": "ClassCheck offline attendance website and Android APK build",
   "scripts": {
     "build": "node scripts/prepare-web.mjs",
     "android:add": "npm run build && npx cap add android",
     "android:sync": "npm run build && npx cap sync android",
-    "test": "node tests/smoke.mjs"
+    "test": "node tests/smoke.mjs && node tests/auth-session.mjs && node tests/no-pwa.mjs"
   },
   "dependencies": {
     "@capacitor/core": "7.6.9",

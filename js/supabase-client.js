@@ -53,7 +53,7 @@
     if(APP_CONFIG.DEMO_MODE)return {user:{id:'demo-teacher',email:'teacher@example.com'},teacherProfile:null};
     const session=await getSession();
     if(!session){(window.App?.navigate?App.navigate('index.html'):location.href='index.html');throw new Error('AUTH_REQUIRED');}
-    return {user:session.user,teacherProfile:null};
+    return {user:session.user,teacherProfile:null,offline:!!session.offline};
   }
   async function ensureProfile(user,seedName=''){
     const supa=getClient();
@@ -91,6 +91,7 @@
         if(teachersRes.error)throw teachersRes.error;
         const state={profile,classes:classesRes.data||[],students:studentsRes.data||[],classTeachers:teachersRes.data||[]};
         AppStorage.set(state,userId);
+        localStorage.setItem('classcheck_offline_user',JSON.stringify({id:ctx.user.id,email:ctx.user.email}));
         sessionStorage.setItem('classcheck_teacher_name',profile.full_name||'Teacher');
         return state;
       })(),cached?4500:12000);

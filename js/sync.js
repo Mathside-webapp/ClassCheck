@@ -51,7 +51,7 @@
     emit({type:'syncing',count:pending.length});
     try{
       const session=await Supa.getSession();
-      if(!session||session.user.id!==uid)throw new Error('Sign in to sync this account.');
+      if(!session||session.offline||session.user.id!==uid)throw new Error('Sign in to sync this account.');
       const supa=Supa.getClient();
       const attendanceOps=pending.filter(x=>x.type==='attendance_upsert');
       const sessionOps=pending.filter(x=>x.type==='session_upsert');

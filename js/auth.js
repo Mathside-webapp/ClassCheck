@@ -1,10 +1,4 @@
 (function(){
-  const isStandalone=()=>Boolean(
-    window.matchMedia?.('(display-mode: standalone)').matches ||
-    window.navigator.standalone === true ||
-    new URLSearchParams(location.search).get('source') === 'pwa'
-  );
-
   document.addEventListener('DOMContentLoaded',async()=>{
     const signInTab=document.getElementById('showSignIn');
     const createTab=document.getElementById('showCreate');
@@ -42,38 +36,26 @@
     async function openWorkspace(session){
       if(!session) throw new Error('Your ClassCheck session has expired. Please sign in again.');
       await App.withLoading('Opening ClassCheck…','Loading your classes and attendance.',async()=>{
-        const ctx=await Supa.requireTeacher();
+        const ctx={user:session.user,teacherProfile:null,offline:!!session.offline};
         await Supa.loadState(ctx,!ctx.offline&&navigator.onLine);
       },{minimum:380});
       App.navigate('dashboard.html');
     }
 
-    // Mathside/EduCore-style public entry: the browser link keeps this login/install
-    // screen visible. Only the installed PWA restores straight into the workspace.
+    // Restore the same account on every entry: browser, PWA and Android WebView.
     if(!APP_CONFIG.DEMO_MODE){
       try{
         const session=await Supa.getSession();
         if(session){
-          if(isStandalone()){
-            await openWorkspace(session);
-            return;
+          showExistingSession(session);
+          try{await openWorkspace(session);return;}
+          catch(err){
+            console.warn('Workspace could not open.',err);
+            if(authNote)authNote.textContent=err?.message||'Unable to open your saved workspace. Try again.';
           }
-          let displayName='';
-          try{
-            const profile=navigator.onLine?await Supa.ensureProfile(session.user):AppStorage.get().profile;
-            displayName=profile?.full_name||'';
-          }catch(err){console.warn('Could not load ClassCheck profile name.',err)}
-          showExistingSession(session,displayName);
-        }else{
-          showAuthForms();
-        }
-      }catch(err){
-        console.warn(err);
-        showAuthForms();
-      }
-    }else{
-      showAuthForms();
-    }
+        }else{showAuthForms();}
+      }catch(err){console.warn(err);showAuthForms();}
+    }else{showAuthForms();}
 
     function mode(which){
       const creating=which==='create';

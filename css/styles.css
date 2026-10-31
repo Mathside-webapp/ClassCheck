@@ -1961,40 +1961,9 @@ body.classcheck-app .modal{z-index:90!important}
 
 
 /* =========================================================
-   V10 PWA INSTALL / APP EXPERIENCE
-   ========================================================= */
-.pwa-install-card{
-  margin-top:18px;padding:17px;border-radius:18px;border:1px solid #ead6dc;
-  background:linear-gradient(145deg,#fff,#fff8fa);box-shadow:var(--skeuo-soft);
-  display:grid;grid-template-columns:46px minmax(0,1fr);gap:12px;align-items:start
-}
-.pwa-install-mark{
-  width:46px;height:46px;border-radius:14px;display:grid;place-items:center;color:#fff;
-  background:linear-gradient(145deg,#8c1a37,#671127);
-  box-shadow:4px 5px 11px rgba(83,23,39,.18),inset 0 1px 0 rgba(255,255,255,.25)
-}
-.pwa-install-mark svg{width:25px;height:25px;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
-.pwa-install-copy{min-width:0}.pwa-install-copy b{display:block;color:#3b2029;font-size:14px;margin:1px 0 4px}.pwa-install-copy span{display:block;color:#77676d;font-size:12px;line-height:1.45}.pwa-install-copy small{display:block;color:#8c4960;font-size:10px;font-weight:800;text-transform:uppercase;letter-spacing:.07em;margin-top:7px}
-.pwa-install-actions{grid-column:1/-1;display:grid;grid-template-columns:1fr 1fr;gap:9px;margin-top:2px}.pwa-install-actions .btn{min-height:43px;border-radius:11px;font-size:12px}
-[data-install-classcheck].installed,[data-install-classcheck]:disabled{opacity:.72;cursor:default}
-.pwa-install-guide{position:fixed;inset:0;z-index:130;background:rgba(28,13,19,.54);backdrop-filter:blur(8px);display:grid;place-items:center;padding:20px;opacity:0;transition:opacity .16s ease}
-.pwa-install-guide.hidden{display:none!important}.pwa-install-guide.visible{opacity:1}.pwa-guide-card{position:relative;width:min(520px,100%);max-height:min(760px,90vh);overflow:auto;background:#fff;border:1px solid #ead8de;border-radius:28px;padding:26px;box-shadow:0 28px 70px rgba(52,16,30,.25);transform:translateY(10px) scale(.985);transition:transform .16s ease}.pwa-install-guide.visible .pwa-guide-card{transform:none}
-.pwa-guide-close{position:absolute;right:16px;top:14px;width:38px;height:38px;border:1px solid #ead8de;border-radius:50%;background:#fff;color:#6f4050;font-size:24px;line-height:1;display:grid;place-items:center}.pwa-guide-icon{width:58px;height:58px;border-radius:18px;display:grid;place-items:center;background:#f8e9ee;color:#7a1730;margin-bottom:14px}.pwa-guide-icon svg{width:30px;height:30px;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}.pwa-guide-card h2{font-size:27px;line-height:1.05;margin:6px 46px 9px 0}.pwa-guide-lead{font-size:13px;margin:0 0 16px}.pwa-guide-steps{display:grid;gap:10px;margin:0 0 15px}.pwa-guide-steps section{border:1px solid #eee1e5;border-radius:15px;padding:13px;background:#fffafb}.pwa-guide-steps b{display:block;color:#5b1f33;font-size:13px;margin-bottom:4px}.pwa-guide-steps span{display:block;color:#6f6368;font-size:12px;line-height:1.5}.pwa-guide-note{font-size:11px;background:#fff4f6;border-radius:12px;padding:11px;color:#74495a}.pwa-guide-open{overflow:hidden}.pwa-mini-toast{position:fixed;left:50%;bottom:28px;z-index:160;transform:translate(-50%,14px);opacity:0;background:#261a1f;color:#fff;border-radius:999px;padding:11px 16px;font-size:12px;box-shadow:0 12px 30px rgba(0,0,0,.2);transition:.18s ease;white-space:nowrap;max-width:calc(100% - 28px);overflow:hidden;text-overflow:ellipsis}.pwa-mini-toast.show{opacity:1;transform:translate(-50%,0)}
-.classcheck-login .pwa-install-card{margin-top:16px}.classcheck-login .pwa-install-copy{text-align:left}.classcheck-login .pwa-install-copy span{text-align:left}
-#profileForm + .pwa-install-card{max-width:900px;margin:16px auto 0}
-@media(max-width:480px){.pwa-install-actions{grid-template-columns:1fr}.pwa-guide-card{padding:22px 18px;border-radius:22px}.pwa-guide-card h2{font-size:24px}.pwa-install-card{padding:14px}}
-
-.pwa-installed .pwa-install-card{display:none!important}.pwa-classes-install{margin:0 0 16px}.secondary-page .pwa-install-card{max-width:900px}
-
-
-/* =========================================================
-   V10.1 — mobile profile/logout + PWA install accessibility
+   V10.1 — mobile profile/logout
    ========================================================= */
 .classcheck-mobile-profile-nav{display:none!important}
-.pwa-header-install{display:inline-flex!important;align-items:center!important;justify-content:center!important;gap:6px!important;white-space:nowrap}
-.pwa-header-install .svg-icon{width:17px!important;height:17px!important}
-.pwa-installed .pwa-header-install{display:none!important}
-.pwa-install-ready [data-install-classcheck]:not(.pwa-header-install){box-shadow:0 8px 20px rgba(122,23,48,.18)!important}
 
 @media(max-width:780px){
   .classcheck-sidebar{overflow:visible!important}
@@ -2003,8 +1972,6 @@ body.classcheck-app .modal{z-index:90!important}
   .classcheck-mobile-profile-nav{display:flex!important}
   .classcheck-sidebar .nav-item{font-size:8.8px!important;padding-inline:2px!important}
   .classcheck-sidebar .nav-icon .svg-icon{width:19px!important;height:19px!important}
-  .pwa-header-install{width:40px!important;height:40px!important;min-height:40px!important;padding:0!important;border-radius:11px!important}
-  .pwa-header-install [data-install-label]{display:none!important}
 }
 
 @media(max-width:410px){
@@ -2015,12 +1982,6 @@ body.classcheck-app .modal{z-index:90!important}
   .class-header-actions .compact-action{padding-inline:8px!important;font-size:.72rem!important}
 }
 
-.pwa-dialog{border:0;padding:0;background:transparent;max-width:none;max-height:none}
-.pwa-dialog::backdrop{background:rgba(28,13,19,.56);backdrop-filter:blur(7px)}
-.pwa-dialog .pwa-card{position:relative;width:min(520px,calc(100vw - 30px));max-height:min(820px,90dvh);overflow:auto;background:#fff;border:1px solid #ead8de;border-radius:26px;padding:25px;box-shadow:0 28px 70px rgba(52,16,30,.25)}
-.pwa-dialog .pwa-card h2{font:700 27px/1.08 Georgia,serif;color:#341b24;margin:6px 44px 10px 0}
-.pwa-dialog .pwa-install-actions{margin-top:14px}
-@media(max-width:480px){.pwa-dialog .pwa-card{padding:21px 17px;border-radius:22px}.pwa-dialog .pwa-card h2{font-size:24px}}
 
 
 /* =========================================================
@@ -2051,7 +2012,6 @@ body.classcheck-app .modal{z-index:90!important}
 .existing-session-copy span{font-size:15px;font-weight:850;color:var(--maroon-deep);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .existing-session-copy small{font-size:12px;line-height:1.45;color:var(--muted)}
 .existing-session-actions{grid-column:1/-1;display:grid;grid-template-columns:1fr 1fr;gap:9px}
-.classcheck-login .pwa-install-card{margin-top:18px}
 @media(max-width:520px){
   .existing-session-actions{grid-template-columns:1fr}
   .classcheck-login .login-card{border-radius:28px}
@@ -2127,7 +2087,6 @@ h1, h2, h3, h4, h5, h6,
 button.btn,
 .auth-switch-btn,
 .existing-session-copy b,
-.pwa-install-copy b,
 .classcheck-teacher-card b,
 .topbar b,
 strong,
@@ -2148,8 +2107,6 @@ b {
 .login-card .demo-note,
 .demo-note,
 .existing-session-copy small,
-.pwa-install-copy small,
-.pwa-install-copy span,
 .card p.small,
 small,
 label,
@@ -2210,9 +2167,6 @@ body.classcheck-login .login-card {
 .classcheck-login .eyebrow,
 .classcheck-login h1,
 .classcheck-login p,
-.classcheck-login .pwa-install-copy,
-.classcheck-login .pwa-install-copy span,
-.classcheck-login .pwa-install-copy small,
 .classcheck-login .demo-note {
   text-align: center !important;
 }

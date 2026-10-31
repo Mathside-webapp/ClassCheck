@@ -1,15 +1,9 @@
-<!doctype html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><title>ClassCheck</title><meta name="theme-color" content="#7a1730"><link rel="icon" href="assets/classcheck-tabicon.png?v=11.9" type="image/png">
-  <link rel="shortcut icon" href="assets/classcheck-tabicon.png?v=11.9" type="image/png">
-  <link rel="manifest" href="manifest.webmanifest">
-  <link rel="apple-touch-icon" href="assets/icons/classcheck-180.png?v=11.9">
-  <meta name="mobile-web-app-capable" content="yes">
-  <meta name="apple-mobile-web-app-capable" content="yes">
-  <meta name="apple-mobile-web-app-status-bar-style" content="default">
-  <meta name="apple-mobile-web-app-title" content="ClassCheck"><style>html,body{background:#fff7f8}</style><link rel="stylesheet" href="css/styles.css?v=12.5"><link rel="stylesheet" href="css/responsive.css?v=11.6"><link rel="stylesheet" href="css/dashboard.css?v=14.0"></head><body class="classcheck-login">
-<div class="login-wrap"><main class="login-card"><div class="eyebrow">Teacher access</div><h1 class="classcheck-hero-heading"><span class="hero-heading-intro">Daily attendance,</span><span class="hero-heading-accent">made simpler.</span></h1><p id="authNote">Sign in with your ClassCheck teacher account.</p>
+<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><title>ClassCheck</title><meta name="theme-color" content="#7a1730"><link rel="icon" href="assets/classcheck-tabicon.png?v=11.9" type="image/png">
+  <link rel="shortcut icon" href="assets/classcheck-tabicon.png?v=11.9" type="image/png"><style>html,body{background:#fff7f8}</style><link rel="stylesheet" href="css/styles.css?v=14.2"><link rel="stylesheet" href="css/responsive.css?v=11.6"><link rel="stylesheet" href="css/dashboard.css?v=14.0"><link rel="stylesheet" href="css/redesign.css?v=15.0"></head><body class="classcheck-login">
+<div class="login-wrap"><aside class="cc-welcome"><a class="cc-brand" href="index.html"><span class="cc-brand-icon">✓</span><span>ClassCheck<small>YOUR EVERYDAY CLASSROOM</small></span></a><div><span class="cc-welcome-label">LESS ADMIN. MORE TEACHING.</span><h2>A good day starts<br>with a little check.</h2><p>A calmer place for your classes, learners,<br>and everyday attendance.</p><div class="cc-register-art" aria-hidden="true"><div class="cc-art-head"><span>DAILY REGISTER</span><b>Every learner counts.</b></div><div><i>✓</i><span>Take attendance<small>One class at a time</small></span></div><div><i>✓</i><span>Keep it organized<small>Your classroom, in one place</small></span></div><div><i>✓</i><span>Make time for teaching<small>The little things, taken care of</small></span></div></div></div><span class="cc-welcome-footer">Built around your school day.</span></aside><main class="login-card"><div class="eyebrow">WELCOME TO CLASSCHECK</div><h1 class="classcheck-hero-heading"><span class="hero-heading-intro">Your classroom.</span><span class="hero-heading-accent">All together.</span></h1><p id="authNote">Sign in with your ClassCheck teacher account.</p>
 <div class="auth-switch" role="tablist" aria-label="Account options"><button id="showSignIn" class="auth-switch-btn active" type="button">Sign in</button><button id="showCreate" class="auth-switch-btn" type="button">Create account</button></div>
-<form id="loginForm" class="form-card"><div class="field"><label>Email</label><input id="email" class="input" type="email" autocomplete="email" required></div><div class="field"><label>Password</label><input id="password" class="input" type="password" autocomplete="current-password" required></div><button type="submit" class="btn primary block">Log in</button></form>
-<form id="createForm" class="form-card hidden"><div class="field"><label>Full name</label><input class="input" name="full_name" autocomplete="name" required placeholder="Juan Dela Cruz"></div><div class="field"><label>Email</label><input class="input" name="email" type="email" autocomplete="email" required></div><div class="field"><label>Password</label><input class="input" name="password" type="password" autocomplete="new-password" minlength="6" required></div><div class="field"><label>Confirm password</label><input class="input" name="confirm_password" type="password" autocomplete="new-password" minlength="6" required></div><button type="submit" class="btn primary block">Create teacher account</button></form>
+<form id="loginForm" class="form-card"><div class="field"><label for="email">Email</label><input id="email" class="input" type="email" autocomplete="email" required></div><div class="field"><label for="password">Password</label><input id="password" class="input" type="password" autocomplete="current-password" required></div><button type="submit" class="btn primary block">Log in</button></form>
+<form id="createForm" class="form-card hidden"><div class="field"><label for="cc-field-3">Full name</label><input class="input" name="full_name" autocomplete="name" required placeholder="Juan Dela Cruz" id="cc-field-3"></div><div class="field"><label for="cc-field-4">Email</label><input class="input" name="email" type="email" autocomplete="email" required id="cc-field-4"></div><div class="field"><label for="cc-field-5">Password</label><input class="input" name="password" type="password" autocomplete="new-password" minlength="6" required id="cc-field-5"></div><div class="field"><label for="cc-field-6">Confirm password</label><input class="input" name="confirm_password" type="password" autocomplete="new-password" minlength="6" required id="cc-field-6"></div><button type="submit" class="btn primary block">Create teacher account</button></form>
 <div class="demo-note"><b>For teachers.</b><br>Your classes and attendance are protected by your ClassCheck account.</div>
 <section id="activeSessionCard" class="existing-session-card hidden" aria-live="polite">
   <div class="existing-session-icon" aria-hidden="true">✓</div>
@@ -23,19 +17,6 @@
     <button id="logoutSessionBtn" type="button" class="btn ghost block">Log out</button>
   </div>
 </section>
-<section class="pwa-install-card" aria-label="Install ClassCheck app">
-  <div class="pwa-install-mark" aria-hidden="true">
-    <svg viewBox="0 0 24 24"><path d="M12 3v11m0 0 4-4m-4 4-4-4M5 17v2h14v-2"/></svg>
-  </div>
-  <div class="pwa-install-copy">
-    <b>Install ClassCheck on your device</b>
-    <span>Open attendance faster from your Home Screen or desktop.</span>
-    <small data-pwa-status>Install from your browser</small>
-  </div>
-  <div class="pwa-install-actions">
-    <button class="btn primary block" type="button" data-install-classcheck><span data-install-label>Install ClassCheck</span></button>
-    <button class="btn soft block" type="button" data-install-help>How to install</button>
-  </div>
-</section></main></div>
-<script src="js/vendor/supabase.js"></script><script src="js/config.js?v=10.4"></script><script src="js/demo-data.js?v=9"></script><script src="js/storage.js?v=13.3"></script><script src="js/supabase-client.js?v=13.3"></script><script src="js/app.js?v=11.5"></script><script src="js/auth.js?v=13.3"></script><script src="js/pwa.js?v=14.0"></script>
+</main></div>
+<script src="js/vendor/supabase.js"></script><script src="js/config.js?v=10.4"></script><script src="js/demo-data.js?v=9"></script><script src="js/storage.js?v=13.3"></script><script src="js/offline-db.js?v=13.4"></script><script src="js/supabase-client.js?v=14.1"></script><script src="js/app.js?v=15.0"></script><script src="js/auth.js?v=14.1"></script><script src="js/retire-web-install.js?v=14.2"></script>
 </body></html>

@@ -2,10 +2,10 @@
 <html lang="en">
 <head>
   <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-  <title>ClassCheck • Profile</title><meta name="theme-color" content="#7a1730"><link rel="icon" href="assets/classcheck-tabicon.png?v=11.9" type="image/png">
+  <title>ClassCheck • Profile</title><meta name="theme-color" content="#174b2c"><link rel="icon" href="assets/classcheck-tabicon.png?v=11.9" type="image/png">
   <link rel="shortcut icon" href="assets/classcheck-tabicon.png?v=11.9" type="image/png"><style>html,body{margin:0;background:#fff7f8!important}main.app-shell{min-height:100vh;background:#fff7f8!important;opacity:1!important}</style>
   <link rel="stylesheet" href="css/styles.css?v=14.2"><link rel="stylesheet" href="css/responsive.css?v=11.6"><link rel="prefetch" href="classes.html"><link rel="prefetch" href="attendance.html"><link rel="prefetch" href="calendar.html"><link rel="prefetch" href="reports.html">
-<link rel="stylesheet" href="css/dashboard.css?v=14.0"><link rel="stylesheet" href="css/redesign.css?v=15.0"></head>
+<link rel="stylesheet" href="css/dashboard.css?v=14.0"><link rel="stylesheet" href="css/redesign.css?v=16.0"></head>
 <body class="classcheck-app">
   <main class="app-shell secondary-page">
     <header class="topbar page-topbar">
@@ -13,7 +13,25 @@
       <div class="page-title-stack"><h1>Teacher Profile</h1></div>
       
     </header>
-    <form id="profileForm" class="card form-card">
+    <section class="cc-photo-section" aria-labelledby="profilePhotoHeading">
+<img id="profilePhotoPreview" class="cc-photo-preview" alt="Your profile photo" hidden>
+<span id="profilePhotoPlaceholder" class="cc-photo-placeholder" aria-hidden="true">T</span>
+<div><h2 id="profilePhotoHeading">Profile photo</h2><p>Choose a photo, then crop and resize it before uploading.</p>
+<button class="btn ghost" id="chooseProfilePhoto" type="button">Choose photo</button>
+<input id="profilePhotoFile" type="file" accept="image/jpeg,image/png,image/webp" hidden>
+<p id="profilePhotoStatus" class="cc-photo-status" role="status"></p></div></section>
+<dialog id="profilePhotoEditor" class="cc-photo-editor" aria-labelledby="photoEditorTitle">
+<h2 id="photoEditorTitle">Edit profile photo</h2><p>Adjust the square crop. Your photo appears in a circle.</p>
+<canvas id="profilePhotoCanvas" width="512" height="512" aria-label="Preview of your cropped photo"></canvas>
+<label>Zoom<input id="photoZoom" type="range" min="1" max="4" step="0.01" value="1" autofocus></label>
+<label>Horizontal position<input id="photoX" type="range" min="0" max="100" value="50"></label>
+<label>Vertical position<input id="photoY" type="range" min="0" max="100" value="50"></label>
+<label for="photoSize">Image size</label><select id="photoSize" class="input"><option value="256">256 × 256</option><option value="512" selected>512 × 512</option><option value="1024">1024 × 1024</option></select>
+<div class="cc-photo-actions"><button class="btn ghost" id="rotatePhoto" type="button">Rotate 90°</button><button class="btn ghost" id="resetPhoto" type="button">Reset crop</button></div>
+<p id="photoEditorStatus" class="cc-photo-status" role="status"></p>
+<div class="cc-photo-actions"><button class="btn ghost" id="cancelPhoto" type="button">Cancel</button><button class="btn primary" id="uploadPhoto" type="button">Upload photo</button></div>
+</dialog>
+<form id="profileForm" class="card form-card">
       <div class="field"><label for="cc-field-1">Full name</label><input class="input" name="full_name" id="cc-field-1"></div>
       <div class="field"><label for="cc-field-2">School name</label><input class="input" name="school_name" id="cc-field-2"></div>
       <div class="field"><label for="cc-field-3">School head name</label><input class="input" name="school_head_name" placeholder="Printed name of the school head" id="cc-field-3"></div>
@@ -52,7 +70,8 @@
 
 
   </main>
-  <script src="js/vendor/supabase.js"></script><script src="js/config.js?v=10.4"></script><script src="js/demo-data.js?v=9"></script><script src="js/storage.js?v=13.3"></script><script src="js/supabase-client.js?v=14.1"></script><script src="js/bootstrap.js?v=9"></script><script src="js/app.js?v=15.0"></script><script src="js/profile.js?v=12.4"></script>
+  <script src="js/vendor/supabase.js"></script><script src="js/config.js?v=10.4"></script><script src="js/demo-data.js?v=9"></script><script src="js/storage.js?v=13.3"></script><script src="js/supabase-client.js?v=14.1"></script><script src="js/bootstrap.js?v=9"></script><script src="js/app.js?v=15.0"></script><script src="js/profile-photo.js?v=16.0"></script>
+<script src="js/profile.js?v=12.4"></script>
 <script src="js/retire-web-install.js?v=14.2"></script>
 </body>
 </html>

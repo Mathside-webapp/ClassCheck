@@ -193,7 +193,7 @@
     const teacherName=state?.profile?.full_name||sessionStorage.getItem('classcheck_teacher_name')||'Teacher';
     const teacherInitial=(teacherName.trim()[0]||'T').toUpperCase();
     const items=[
-      ['dashboard','home','Home'],
+      ['dashboard','home','Dashboard'],
       ['classes','users','Classes'],
       ['attendance','attendance','Attendance'],
       ['calendar','calendar','Calendar'],

@@ -901,7 +901,7 @@ ${d.schoolDays}`);
     if(!cid)throw new Error('Choose a class first.');
     state=AppStorage.get();
     let row=state.classes.find(c=>c.id===cid)||null;
-    if(!APP_CONFIG.DEMO_MODE){
+    if(!APP_CONFIG.DEMO_MODE&&navigator.onLine&&!ctx.offline){
       const {data,error}=await supa.from('classcheck_classes')
         .select('id,teacher_id,enrollment_baseline_male,enrollment_baseline_female,enrollment_baseline_set_at')
         .eq('id',cid).single();
@@ -939,6 +939,7 @@ ${d.schoolDays}`);
       return{male,female};
     }
     if(oldMale===male&&oldFemale===female)return{male,female};
+    if(!navigator.onLine||ctx.offline)throw new Error('Connect to change the enrolment baseline. The previously saved values remain usable for offline SF2 exports.');
     const row={enrollment_baseline_male:male,enrollment_baseline_female:female,enrollment_baseline_set_at:new Date().toISOString()};
     if(!APP_CONFIG.DEMO_MODE){
       const {error}=await supa.rpc('classcheck_set_sf2_baseline',{p_class_id:cid,p_male:male,p_female:female});
@@ -980,7 +981,13 @@ ${d.schoolDays}`);
   }
   async function refreshSf2Identity(d){
     if(APP_CONFIG.DEMO_MODE)return d;
-
+    // Cached identity is used only when disconnected; never fabricate missing fields.
+    if(!navigator.onLine||ctx.offline){
+      const adviserName=String(d.c?.adviser_name||d.profile?.full_name||'').trim();
+      if(!adviserName||!String(d.profile?.school_head_name||'').trim())throw new Error('Set your adviser name and school head online before creating an offline SF2.');
+      d.c={...d.c,adviser_name:adviserName};d.isOfflineReport=true;
+      return d;
+    }
     // Always read identity fields fresh from Supabase before creating an SF2.
     // This avoids stale local-cache values after the teacher edits Profile.
     const [{data:profile,error:profileError},{data:classRow,error:classError}]=await Promise.all([
@@ -1024,14 +1031,16 @@ ${d.schoolDays}`);
     if(!canGenerateSf2()){App.toast('Only the adviser can generate SF2 using Adviser attendance.');return;}
     try{
       let d,blob,filename;
-      await App.withLoading('Generating SF2…','Refreshing the Teacher Profile and adding attendance data to the original SF2 form.',async()=>{
+      await App.withLoading('Generating SF2…','Using the saved teacher profile and attendance data to fill the original SF2 form.',async()=>{
         d=applySf2Details(await collectReportData(),manual);
         if(d.c.teacher_id!==userId||d.source.teacher_id!==userId)throw new Error('SF2 requires your own advisory attendance.');
         d=await refreshSf2Identity(d);
         const wb=await buildSf2WorkbookExact(d);blob=await sf2WorkbookBlobExact(wb);filename=`SF2_${filePart(d.c.grade_level)}_${filePart(d.c.section_name)}_${d.prefix}.xlsx`;
       },{minimum:420});
       if(sf2Download?.url)URL.revokeObjectURL(sf2Download.url);
-      sf2Download={url:URL.createObjectURL(blob),filename};fillSf2Result(d,filename);sf2Modal?.classList.remove('hidden');
+      sf2Download={url:URL.createObjectURL(blob),filename};fillSf2Result(d,filename);
+      if(d.isOfflineReport){const note=sf2Modal?.querySelector('.sf2-result-note');if(note)note.textContent='Generated from locally saved records while offline. Confirm pending sync and review the report after reconnecting.';}
+      sf2Modal?.classList.remove('hidden');
     }catch(error){console.error(error);App.toast(error?.message||'Unable to generate SF2.');}
   }
 

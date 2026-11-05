@@ -266,7 +266,7 @@ document.addEventListener('DOMContentLoaded',async()=>{
       .sort((a,b)=>App.studentName(a).localeCompare(App.studentName(b)));
 
     if(!students.length){
-      list.innerHTML='<div class="empty">No learners in this class yet.</div>';
+      list.innerHTML='<div class="cc-empty-art"><img src="assets/empty-roster.png" alt="Learner illustration"><b>No learners in this class yet</b><p>Open Classes and add your learners before marking attendance.</p></div>';
       updateSummary(0);
       return;
     }

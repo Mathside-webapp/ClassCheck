@@ -1,54 +1,83 @@
+/* ClassCheck 2026 dashboard: real cached class/attendance state, no mock data. */
 document.addEventListener('DOMContentLoaded',async()=>{
-  const root=document.getElementById('dashboardContent');if(!root)return;
-  let ctx;try{ctx=await AppBoot.ready();}catch(e){root.textContent=e.message;return;}
-  const esc=App.escapeHtml;
-  async function render(){
-    const state=AppStorage.get(),today=App.fmtDate();
-    const classes=state.classes.filter(c=>!c.archived);
-    const learners=state.students.filter(s=>!s.archived&&classes.some(c=>c.id===s.class_id));
-    const rows=(await OfflineDB.all('attendance')).filter(r=>r.teacher_id===ctx.user.id&&r.attendance_date===today&&learners.some(s=>s.id===r.student_id));
-    const counts={present:0,absent:0,late:0};rows.forEach(r=>{if(r.status in counts)counts[r.status]++;});
-    const marked=rows.length,rate=learners.length?Math.round(marked/learners.length*100):0;
-    counts.present=Math.max(0,learners.length-counts.absent-counts.late);
-    const sessions=(await OfflineDB.all('sessions')).filter(s=>s.teacher_id===ctx.user.id&&s.attendance_date===today&&s.session_status==='completed');
-    const completed=classes.filter(c=>sessions.some(s=>s.class_id===c.id)).length;
-    root.innerHTML=`<header class="dash-heading"><div><p class="dash-eyebrow">YOUR CLASSROOM, CONNECTED</p><h1>Today’s attendance<span class="cc-heading-dot">.</span></h1><p>Hello, ${esc(state.profile.full_name||'Teacher')}. Let’s make every learner count.</p></div><a class="dash-profile" href="#profile" aria-label="Open profile">${esc((state.profile.full_name||'T')[0])}</a></header>
-    <section class="cc-today-banner"><div class="cc-date-tile"><span>${esc(new Date(today+'T12:00:00').toLocaleDateString(undefined,{month:'short'}))}</span><strong>${new Date(today+'T12:00:00').getDate()}</strong></div><div class="cc-today-copy"><span class="dash-eyebrow">YOUR DAILY REGISTER</span><h2>Ready for a great school day?</h2><p>${esc(App.longDate(today))}</p></div><a class="btn primary cc-start" href="#attendance">${App.icon('attendance')} Take attendance ${App.icon('chevron-right')}</a></section>
-    <section class="dash-stats" aria-label="Today's attendance overview"><article><span class="cc-stat-icon">${App.icon('users')}</span><span>Learners</span><strong>${learners.length}</strong><small>In ${classes.length} active classes</small></article><article><span class="cc-stat-icon cc-green">${App.icon('check-circle')}</span><span>Present by default</span><strong>${counts.present}</strong><small>Until marked absent or late</small></article><article><span class="cc-stat-icon cc-red">${App.icon('user')}</span><span>Absent</span><strong>${counts.absent}</strong><small>Recorded today</small></article><article><span class="cc-stat-icon cc-amber">${App.icon('calendar')}</span><span>Late</span><strong>${counts.late}</strong><small>Recorded today</small></article></section>
-    <div class="dash-columns"><section class="dash-card cc-class-overview"><div class="dash-section-title"><div><p class="dash-eyebrow">PICK UP WHERE YOU LEFT OFF</p><h2>Your classes <span class="cc-count">${classes.length}</span></h2></div><a href="#classes">Manage ${App.icon('chevron-right')}</a></div><div>${classes.length?classes.map((c,i)=>{const total=learners.filter(s=>s.class_id===c.id).length,done=rows.filter(r=>r.class_id===c.id).length,complete=sessions.some(s=>s.class_id===c.id);return `<a class="dash-class" href="#attendance?class=${encodeURIComponent(c.id)}&date=${today}"><span class="dash-class-icon cc-class-tone-${i%3}">${esc(c.section_name.slice(0,2).toUpperCase())}</span><span class="cc-class-detail"><b>${esc(c.section_name)}</b><small>${esc(c.grade_level)} · ${total} learners</small></span><span class="cc-class-status ${complete?'is-complete':''}">${complete?'✓ Complete':done?'In progress':'To do'}</span><span class="dash-class-arrow">${App.icon('chevron-right')}</span></a>`;}).join(''):'<div class="dash-empty">Your day starts with a class.<br><a href="#classes">Create a class and add your learners →</a></div>'}</div><p class="dash-footnote">${App.icon('clipboard-check')} ${completed} of ${classes.length} class registers completed today.</p></section>
-    <aside class="dash-card cc-progress-card"><p class="dash-eyebrow">SMALL STEPS, REAL PROGRESS</p><h2>Today, so far</h2><div class="cc-progress-ring" style="--progress:${Math.min(100,rate)}%" role="img" aria-label="${rate}% of learners saved"><div><strong>${rate}<small>%</small></strong><span>of learners saved</span></div></div><p><b>${marked} of ${learners.length} learners</b><br>Finish attendance to save your class register.</p><a class="dash-report-link" href="#reports">View attendance reports ${App.icon('chevron-right')}</a></aside></div>
-    <section class="cc-quick-tools" aria-label="Quick tools"><button type="button" id="dashScan"><span class="cc-tool-icon">${App.icon('attendance')}</span><span><b>Scan a student QR</b><small>A quick check-in, ready in seconds</small></span>${App.icon('chevron-right')}</button><button type="button" id="dashCards"><span class="cc-tool-icon">${App.icon('download')}</span><span><b>Student QR cards</b><small>Prepare cards for your next class</small></span>${App.icon('chevron-right')}</button></section>
-    <p class="cc-data-caption">Overview uses attendance saved on this device. Open a class to refresh its cloud records.</p>`;
-    document.getElementById('dashScan').onclick=()=>{App.showPanel('attendance');window.ClassCheckQR.openScanner();};
-    document.getElementById('dashCards').onclick=()=>window.ClassCheckQR.openCards();
-    await syncStatus();
-  }
-  let lastState='';
-  async function syncStatus(){
-    let pending=0,queueReadable=true;
-    try{pending=(await OfflineDB.all('syncQueue')).filter(x=>x.payload?.teacher_id===ctx.user.id).length;}
-    catch(err){queueReadable=false;console.error('Cannot inspect device attendance queue',err);}
-    const el=document.getElementById('dashSyncText');
-    const hint=document.getElementById('dashSyncHint');
-    const retry=document.getElementById('dashSyncRetry');
-    if(!el)return;
-    const storageProblem=SyncManagerApp.storageError() || typeof window.OfflineDB?.saveQueued!=='function' || !queueReadable;
-    el.textContent=storageProblem ? 'Device storage unavailable — changes may not be saved'
-      :!navigator.onLine
-      ? `Offline • ${pending} change${pending===1?'':'s'} saved on device`
-      :lastState==='syncing' ? `Automatically syncing ${pending} change${pending===1?'':'s'}…`
-      :lastState==='failed'&&pending ? `${pending} change${pending===1?'':'s'} not synced yet`
-      :pending ? `${pending} change${pending===1?'':'s'} saved • waiting to sync`
-      :'✓ All saved attendance synced';
-    if(hint)hint.textContent=storageProblem ? 'Reopen ClassCheck online to get the latest app. Do not clear site data.'
-      :!navigator.onLine
-      ? 'Changes will upload automatically after you reconnect and open ClassCheck.'
-      :pending ? 'ClassCheck will keep retrying automatically. You can continue taking attendance.'
-      :'Attendance is saved locally first, with automatic cloud syncing.';
-    if(retry)retry.hidden=storageProblem||!(navigator.onLine&&pending&&lastState==='failed');
-  }
-  document.getElementById('dashSyncRetry').onclick=()=>SyncManagerApp.flush().catch(console.error);
-  SyncManagerApp.onState(s=>{lastState=s.type;syncStatus().catch(console.error);});
-  document.addEventListener('classcheck:panelchange',e=>{if(e.detail.panel==='dashboard')render().catch(console.error);});
-  await render();
+ const root=document.getElementById('dashboardContent');if(!root)return;
+ let ctx;try{ctx=await AppBoot.ready();}catch(e){root.textContent=e.message||'Could not open dashboard.';return;}
+ if(!App.isUnified())App.nav('dashboard');
+ const esc=App.escapeHtml;
+ const icon=(name)=>App.icon(name);
+ const today=()=>App.fmtDate();
+ const summary=row=>row?.session_status==='completed'||row?.status==='completed';
+ let refreshInProgress=false;
+ async function render(){
+  if(refreshInProgress)return;refreshInProgress=true;
+  try{
+   const state=AppStorage.get();const date=today();const name=state.profile?.full_name?.trim()||'Teacher';
+   const classes=(state.classes||[]).filter(c=>!c.archived);
+   const students=(state.students||[]).filter(s=>!s.archived&&classes.some(c=>c.id===s.class_id));
+   const allRows=await OfflineDB.all('attendance');
+   const rows=allRows.filter(r=>r.teacher_id===ctx.user.id&&r.attendance_date===date&&students.some(s=>s.id===r.student_id));
+   const allSessions=await OfflineDB.all('sessions');
+   const sessions=allSessions.filter(s=>s.teacher_id===ctx.user.id&&s.attendance_date===date&&summary(s));
+   const uniqueRows=[...new Map(rows.map(r=>[`${r.class_id}_${r.student_id}`,r])).values()];
+   const counts={present:0,absent:0,late:0};uniqueRows.forEach(r=>{if(r.status in counts)counts[r.status]++;});
+   const done=classes.filter(c=>sessions.some(s=>s.class_id===c.id));
+   const totals=classes.map((c,i)=>({c,i,learners:students.filter(s=>s.class_id===c.id),saved:uniqueRows.filter(r=>r.class_id===c.id),finished:done.some(x=>x.id===c.id)}));
+   const welcomeDate=App.longDate(date);
+   root.innerHTML=`<div class="cc-dashboard">
+    <header class="cc-dash-hero"><div><h1>Dashboard</h1><p>Good day, ${esc(name)}! Ready for today's class?</p></div><div class="cc-dash-date">${esc(welcomeDate)}</div></header>
+    <section class="cc-kpis" aria-label="Today's attendance numbers">
+      ${[
+       ['users',classes.length,'Classes',''],['users',students.length,'Learners',''],
+       ['check-circle',counts.present,'Present','success'],['user',counts.absent,'Absent','warning'],['calendar',counts.late,'Late','']
+      ].map(([i,n,label,t])=>`<article class="cc-kpi"><span class="cc-kpi-icon ${t}">${icon(i)}</span><div><strong>${n}</strong><span>${label}</span></div></article>`).join('')}
+    </section>
+    <div class="cc-dash-grid">
+      <section class="cc-maroon-panel"><div class="cc-panel-header"><h2>My Classes</h2><a href="#classes">Manage classes ${icon('chevron-right')}</a></div>
+       ${totals.length?totals.map(({c,i,learners,saved,finished})=>`<a class="cc-dash-class" href="#attendance?class=${encodeURIComponent(c.id)}&date=${date}"><span class="cc-class-bubble">${esc((c.section_name||'CL').slice(0,2).toUpperCase())}</span><span class="cc-class-text"><b>${esc(c.grade_level)} – ${esc(c.section_name)}</b><small>${learners.length} learners · ${saved.length} marked today</small></span><span class="cc-finish-tag ${finished?'done':''}">${finished?'✓ Complete':saved.length?'In progress':'To do'}</span>${icon('chevron-right')}</a>`).join(''):`<div class="cc-empty-art"><img src="assets/empty-classes.png" alt="Books and classroom board"><b>No classes yet</b><p>Create a class or join an adviser’s shared class.</p><a class="btn primary" href="#classes">Open classes</a></div>`}
+      </section>
+      <section class="cc-maroon-panel"><div class="cc-panel-header"><h2>Quick Actions</h2></div>
+       <div class="cc-quick-grid">
+        <a class="cc-quick-tile" href="#attendance">${icon('clipboard-check')}<span>Mark Attendance<small>Record P, A or L</small></span></a>
+        <a class="cc-quick-tile" href="#calendar">${icon('calendar')}<span>View Calendar<small>Attendance history</small></span></a>
+        <a class="cc-quick-tile" href="#classes">${icon('users')}<span>Manage SF1<small>Open class → Upload SF1</small></span></a>
+        <a class="cc-quick-tile" href="#reports">${icon('download')}<span>Export SF2<small>Monthly school form</small></span></a>
+        <button class="cc-quick-tile" id="ccDashQrScanner" type="button">${icon('attendance')}<span>Scan QR<small>Check in learners</small></span></button>
+        <button class="cc-quick-tile" id="ccDashQrCards" type="button">${icon('download')}<span>Student QR Cards<small>Prepare class cards</small></span></button>
+       </div></section>
+      <section class="cc-maroon-panel cc-dash-today"><div class="cc-panel-header"><h2>Today's Attendance</h2><a href="#attendance">Take attendance ${icon('chevron-right')}</a></div>
+      ${totals.length?totals.map(({c,learners,saved,finished})=>`<div class="cc-attendance-line"><span class="cc-kpi-icon ${finished?'success':''}" style="width:35px;height:35px">${icon('clipboard-check')}</span><strong>${esc(c.grade_level)} – ${esc(c.section_name)}<small style="display:block;margin-top:3px">${saved.length} of ${learners.length} recorded</small></strong><span class="cc-today-chip ${finished?'done':''}">${finished?'✓ Completed':saved.length?'In progress':'Not started'}</span><a href="#attendance?class=${encodeURIComponent(c.id)}&date=${date}" aria-label="Open attendance for ${esc(c.section_name)}">${icon('chevron-right')}</a></div>`).join(''):`<div class="cc-empty-art"><img src="assets/empty-attendance.png" alt="Attendance checklist"><b>No attendance today</b><p>Add a class to start recording attendance.</p></div>`}
+      </section>
+      <section class="cc-maroon-panel"><div class="cc-panel-header"><h2>Progress & Reports</h2><a href="#reports">View reports ${icon('chevron-right')}</a></div>
+        <div class="cc-attendance-line"><span class="cc-kpi-icon success">${icon('check-circle')}</span><strong>Completed registers</strong><b>${done.length} / ${classes.length}</b></div>
+        <div class="cc-attendance-line"><span class="cc-kpi-icon">${icon('clipboard-check')}</span><strong>Explicitly saved marks</strong><b>${uniqueRows.length} / ${students.length}</b></div>
+        <div class="cc-attendance-line"><span class="cc-kpi-icon warning">${icon('calendar')}</span><strong>Not yet marked</strong><b>${Math.max(0,students.length-uniqueRows.length)}</b></div>
+        <p style="font-size:11px;color:#897b82;margin:12px 0 0">Statistics use marks saved on this device. A learner is not counted Present until that mark has been saved.</p>
+      </section>
+    </div>
+    <div class="cc-dash-note">${icon('shield-check')}<span>Attendance saves to your device first. Pending changes upload automatically after reconnecting with a valid teacher session.</span><a href="#reports">View records</a></div>
+    </div>`;
+   root.querySelector('#ccDashQrScanner')?.addEventListener('click',()=>{App.showPanel('attendance');window.ClassCheckQR?.openScanner?.();});
+   root.querySelector('#ccDashQrCards')?.addEventListener('click',()=>window.ClassCheckQR?.openCards?.());
+  }catch(error){console.error('Dashboard unavailable',error);root.textContent='Cannot read device attendance records. Please reconnect without clearing your browser data.';}
+  finally{refreshInProgress=false;}
+ }
+ // Keep legacy live sync elements functioning, alongside the newer header indicator.
+ let lastState='';
+ async function updateSync(){
+  const title=document.getElementById('dashSyncText'),hint=document.getElementById('dashSyncHint'),retry=document.getElementById('dashSyncRetry');
+  if(!title)return;
+  try{
+   const pending=(await OfflineDB.all('syncQueue')).filter(x=>x.payload?.teacher_id===ctx.user.id).length;
+   const storageError=SyncManagerApp.storageError();
+   title.textContent=storageError?'Device storage error':!navigator.onLine?`Offline · ${pending} pending`:
+    lastState==='syncing'?`Syncing ${pending} changes`:pending?`${pending} changes saved locally`:'All attendance synced';
+   if(hint)hint.textContent=storageError?'Do not clear site data; check device storage.':'Your saved attendance remains available on this device.';
+   if(retry){retry.hidden=!pending||!navigator.onLine;retry.onclick=()=>SyncManagerApp.flush();}
+  }catch(e){console.warn(e);}
+ }
+ SyncManagerApp.onState(event=>{lastState=event.type;updateSync();render();});
+ document.addEventListener('classcheck:panelchange',event=>{if(event.detail.panel==='dashboard')render();});
+ document.addEventListener('visibilitychange',()=>{if(!document.hidden)render();});
+ window.addEventListener('focus',render);
+ await render();await updateSync();
 });

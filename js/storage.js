@@ -11,6 +11,7 @@
   }
   function get(){
     seed();
+    try{const owner=meta().owner_id;const recent=JSON.parse(localStorage.getItem('classcheck_offline_user')||'null')?.id;if(owner&&recent&&owner!==recent)return empty();}catch{}
     try{
       const s=JSON.parse(localStorage.getItem(KEY))||empty();
       s.profile={...emptyProfile,...(s.profile||{})};
@@ -20,10 +21,23 @@
       return s;
     }catch{return empty()}
   }
-  function set(state,ownerId){localStorage.setItem(KEY,JSON.stringify({...state,classTeachers:Array.isArray(state.classTeachers)?state.classTeachers:[]}));touch(ownerId);}
+  let stateWrite=Promise.resolve();
+  function set(state,ownerId){
+    const normalized={...state,classTeachers:Array.isArray(state.classTeachers)?state.classTeachers:[]};
+    localStorage.setItem(KEY,JSON.stringify(normalized));touch(ownerId);
+    // Durable IDB copy for service-worker-powered offline cold launches.
+    if(ownerId&&window.OfflineDB?.put)stateWrite=stateWrite.catch(()=>{}).then(()=>OfflineDB.put('stateCache',{owner_id:ownerId,state:normalized,updated_at:Date.now()})).catch(error=>console.warn('ClassCheck roster IndexedDB mirror failed',error));
+  }
+  async function flushWrites(){await stateWrite;}
+  async function restoreFromIndexedDB(ownerId){
+    if(!ownerId||!window.OfflineDB?.get)return null;
+    const saved=await OfflineDB.get('stateCache',ownerId);
+    if(!saved?.state)return null;
+    set(saved.state,ownerId);return get();
+  }
   function touch(ownerId){localStorage.setItem(META,JSON.stringify({owner_id:ownerId||null,synced_at:Date.now()}));}
   function meta(){try{return JSON.parse(localStorage.getItem(META))||{}}catch{return {}}}
   function isFresh(ownerId,maxAge=(APP_CONFIG.CACHE_TTL_MS||300000)){const m=meta();return !!ownerId&&m.owner_id===ownerId&&Date.now()-(m.synced_at||0)<maxAge;}
   function reset(){localStorage.removeItem(KEY);localStorage.removeItem(META);seed();}
-  window.AppStorage={get,set,meta,seed,reset,touch,isFresh,empty};
+  window.AppStorage={get,set,meta,seed,reset,touch,isFresh,empty,restoreFromIndexedDB,flushWrites};
 })();

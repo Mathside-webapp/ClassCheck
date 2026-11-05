@@ -7,7 +7,7 @@ document.addEventListener('DOMContentLoaded',async()=>{
   let state=AppStorage.get();const grid=document.getElementById('calendarGrid'),label=document.getElementById('calendarPageMonthLabel');
   function iso(d){return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;}
   async function monthSessions(year,month){
-    const local=(await OfflineDB.all('sessions')).filter(s=>{const d=new Date(`${s.attendance_date}T12:00:00`);return s.teacher_id===userId&&d.getFullYear()===year&&d.getMonth()===month&&s.status==='completed';});
+    const local=(await OfflineDB.all('sessions')).filter(s=>{const d=new Date(`${s.attendance_date}T12:00:00`);return s.teacher_id===userId&&d.getFullYear()===year&&d.getMonth()===month&&(s.session_status==='completed'||s.status==='completed');});
     const map=new Map(local.map(s=>[`${s.teacher_id}_${s.class_id}_${s.attendance_date}`,s]));
     if(navigator.onLine&&!APP_CONFIG.DEMO_MODE){
       const first=`${year}-${String(month+1).padStart(2,'0')}-01`;const next=new Date(year,month+1,1);const upper=iso(next);
@@ -23,7 +23,7 @@ document.addEventListener('DOMContentLoaded',async()=>{
     for(let i=0;i<42;i++){
       const delta=i-start.getDay()+1;let d,muted=false;if(delta<1){d=prev+delta;muted=true}else if(delta>end.getDate()){d=delta-end.getDate();muted=true}else d=delta;
       let dayIso='';if(!muted)dayIso=`${year}-${String(month+1).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
-      const complete=sessions.some(s=>s.attendance_date===dayIso&&s.status==='completed'),today=dayIso===App.fmtDate();
+      const complete=sessions.some(s=>s.attendance_date===dayIso&&(s.session_status==='completed'||s.status==='completed')),today=dayIso===App.fmtDate();
       cells.push(`<a ${dayIso?`href="attendance.html?date=${dayIso}&class=${state.classes.find(c=>!c.archived)?.id||''}"`:''} class="cal-day ${muted?'muted':''} ${complete?'complete':''} ${today?'today':''}"><span class="num">${d}</span>${complete?'<span class="dot"></span>':''}</a>`);
     }
     grid.innerHTML=cells.join('');

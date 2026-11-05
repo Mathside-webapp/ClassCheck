@@ -70,7 +70,10 @@
   async function loadState(ctx,force=false){
     if(APP_CONFIG.DEMO_MODE)return AppStorage.get();
     const userId=ctx.user.id;
-    const cached=cacheMeta().owner_id===userId?AppStorage.get():null;
+    let cached=cacheMeta().owner_id===userId?AppStorage.get():null;
+    if(!cached&&window.AppStorage?.restoreFromIndexedDB){
+      try{cached=await AppStorage.restoreFromIndexedDB(userId);}catch(err){console.warn('IndexedDB roster recovery failed',err);}
+    }
     if(!navigator.onLine||ctx.offline){
       if(cached)return cached;
       throw new Error('Connect once to download this account’s classes and learner roster.');
@@ -111,6 +114,8 @@
     if(error)throw error;
     sessionStorage.removeItem('classcheck_teacher_name');
     localStorage.removeItem('classcheck_offline_user');
+    if(window.AppStorage?.flushWrites)await AppStorage.flushWrites();
+    if(window.OfflineDB?.clearOwner&&uid)await OfflineDB.clearOwner(uid);
     AppStorage.reset();
     if(redirect)(window.App?.navigate?App.navigate('index.html'):location.href='index.html');
   }

@@ -6,8 +6,8 @@
   "start_url": "./index.html?source=pwa",
   "scope": "./",
   "display": "standalone",
-  "background_color": "#fff7f8",
-  "theme_color": "#7a1730",
+  "background_color": "#f8f1f3",
+  "theme_color": "#68172e",
   "categories": [
     "education",
     "productivity"
@@ -36,7 +36,7 @@
     {
       "name": "Take Attendance",
       "short_name": "Attendance",
-      "url": "./app.html#dashboard",
+      "url": "./app.html#attendance",
       "icons": [
         {
           "src": "assets/icons/classcheck-192.png",

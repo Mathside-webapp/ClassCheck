@@ -1,0 +1,147 @@
+/* ClassCheck 2026 · approved maroon workspace. Keep existing IDs & handlers intact. */
+:root {
+ --cc-brand:#68172e;--cc-bg:#f8f1f3;--cc-surface:#fff;--cc-ink:#28232a;--cc-muted:#806c76;
+ --cc-soft:#f5e6ec;--cc-border:#eadde1;--cc-radius:16px;--cc-shadow:0 5px 16px rgba(66,19,39,.065);
+ --maroon:#68172e;--maroon-deep:#4a1022;--maroon-soft:#f5e6ec;--rose:#902c4a;--ink:#28232a;
+ --muted:#806c76;--dash-ink:#28232a;--dash-muted:#806c76;--dash-line:#eadde1;--success:#238665;
+ --elevation-1:0 5px 16px rgba(66,19,39,.065);color-scheme:light;
+}
+html,body,body.classcheck-app,body.classcheck-login {background:#f8f1f3!important;color:#28232a!important}
+body.classcheck-app,body.classcheck-login {font-family:Inter,Arial,sans-serif!important}
+body.classcheck-app :is(h1,h2,h3),body.classcheck-login :is(h1,h2,h3){font-family:Helvetica,Arial,sans-serif!important;color:#28232a!important}
+body.classcheck-app :is(p,button,input,select,label,a,small,span,li,td,th),body.classcheck-login :is(p,button,input,select,label,a,small,span,li){font-family:Inter,Arial,sans-serif!important}
+body.classcheck-app h1{font-size:clamp(24px,2.65vw,34px)!important;letter-spacing:-.035em!important}
+body.classcheck-app h2{font-size:20px!important;letter-spacing:-.02em!important}
+body.classcheck-app h3{font-size:16px!important}
+body.classcheck-app .app-shell {background:#f8f1f3!important;max-width:none!important;margin-left:238px!important;width:calc(100% - 238px)!important;min-height:100dvh!important;padding:100px 30px 95px!important;opacity:1!important;transform:none!important}
+body.classcheck-app :is(.card,.workspace-panel,.week-strip,.dash-card,.cc-maroon-panel){background:#fff!important;border:1px solid #eadde1!important;border-radius:16px!important;box-shadow:0 6px 19px rgba(67,13,33,.055)!important}
+body.classcheck-app :is(.btn.primary,.calendar-action.primary),body.classcheck-login .btn.primary {background:#68172e!important;color:#fff!important;border-color:#68172e!important}
+body.classcheck-app :is(.btn.soft,.btn.ghost),body.classcheck-login :is(.btn.soft,.btn.ghost) {color:#68172e!important;background:#f7edf1!important;border-color:#eedde5!important}
+body.classcheck-app :is(.btn.primary,.btn.soft,.btn.ghost):hover,body.classcheck-login :is(.btn.primary,.btn.soft,.btn.ghost):hover{filter:brightness(.96)}
+body.classcheck-app :is(.input,input:not([type=checkbox]):not([type=radio]),select,textarea),body.classcheck-login :is(.input,input:not([type=checkbox]):not([type=radio]),select){border-color:#e5d7de!important;border-radius:10px!important}
+body.classcheck-app :is(.input,input,select,textarea):focus-visible,body.classcheck-login :is(.input,input,select):focus-visible {outline:3px solid #c882954f!important;outline-offset:2px!important;border-color:#902c4a!important}
+body.classcheck-app .classcheck-sidebar{background:linear-gradient(169deg,#68172e 0%,#531023 60%,#450c1e 100%)!important;color:#fff!important;width:238px!important;border:0!important;padding:24px 16px!important;box-shadow:4px 0 18px #4f11221a!important}
+body.classcheck-app .classcheck-sidebar .cc-brand{gap:11px!important;margin-bottom:30px!important}
+body.classcheck-app .classcheck-sidebar .cc-brand-icon{color:#f0be71!important;background:transparent!important}
+body.classcheck-app .classcheck-sidebar .cc-brand-icon svg{stroke:#f5c782!important}
+body.classcheck-app .classcheck-sidebar .cc-brand>span:last-child{color:#fff!important;font-size:21px!important;font-weight:750!important;letter-spacing:-.04em!important}
+body.classcheck-app .classcheck-sidebar .cc-brand small{font-size:8px!important;letter-spacing:.05em!important;color:#e0bac7!important}
+body.classcheck-app .classcheck-sidebar .cc-nav-caption{color:#dcacbb!important;font-size:10px!important;letter-spacing:.11em!important}
+body.classcheck-app .classcheck-sidebar .nav-item,body.classcheck-app .classcheck-sidebar .classcheck-profile-link{color:#f9e7ed!important;border-radius:10px!important;font-size:12px!important;font-weight:600!important;min-height:44px!important;display:flex!important;align-items:center!important}
+body.classcheck-app .classcheck-sidebar .nav-item:hover,body.classcheck-app .classcheck-sidebar .classcheck-profile-link:hover{background:#88354f!important}
+body.classcheck-app .classcheck-sidebar .nav-item.active,body.classcheck-app .classcheck-sidebar .classcheck-profile-link.active{background:#9a3855!important;color:white!important;box-shadow:inset 3px 0 0 #e7b073!important}
+body.classcheck-app .classcheck-sidebar .classcheck-teacher-card{background:#ffffff12!important;border:1px solid #ffffff22!important;border-radius:12px!important;color:#fff!important}
+body.classcheck-app .classcheck-sidebar .classcheck-teacher-card :is(b,small){color:#fff!important}
+body.classcheck-app .classcheck-sidebar .classcheck-avatar{background:#b66b82!important;color:#fff!important}
+body.classcheck-app .classcheck-sidebar .cc-sidebar-note{background:#78243f!important;color:#f9dde6!important;border-color:#ffffff2a!important}
+body.classcheck-app .classcheck-sidebar .cc-sidebar-note span{color:#e9c8d2!important}
+/* Shared fixed header (inserted by js/workspace-ui.js). */
+.cc-workspace-top{position:fixed;top:0;left:238px;right:0;z-index:44;background:#fffefeee;border-bottom:1px solid #eadde1;backdrop-filter:blur(13px);min-height:73px;padding:11px 30px;display:flex;align-items:center;gap:14px;box-shadow:0 2px 12px #50152a08}
+.cc-workspace-top .cc-workspace-menu{display:none}
+.cc-workspace-top .cc-top-title{display:flex;align-items:center;gap:9px;min-width:0;flex:1}
+.cc-workspace-top .cc-top-logo{width:35px;height:35px;object-fit:contain;flex:none}
+.cc-workspace-top .cc-top-title strong{font-size:17px;color:#68172e;font-weight:800;letter-spacing:-.03em}
+.cc-workspace-top .cc-top-title small{display:block;color:#93838b;font-size:10px}
+.cc-workspace-top .cc-sync-button{border:1px solid #d7e9dc;background:#e9f7ed;color:#26764c;border-radius:11px;min-height:40px;padding:7px 12px;display:inline-flex;align-items:center;gap:9px;font-weight:700;font-size:11px;text-align:left;cursor:pointer}
+.cc-workspace-top .cc-sync-button[data-status="offline"],.cc-workspace-top .cc-sync-button[data-status="saved-local"]{background:#fff4df;border-color:#f3e1bc;color:#865f20}
+.cc-workspace-top .cc-sync-button[data-status="failed"],.cc-workspace-top .cc-sync-button[data-status="storage-error"]{background:#fde9eb;border-color:#f0cbd0;color:#a12837}
+.cc-workspace-top .cc-sync-button small{display:block;font-weight:500;font-size:10px;opacity:.8}
+.cc-workspace-top .cc-sync-symbol{font-size:19px;font-weight:900}
+.cc-workspace-top .cc-top-account{display:flex;align-items:center;gap:9px;color:#4a3440;text-decoration:none;min-width:0;font-size:11px}
+.cc-workspace-top .cc-top-avatar{display:grid;place-items:center;width:36px;height:36px;border-radius:50%;background:#f3dbe4;color:#68172e;font-size:16px;font-weight:800}
+.cc-workspace-top .cc-top-account b{display:block;max-width:140px;text-overflow:ellipsis;white-space:nowrap;overflow:hidden}
+.cc-workspace-top .cc-top-account small{color:#8e8185;font-size:10px}
+.cc-sync-detail{position:fixed;top:70px;right:24px;z-index:50;width:min(345px,calc(100vw - 32px));background:#fff;border:1px solid #eadde1;border-radius:15px;box-shadow:0 18px 48px #3f10282b;padding:18px;color:#342a30}
+.cc-sync-detail[hidden]{display:none!important}.cc-sync-detail h3{margin:0 0 7px;font-size:15px}.cc-sync-detail p{color:#766b73;font-size:12px;margin:7px 0}.cc-sync-detail .cc-sync-actions{display:flex;justify-content:flex-end;gap:8px;margin-top:13px}.cc-sync-detail button{border:0;border-radius:8px;background:#68172e;color:#fff;padding:9px 13px;font-weight:700;cursor:pointer}.cc-sync-detail .cc-close{background:#f5e6ec;color:#68172e}
+/* Dashboard follows the approved compact card grid, using real teacher data. */
+.cc-dashboard{max-width:1400px;margin:0 auto}
+.cc-dash-hero{display:flex;align-items:flex-end;justify-content:space-between;gap:15px;flex-wrap:wrap;margin-bottom:20px}
+.cc-dash-hero h1{margin:0 0 4px!important;font-weight:800!important}
+.cc-dash-hero p{margin:0;font-size:13px;color:#786b72}
+.cc-dash-date{border-radius:12px;background:#f1e5e9;color:#6c2540;padding:10px 13px;font-size:11px;font-weight:700}
+.cc-kpis{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:12px;margin-bottom:16px}
+.cc-kpi{display:flex;align-items:center;gap:12px;min-height:95px;padding:17px 15px;background:#fff;border:1px solid #eadde1;border-radius:13px;box-shadow:0 4px 14px #50132d0b;min-width:0}
+.cc-kpi .cc-kpi-icon{display:grid;place-items:center;flex:none;width:43px;height:43px;border-radius:12px;background:#faeaf0;color:#902c4a}
+.cc-kpi .cc-kpi-icon svg{width:23px;height:23px}
+.cc-kpi .cc-kpi-icon.success{background:#e5f6eb;color:#278654}
+.cc-kpi .cc-kpi-icon.warning{background:#fff3df;color:#bd7919}
+.cc-kpi strong{display:block;font-size:26px;line-height:1.1;color:#28232a;font-weight:800;letter-spacing:-.04em}
+.cc-kpi span:last-child{display:block;color:#756872;font-size:11px;margin-top:4px}
+.cc-dash-grid{display:grid;grid-template-columns:minmax(0,1.15fr) minmax(0,1fr);gap:15px}
+.cc-maroon-panel{padding:22px;min-width:0}
+.cc-maroon-panel .cc-panel-header{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:15px;flex-wrap:wrap}
+.cc-maroon-panel .cc-panel-header h2{font-size:19px!important;margin:0!important}
+.cc-maroon-panel .cc-panel-header a{color:#902c4a;font-weight:750;font-size:12px;text-decoration:none}
+.cc-dash-class{display:flex;align-items:center;gap:13px;background:#fdf9fb;border:1px solid #f1e9ec;border-radius:11px;padding:12px 13px;color:#28232a;text-decoration:none;margin-top:9px;min-width:0}
+.cc-dash-class:hover{background:#f8eef2;box-shadow:0 2px 8px #650d2a12}
+.cc-dash-class .cc-class-bubble{display:grid;place-items:center;background:#f7e7ed;color:#902c4a;width:40px;height:40px;min-width:40px;border-radius:11px;font-weight:800;font-size:14px}
+.cc-dash-class .cc-class-text{min-width:0;flex:1}.cc-dash-class b{display:block;font-size:13px}.cc-dash-class small{color:#856f7b;font-size:11px;display:block;margin-top:3px}
+.cc-dash-class .cc-finish-tag{font-size:10px;color:#8e5470;background:#f4e8ec;border-radius:20px;padding:5px 9px;white-space:nowrap}
+.cc-dash-class .cc-finish-tag.done{color:#287850;background:#e7f5e9}
+.cc-quick-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:11px}
+.cc-quick-tile{display:flex;align-items:center;gap:11px;min-height:78px;background:#fcf8fa;border:1px solid #f0e6eb;border-radius:12px;padding:13px;color:#68172e!important;text-decoration:none!important;font-size:12px;font-weight:750;text-align:left;cursor:pointer}
+.cc-quick-tile svg{width:24px;height:24px;flex:none}
+.cc-quick-tile:hover{background:#f5e6ec}
+.cc-quick-tile small{font-size:10px;display:block;margin-top:3px;font-weight:500;color:#967983}
+.cc-dash-today{display:flex;flex-direction:column;gap:11px}
+.cc-attendance-line{display:flex;gap:11px;align-items:center;border-bottom:1px solid #f1e8ec;padding:12px 0;font-size:12px}
+.cc-attendance-line:last-child{border:0}
+.cc-attendance-line strong{min-width:0;flex:1;font-size:12px}
+.cc-attendance-line small{font-size:10px;color:#86737a}
+.cc-attendance-line .cc-today-chip{border-radius:20px;background:#fff0db;color:#9b702d;padding:5px 9px;font-size:10px}
+.cc-attendance-line .cc-today-chip.done{background:#e6f5e9;color:#267b4f}
+.cc-empty-art{text-align:center;padding:14px 10px 17px}
+.cc-empty-art img{width:146px;max-width:75%;height:auto;max-height:150px;object-fit:contain;margin:0 auto 8px;display:block}
+.cc-empty-art b{display:block;margin-bottom:4px;font-size:14px}.cc-empty-art p{margin:0 0 13px;color:#8a7b83;font-size:11px}
+.cc-empty-art .btn{display:inline-flex!important}
+.cc-dash-note{margin-top:15px;padding:13px 17px;background:#f6e9ed;border:1px solid #eedce3;border-radius:12px;display:flex;align-items:center;gap:10px;color:#7a4157;font-size:12px}
+.cc-dash-note strong{font-weight:800}.cc-dash-note span{flex:1}
+/* Existing panels match new palette while preserving all functional elements. */
+body.classcheck-app .attendance-page .attendance-topbar,body.classcheck-app .secondary-page .topbar{background:transparent!important;border:0!important;box-shadow:none!important}
+body.classcheck-app .attendance-workspace{gap:16px!important}
+body.classcheck-app .workspace-panel{padding:23px!important}
+body.classcheck-app :is(.attendance-summary-card,.report-summary-highlight,.share-panel,.cc-photo-section){background:#fdf7f9!important;border-color:#eddfe5!important}
+body.classcheck-app :is(.month-button,.pill.active,.calendar-day.selected,.calendar-action.primary,.date-rail .active,.class-rail .active){color:#68172e!important}
+body.classcheck-app .roster-panel .roster-heading{border-color:#efdee5!important}
+body.classcheck-app .student-row{border-color:#efe2e7!important}
+body.classcheck-app .class-card .class-badge{background:#f5e6ec!important;color:#902c4a!important}
+body.classcheck-app .class-card .class-info{min-width:0}
+body.classcheck-app .week-strip .calendar-grid [data-date].selected{background:#68172e!important;color:#fff!important}
+body.classcheck-app .reports-hero-card .input{background:#fff!important}
+body.classcheck-app .modal{backdrop-filter:blur(3px)}
+body.classcheck-app .modal-panel{border-radius:18px!important}
+body.classcheck-app .cc-photo-section{border-radius:16px!important}
+body.classcheck-app .toast{z-index:110!important}
+body.classcheck-login .login-wrap{background:#f8f1f3!important}
+body.classcheck-login .cc-welcome{background:#68172e!important;color:#fff!important}
+body.classcheck-login .cc-welcome :is(h1,h2,p,b,strong,small){color:#fff!important}
+body.classcheck-login :is(.auth-switch-btn.active,.cc-brand-icon){color:#68172e!important}
+body.classcheck-login .cc-brand-icon{background:#fff0e2!important}
+/* QR scanner, dialogs, modals always sit above sticky header. */
+body.classcheck-app :is(.modal,.cc-account-dialog,.cc-photo-editor){z-index:70}
+@media(max-width:1100px){.cc-kpis{grid-template-columns:repeat(3,minmax(0,1fr))}.cc-dash-grid{grid-template-columns:1fr 1fr}.cc-kpi{padding:13px;min-height:88px}.cc-workspace-top .cc-top-account small{display:none}}
+@media(max-width:900px){body.classcheck-app .app-shell{padding:95px 18px 90px!important}.cc-dash-grid{grid-template-columns:1fr}.cc-maroon-panel{padding:18px}.cc-top-account b{max-width:94px!important}}
+@media(max-width:780px){
+ body.classcheck-app .app-shell{max-width:none!important;margin:0!important;width:100%!important;padding:94px 15px 116px!important}
+ .cc-workspace-top{left:0;padding:10px 15px;min-height:67px}
+ .cc-workspace-top .cc-workspace-menu{border:0;background:#f4e5eb;color:#68172e;display:grid;place-items:center;width:36px;height:36px;border-radius:9px;cursor:pointer}
+ .cc-workspace-top .cc-top-title strong{font-size:16px}
+ .cc-workspace-top .cc-top-title small{display:none}
+ .cc-workspace-top .cc-top-account{display:none}
+ .cc-workspace-top .cc-sync-button{min-height:35px;padding:5px 9px}
+ .cc-workspace-top .cc-sync-button small{display:none}
+ body.classcheck-app .classcheck-sidebar{position:fixed!important;top:auto!important;bottom:0!important;left:0!important;right:0!important;width:100%!important;height:calc(65px + env(safe-area-inset-bottom))!important;padding:4px 5px calc(5px + env(safe-area-inset-bottom))!important;display:flex!important;justify-content:center!important;align-items:center!important;overflow:hidden!important;transform:none!important;border-radius:0!important;box-shadow:0 -6px 20px #450c1f17!important;z-index:50!important;background:#fff!important}
+ body.classcheck-app .classcheck-sidebar .cc-brand,body.classcheck-app .classcheck-sidebar .cc-nav-caption,body.classcheck-app .classcheck-sidebar .classcheck-teacher-card,body.classcheck-app .classcheck-sidebar .classcheck-profile-link,body.classcheck-app .classcheck-sidebar .cc-sidebar-note{display:none!important}
+ body.classcheck-app .classcheck-sidebar .classcheck-nav-links{width:100%!important;display:grid!important;grid-template-columns:repeat(6,minmax(0,1fr))!important;gap:0!important;overflow:visible!important}
+ body.classcheck-app .classcheck-sidebar .nav-item{display:flex!important;flex-direction:column!important;align-items:center!important;justify-content:center!important;gap:2px!important;color:#85737c!important;min-width:0!important;min-height:49px!important;margin:0!important;padding:4px 0!important;font-size:9px!important;border-radius:8px!important;line-height:1.3!important;text-align:center!important;background:transparent!important;box-shadow:none!important}
+ body.classcheck-app .classcheck-sidebar .nav-item.active{color:#68172e!important;background:#f5e6ec!important;box-shadow:none!important}
+ body.classcheck-app .classcheck-sidebar .nav-icon .svg-icon{width:19px!important;height:19px!important;stroke:#68172e!important}
+ .cc-kpis{grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
+ .cc-kpi{min-height:77px;padding:11px;gap:8px}.cc-kpi .cc-kpi-icon{width:36px;height:36px;border-radius:10px}.cc-kpi .cc-kpi-icon svg{width:19px;height:19px}.cc-kpi strong{font-size:22px}
+ .cc-dash-hero{margin-bottom:16px}.cc-dash-hero .cc-dash-date{font-size:10px}
+ .cc-quick-grid{grid-template-columns:repeat(2,minmax(0,1fr))}
+ .cc-sync-detail{top:69px;right:11px}
+}
+@media(max-width:420px){.cc-kpi span:last-child{font-size:10px}.cc-kpi .cc-kpi-icon{width:32px;height:32px}.cc-quick-tile{gap:8px;padding:9px;font-size:11px;min-height:65px}.cc-maroon-panel{padding:15px}.cc-workspace-top .cc-top-title strong{font-size:14px}}
+@media(prefers-reduced-motion:reduce){.cc-dashboard *, .cc-workspace-top *{animation:none!important;transition:none!important}}
+body.classcheck-app .dash-sync{display:none!important}

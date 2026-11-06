@@ -4,7 +4,7 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
   <title>ClassCheck • Attendance</title>
-<link rel="manifest" href="manifest.webmanifest?v=17.0"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-status-bar-style" content="default">
+<link rel="manifest" href="manifest.webmanifest?v=18.0"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-status-bar-style" content="default">
   <meta name="theme-color" content="#68172e">
   <link rel="icon" href="assets/classcheck-tabicon.png?v=11.9" type="image/png">
   <link rel="shortcut icon" href="assets/classcheck-tabicon.png?v=11.9" type="image/png">
@@ -12,18 +12,16 @@
   <link rel="stylesheet" href="css/styles.css?v=14.2">
   <link rel="stylesheet" href="css/responsive.css?v=11.6">
   <link rel="stylesheet" href="css/dashboard.css?v=14.0">
-<link rel="stylesheet" href="css/redesign.css?v=16.0"><link rel="stylesheet" href="css/maroon-2026.css?v=17.0"></head>
+<link rel="stylesheet" href="css/redesign.css?v=16.0"><link rel="stylesheet" href="css/maroon-2026.css?v=17.0"><link rel="stylesheet" href="css/preview-implementation.css?v=18.0"></head>
 <body class="classcheck-app attendance-screen" data-classcheck-unified="true">
 <div class="cc-app-panel" data-app-panel="dashboard" hidden><main class="app-shell dash-shell"><div id="dashboardContent"><p>Loading your dashboard…</p></div><div class="dash-sync" role="status" aria-live="polite"><span><i></i><b id="dashSyncText">Checking saved attendance…</b><small id="dashSyncHint">Attendance saves on your device first and syncs automatically.</small></span><button id="dashSyncRetry" type="button" hidden>Retry sync</button></div></main></div>
   <div class="cc-app-panel" data-app-panel="classes" hidden>
     <main class="app-shell secondary-page">
-<header class="topbar page-topbar">
-<span aria-hidden="true" class="topbar-spacer"></span>
-<div class="page-title-stack"><h1>My Classes</h1></div>
-<div class="class-header-actions">
-<button class="btn soft compact-action" id="joinClassBtn" type="button">Join class</button>
+<header class="ccx-page-heading"><div><span class="ccx-eyebrow">CLASS MANAGEMENT</span><h1>My Classes</h1><p>Organize your sections and access their student rosters.</p></div>
+<div class="class-header-actions ccx-heading-actions">
+<button class="btn soft compact-action" id="joinClassBtn" type="button">Join a class</button>
 
-<button aria-label="Create class" class="icon-btn" data-icon="plus" id="addClassBtn"></button>
+<button class="btn primary" id="addClassBtn" type="button">+ Add Class</button>
 </div>
 </header>
 <div aria-label="Class filters" class="pills centered-pills">
@@ -37,15 +35,13 @@
   </div>
   <div class="cc-app-panel" data-app-panel="attendance">
     <main class="app-shell attendance-page">
-<header class="attendance-topbar">
-<a aria-label="Back to classes" class="icon-btn attendance-back" data-icon="arrow-left" href="classes.html"></a>
-<div class="attendance-title-group">
-<h1>Attendance</h1><span class="tag attendance-subject-badge" id="attendanceSubjectBadge">Advisory</span>
-<span class="sync-badge" id="syncBadge">Saved on device</span>
-</div>
-</header>
-<div class="attendance-workspace">
-<section aria-labelledby="controlsTitle" class="workspace-panel controls-panel">
+<header class="ccx-page-heading ccx-attendance-heading">
+ <div><span class="ccx-eyebrow">ATTENDANCE REGISTER</span><h1>Daily Attendance</h1><p>Mark learners in seconds, even without internet.</p></div>
+ <div class="ccx-heading-actions"><span class="sync-badge" id="syncBadge">Saved on device</span><button type="button" class="btn soft" id="ccxMarkAll">✓ Mark all Present</button></div>
+ </header>
+ <div class="ccx-filterbar ccx-attendance-filterbar"><label>Class / Section<select id="ccxClassSelect" class="input" aria-label="Select attendance class"></select></label><label>Attendance date<input type="date" id="ccxDateSelect" class="input" aria-label="Select attendance date"></label><label class="ccx-search-field">Find learner<input id="ccxStudentSearch" class="input" type="search" placeholder="Search by learner name"></label></div>
+<div class="attendance-workspace ccx-register-layout">
+<section aria-label="Attendance overview" class="workspace-panel controls-panel ccx-attendance-tools"><header class="ccx-side-overview-heading"><span class="ccx-eyebrow">REGISTER OVERVIEW</span><h2>Today’s Register</h2><p>Live totals for your selected date and section.</p></header>
 <div class="panel-heading centered-heading">
 <h2 id="controlsTitle">Date &amp; Section</h2>
 <p>Choose where you are recording attendance.</p>
@@ -54,7 +50,7 @@
 <div class="date-deck-head">
 <button aria-label="Previous month" class="mini-round-btn" data-icon="chevron-left" id="prevMonthBtn"></button>
 <button aria-controls="calendarDrawer" aria-expanded="false" class="month-button" id="monthPickerBtn" type="button">
-<span id="monthLabel">October 2026</span>
+<span id="monthLabel">Month</span>
 <span class="tiny-icon month-caret" data-icon="chevron-down"></span>
 </button>
 <button aria-label="Next month" class="mini-round-btn" data-icon="chevron-right" id="nextMonthBtn"></button>
@@ -76,6 +72,7 @@
 </section>
 <div class="section-label inline-label centered-label">Section</div>
 <div aria-label="Choose class" class="class-rail" id="classRail"></div>
+<div class="ccx-real-summary"><h3>Attendance Summary</h3><p id="ccxSummaryDate" class="ccx-muted">Selected date</p><div class="ccx-summary-numbers"><div><b id="ccxPresent">0</b><small>Present</small></div><div><b id="ccxAbsent">0</b><small>Absent</small></div><div><b id="ccxLate">0</b><small>Late</small></div></div><div class="ccx-summary-meter" id="ccxSummaryMeter"><i></i><i></i><i></i></div><p id="ccxMarkedCount" class="ccx-muted">Select a class</p></div>
 <div aria-live="polite" class="attendance-summary-card">
 <span class="summary-icon" data-icon="clipboard-check"></span>
 <div class="summary-copy">
@@ -84,34 +81,23 @@
 </div>
 </div>
 </section>
-<section aria-labelledby="rosterTitle" class="workspace-panel roster-panel">
+<section aria-labelledby="rosterTitle" class="workspace-panel roster-panel ccx-attendance-register">
 <div class="panel-heading roster-heading">
 <div>
-<h2 id="rosterTitle">Learners</h2>
-<p>Everyone starts as Present. Tap Absent or Late only when needed; finish to save everyone.</p>
+<h2 id="rosterTitle">Learners</h2> <span class="ccx-learner-total" id="ccxLearnerCount">0 learners</span>
+<p>Select Present, Absent or Late for each learner. Changes save on your device immediately.</p>
 </div>
-<span class="roster-status">Live roster</span>
+<span class="roster-status">LIVE ROSTER</span>
 </div>
-<section class="student-list radio-attendance-list" id="studentList"></section>
+<section class="student-list radio-attendance-list" id="studentList"></section><div class="ccx-register-footer"><p>Changes are saved locally as you mark learners. Select <b>Finish Attendance</b> to complete the day’s register.</p><button class="btn primary finish-attendance-btn" id="finishBtn" type="button"><span data-icon="check-circle"></span>Finish Attendance</button></div>
 </section>
 </div>
 </main>
-    <div class="bottom-actions">
-<div class="inner">
-<button class="btn primary block finish-attendance-btn" id="finishBtn">
-<span data-icon="check-circle"></span>
-        Finish Attendance
-      </button>
-</div>
-</div>
+
   </div>
   <div class="cc-app-panel" data-app-panel="calendar" hidden>
     <main class="app-shell secondary-page">
-<header class="topbar page-topbar">
-<span aria-hidden="true" class="topbar-spacer"></span>
-<div class="page-title-stack"><h1>Calendar</h1></div>
-<a aria-label="Take attendance" class="icon-btn" data-icon="plus" href="attendance.html"></a>
-</header>
+<header class="ccx-page-heading"><div><span class="ccx-eyebrow">ATTENDANCE HISTORY</span><h1>Monthly Calendar</h1><p>Find and update attendance from any school day.</p></div><a class="btn primary" href="#attendance">Take attendance</a></header>
 <section class="week-strip">
 <div class="week-title"><button aria-label="Previous month" class="icon-btn" data-icon="chevron-left" id="prevMonth"></button><h2 id="calendarPageMonthLabel">Month</h2><button aria-label="Next month" class="icon-btn" data-icon="chevron-right" id="nextMonth"></button></div>
 <div class="calendar-grid"><div class="cal-label">SUN</div><div class="cal-label">MON</div><div class="cal-label">TUE</div><div class="cal-label">WED</div><div class="cal-label">THU</div><div class="cal-label">FRI</div><div class="cal-label">SAT</div></div>
@@ -122,11 +108,7 @@
   </div>
   <div class="cc-app-panel" data-app-panel="reports" hidden>
     <main class="app-shell secondary-page reports-page">
-<header class="topbar page-topbar">
-<span aria-hidden="true" class="topbar-spacer"></span>
-<div class="page-title-stack"><h1>Reports</h1></div>
-<span class="brand-mark compact-brand">SF2</span>
-</header>
+<header class="ccx-page-heading"><div><span class="ccx-eyebrow">DEPED REPORTS</span><h1>SF2 Monthly Reports</h1><p>Review attendance and generate the original DepEd School Form 2.</p></div><span class="ccx-report-flag">SF2 · EXCEL</span></header>
 <section class="card reports-hero-card">
 <div class="report-form-grid">
 <div class="field report-field">
@@ -136,7 +118,7 @@
 <div class="field report-field report-month-wrap">
 <label for="reportMonthBtn">Month</label>
 <button aria-controls="reportMonthDrawer" aria-expanded="false" class="input month-select-btn" id="reportMonthBtn" type="button">
-<span id="reportMonthLabel">October 2026</span>
+<span id="reportMonthLabel">Month</span>
 <span class="month-select-icon" data-icon="calendar"></span>
 </button>
 <input id="reportMonth" type="hidden" value=""/>
@@ -244,11 +226,7 @@
   </div>
   <div class="cc-app-panel" data-app-panel="profile" hidden>
     <main class="app-shell secondary-page">
-<header class="topbar page-topbar">
-<a aria-label="Back" class="icon-btn" data-icon="arrow-left" href="classes.html"></a>
-<div class="page-title-stack"><h1>Teacher Profile</h1></div>
-
-</header>
+<header class="ccx-page-heading"><div><span class="ccx-eyebrow">ACCOUNT</span><h1>Settings &amp; Profile</h1><p>Update your account details and school information.</p></div></header>
 <section class="cc-photo-section" aria-labelledby="profilePhotoHeading">
 <img id="profilePhotoPreview" class="cc-photo-preview" alt="Your profile photo" hidden>
 <span id="profilePhotoPlaceholder" class="cc-photo-placeholder" aria-hidden="true">T</span>
@@ -308,6 +286,11 @@
 </main>
   </div>
 
+
+  <div class="cc-app-panel" data-app-panel="roster" hidden><main class="app-shell ccx-extra-screen"><div id="ccxRosterScreen"></div></main></div>
+  <div class="cc-app-panel" data-app-panel="import" hidden><main class="app-shell ccx-extra-screen"><div id="ccxImportScreen"></div></main></div>
+  <div class="cc-app-panel" data-app-panel="archive" hidden><main class="app-shell ccx-extra-screen"><div id="ccxArchiveScreen"></div></main></div>
+  <div class="cc-app-panel" data-app-panel="sync" hidden><main class="app-shell ccx-extra-screen"><div id="ccxSyncScreen"></div></main></div>
   <div class="modal hidden" id="classModal">
 <div class="modal-panel">
 <div class="handle"></div>
@@ -399,9 +382,9 @@
   <script src="js/supabase-client.js?v=14.1"></script>
   <script src="js/bootstrap.js?v=9"></script>
   <script src="js/sync.js?v=14.1"></script>
-  <script src="js/app.js?v=15.0"></script>
-  <script src="js/classes.js?v=12.4"></script>
-  <script src="js/attendance.js?v=14.0"></script>
+  <script src="js/app.js?v=18.0"></script>
+  <script src="js/classes.js?v=18.0"></script>
+  <script src="js/attendance.js?v=18.0"></script>
   <script src="js/calendar.js?v=9"></script>
   <script src="js/jszip.min.js?v=9.5"></script>
   <script src="js/sf2-template.js?v=9.5"></script>
@@ -409,7 +392,7 @@
   <script src="js/profile-photo.js?v=16.0"></script>
 <script src="js/profile.js?v=12.4"></script>
 
-<script src="js/vendor/qrcode.js"></script><script src="js/vendor/jsQR.js"></script><script src="js/qr-attendance.js"></script><script src="js/dashboard.js?v=15.0"></script>
-<script src="js/workspace-ui.js?v=17.0"></script><script src="js/pwa-register.js?v=17.0"></script>
+<script src="js/vendor/qrcode.js"></script><script src="js/vendor/jsQR.js"></script><script src="js/qr-attendance.js"></script><script src="js/dashboard.js?v=18.0"></script>
+<script src="js/workspace-ui.js?v=18.0"></script><script src="js/preview-live.js?v=18.0"></script><script src="js/pwa-register.js?v=18.0"></script>
 </body>
 </html>

@@ -34,6 +34,6 @@
   }
   document.addEventListener('visibilitychange',()=>{if(document.hidden&&stream){stop();const b=dialog?.querySelector('#qrStart');if(b)b.disabled=false;}});
   document.addEventListener('classcheck:panelchange',()=>{if(dialog)close();});window.addEventListener('pagehide',stop);
-  document.addEventListener('DOMContentLoaded',()=>{const summary=document.getElementById('attendanceSummary');if(summary){const bar=document.createElement('div');bar.className='cc-qr-toolbar';bar.innerHTML='<button class="btn primary" id="attendanceQR">Scan student QR</button><button class="btn soft" id="attendanceCards">Student QR cards</button>';summary.after(bar);bar.querySelector('#attendanceQR').onclick=openScanner;bar.querySelector('#attendanceCards').onclick=openCards;}});
+  document.addEventListener('DOMContentLoaded',()=>{const summary=document.getElementById('attendanceSummary');if(summary){const bar=document.createElement('div');bar.className='cc-qr-toolbar';bar.innerHTML='<button class="btn primary" id="attendanceQR">Scan student QR</button><button class="btn soft" id="attendanceCards">Student QR cards</button>';(document.querySelector('.ccx-attendance-tools .ccx-real-summary')||summary).after(bar);bar.querySelector('#attendanceQR').onclick=openScanner;bar.querySelector('#attendanceCards').onclick=openCards;}});
   window.ClassCheckQR={openScanner,openCards,payload};
 })();

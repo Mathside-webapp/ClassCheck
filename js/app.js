@@ -26,6 +26,9 @@
     'chevron-down':'<path d="m6 9 6 6 6-6"/>',
     plus:'<path d="M12 5v14M5 12h14"/>',
     close:'<path d="M6 6l12 12M18 6 6 18"/>',
+    book:'<path d="M12 6C9 4 6 4 3 5v14c3-1 6-1 9 1 3-2 6-2 9-1V5c-3-1-6-1-9 1zm0 0v14"/>',
+    clock:'<circle cx="12" cy="12" r="9"/><path d="M12 7v6l4 2"/>',
+    'shield-check':'<path d="M12 2 4 6v6c0 5 3 8 8 10 5-2 8-5 8-10V6l-8-4Zm-4 10 3 3 5-6"/>',
     'check-circle':'<circle cx="12" cy="12" r="9"/><path d="m8 12 2.6 2.6L16.5 9"/>',
     'clipboard-check':'<rect x="5" y="4" width="14" height="17" rx="2"/><path d="M9 4.5V3h6v1.5M9 13l2 2 4-4"/>',
     download:'<path d="M12 3v12M7 10l5 5 5-5M5 21h14"/>'
@@ -123,7 +126,7 @@
       setTimeout(()=>ok.focus(),30);
     });
   }
-  const panelPages={dashboard:'dashboard.html',classes:'classes.html',attendance:'attendance.html',calendar:'calendar.html',reports:'reports.html',profile:'profile.html'};
+  const panelPages={dashboard:'dashboard.html',classes:'classes.html',roster:'roster.html',attendance:'attendance.html',calendar:'calendar.html',import:'import.html',reports:'reports.html',archive:'archive.html',sync:'sync.html',profile:'profile.html'};
   const pagePanels=Object.fromEntries(Object.entries(panelPages).map(([panel,page])=>[page,panel]));
   function isUnified(){return document.body?.dataset?.classcheckUnified==='true'}
   function routeParams(){
@@ -189,37 +192,34 @@
   }
 
   function nav(active){
-    const state=window.AppStorage?AppStorage.get():null;
-    const teacherName=state?.profile?.full_name||sessionStorage.getItem('classcheck_teacher_name')||'Teacher';
-    const teacherInitial=(teacherName.trim()[0]||'T').toUpperCase();
-    const items=[
-      ['dashboard','home','Dashboard'],
-      ['classes','users','Classes'],
-      ['attendance','attendance','Attendance'],
-      ['calendar','calendar','Calendar'],
-      ['reports','report','Reports'],
-      ['profile','user','Profile']
-    ];
-    const hrefFor=panel=>isUnified()?`#${panel}`:panelPages[panel];
-    let el=qs('.classcheck-sidebar');
-    if(!el){
-      el=document.createElement('nav');
-      el.className='bottom-nav classcheck-sidebar';
-      el.setAttribute('aria-label','ClassCheck navigation');
-      document.body.appendChild(el);
+    const esc=escapeHtml;
+    const state=window.AppStorage?.get?.()||{};
+    const teacherName=(state.profile?.full_name||'Teacher').trim()||'Teacher';
+    const initial=(teacherName[0]||'T').toUpperCase();
+    const href=p=>isUnified()?`#${p}`:`app.html#${p}`;
+    const items=[['dashboard','home','Dashboard'],['classes','users','My Classes'],['roster','users','Student Roster'],['attendance','clipboard-check','Daily Attendance'],['calendar','calendar','Monthly Calendar'],['import','download','SF1 Import'],['reports','report','SF2 Reports'],['archive','clipboard-check','Archived Classes']];
+    let sidebar=qs('.ccx-sidebar');
+    if(!sidebar){
+      sidebar=document.createElement('aside');sidebar.className='ccx-sidebar';sidebar.setAttribute('aria-label','Main navigation');
+      document.body.appendChild(sidebar);
+      const scrim=document.createElement('button');scrim.type='button';scrim.className='ccx-nav-scrim';scrim.setAttribute('aria-label','Close navigation');scrim.addEventListener('click',()=>document.body.classList.remove('ccx-nav-open'));document.body.appendChild(scrim);
+      const bottom=document.createElement('nav');bottom.className='ccx-mobile-nav';bottom.setAttribute('aria-label','Mobile navigation');document.body.appendChild(bottom);
+      document.addEventListener('keydown',e=>{if(e.key==='Escape')document.body.classList.remove('ccx-nav-open');});
+      document.addEventListener('click',e=>{if(e.target.closest('.ccx-sidebar a,.ccx-mobile-nav a'))document.body.classList.remove('ccx-nav-open');});
     }
-    el.innerHTML=`
-      <a class="cc-brand" href="${hrefFor('dashboard')}" aria-label="ClassCheck home"><span class="cc-brand-icon">${icon('clipboard-check')}</span><span>ClassCheck<small>YOUR EVERYDAY CLASSROOM</small></span></a>
-      <p class="cc-nav-caption">WORKSPACE</p>
-      <a class="classcheck-teacher-card ${active==='profile'?'active':''}" href="${hrefFor('profile')}">
-        <span class="classcheck-avatar">${escapeHtml(teacherInitial)}</span>
-        <span><b>${escapeHtml(teacherName)}</b><small>Daily attendance</small></span>
-      </a>
-      <div class="classcheck-nav-links">
-        ${items.map(([key,ico,label])=>`<a class="nav-item ${key==='profile'?'classcheck-mobile-profile-nav ':''}${active===key?'active':''}" href="${hrefFor(key)}" ${active===key?'aria-current="page"':''}><span class="nav-icon">${icon(ico)}</span><span>${label}</span></a>`).join('')}
-      </div>
-      <a class="classcheck-profile-link ${active==='profile'?'active':''}" href="${hrefFor('profile')}"><span class="nav-icon">${icon('user')}</span><span>Teacher Profile</span></a><div class="cc-sidebar-note">A little check.<br><b>A big difference.</b><span>Every learner counts.</span></div>`;
-    hydrateIcons(el);
+    const link=([key,ico,label])=>`<a href="${href(key)}" class="ccx-nav-link ${active===key?'active':''}" ${active===key?'aria-current="page"':''}>${icon(ico)}<span>${label}</span></a>`;
+    sidebar.innerHTML=`<a class="ccx-brand" href="${href('dashboard')}"><img src="assets/classcheck-logo-icon.png" alt=""><span><b>ClassCheck</b><small>ATTENDANCE MADE SIMPLE</small></span></a>
+      <div class="ccx-nav-label">WORKSPACE</div><nav class="ccx-nav-stack">${items.map(link).join('')}</nav>
+      <div class="ccx-nav-label ccx-account-label">ACCOUNT</div><nav class="ccx-nav-stack">${link(['sync','clipboard-check','Offline & Sync'])}${link(['profile','user','Settings & Profile'])}</nav>
+      <div class="ccx-nav-spacer"></div><a class="ccx-sidebar-synccard" href="${href('sync')}"><span class="ccx-online-dot"></span><span><b>Offline-first ClassCheck</b><small>View saved records & sync</small></span>${icon('chevron-right')}</a>
+      <div class="ccx-sidebar-footer">CLASSCHECK · TEACHER WORKSPACE</div>`;
+    const bottom=qs('.ccx-mobile-nav');
+    const mobile=[['dashboard','home','Home'],['classes','users','Classes'],['attendance','clipboard-check','Attendance'],['calendar','calendar','Calendar'],['sync','clipboard-check','Sync']];
+    bottom.innerHTML=mobile.map(([key,ico,label])=>`<a href="${href(key)}" class="${active===key?'active':''}" ${active===key?'aria-current="page"':''}>${icon(ico)}<span>${label}</span></a>`).join('');
+    document.querySelectorAll('.ccx-topbar .ccx-page-title').forEach(el=>{el.textContent=({dashboard:'Dashboard',classes:'My Classes',roster:'Student Roster',attendance:'Daily Attendance',calendar:'Monthly Calendar',import:'SF1 Import',reports:'SF2 Reports',archive:'Archived Classes',sync:'Offline & Sync',profile:'Settings & Profile'})[active]||'Dashboard';});
+    document.querySelectorAll('.ccx-topbar .ccx-crumb-name').forEach(el=>{el.textContent=({dashboard:'OVERVIEW',classes:'CLASSES',roster:'LEARNERS',attendance:'REGISTER',calendar:'HISTORY',import:'ENROLLMENT',reports:'REPORTS',archive:'ARCHIVE',sync:'DATA SAFETY',profile:'ACCOUNT'})[active]||'OVERVIEW';});
+    document.querySelectorAll('.ccx-account-name').forEach(el=>el.textContent=teacherName);
+    document.querySelectorAll('.ccx-account-initial').forEach(el=>el.textContent=initial);
   }
 
   document.addEventListener('DOMContentLoaded',()=>{

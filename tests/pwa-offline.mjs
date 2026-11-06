@@ -14,11 +14,14 @@ assert.match(register,/serviceWorker\.register/,'worker registration enabled');
 assert.match(db,/stateCache/,'roster has IndexedDB fallback');
 assert.match(db,/saveQueued/,'attendance changes keep atomic queue writes');
 assert.match(read('manifest.webmanifest'),/"display": "standalone"/);
-assert.match(app,/css\/maroon-2026\.css\?v=17\.0/);
-for(const page of ['index.html','app.html','attendance.html','calendar.html','classes.html','reports.html','profile.html']) {
+assert.match(app,/css\/preview-implementation\.css\?v=18\.0/,'approved preview styles are loaded');
+for(const page of ['index.html','app.html']) {
  const content=read(page);
  assert.match(content,/rel="manifest"/,page+' has manifest');
  assert.match(content,/js\/pwa-register\.js/,page+' registers offline shell');
  assert.doesNotMatch(content,/js\/retire-web-install\.js/,page+' must not remove PWA');
+}
+for(const page of ['dashboard','attendance','calendar','classes','reports','profile','roster','import','archive','sync']) {
+ assert.match(read(page+'.html'), new RegExp('app\\.html#'+page),page+' goes to unified redesigned application');
 }
 console.log('PASS: scoped offline PWA, manifest, maroon assets, persisted roster and attendance queue.');

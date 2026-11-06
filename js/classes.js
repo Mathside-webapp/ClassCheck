@@ -35,17 +35,21 @@ document.addEventListener('DOMContentLoaded',async()=>{
     refreshState();
     document.querySelectorAll('[data-class-filter]').forEach(btn=>btn.classList.toggle('active',btn.dataset.classFilter===currentFilter));
     const rows=filteredClasses();
+    list.classList.add('ccx-live-class-grid');
     list.innerHTML=rows.map(c=>{
-      const count=activeStudents(c.id).length;
-      const adviser=isAdviser(c);
-      const archived=c.archived;
-      const action=archived&&adviser
-        ? '<button class="btn primary restore-class" type="button">Restore</button>'
-        : `<button class="btn soft open-roster" type="button">${archived?'View':'Open'}</button>`;
-      return `<div class="card class-card ${archived?'is-archived':''}" data-id="${c.id}"><div class="class-badge">${c.section_name.slice(0,2).toUpperCase()}</div><div class="class-info"><h3>${c.grade_level} – ${c.section_name}</h3><p>${count} learners • ${roleText(c)}${archived?' • Archived':''}</p></div>${action}</div>`;
-    }).join('')||`<div class="card cc-empty-art"><img src="assets/${currentFilter==='archived'?'empty-archive.png':'empty-classes.png'}" alt="${currentFilter==='archived'?'Archive folder illustration':'Classroom books illustration'}"><b>${currentFilter==='archived'?'No archived classes':'No classes yet'}</b><p>${currentFilter==='archived'?'Archived classes will appear here.':'Create a class or join one using a code.'}</p></div>`;
-    document.querySelectorAll('.open-roster').forEach(btn=>btn.onclick=e=>openRoster(e.target.closest('[data-id]').dataset.id));
-    document.querySelectorAll('.restore-class').forEach(btn=>btn.onclick=e=>setClassArchived(e.target.closest('[data-id]').dataset.id,false));
+      const all=activeStudents(c.id);const count=all.length;
+      const boys=all.filter(s=>String(s.sex).toLowerCase().startsWith('m')).length;
+      const adviser=isAdviser(c),archived=c.archived;
+      const title=App.escapeHtml(`${c.grade_level} — ${c.section_name}`);
+      return `<article class="ccx-card ccx-class-card ${archived?'is-archived':''}" data-id="${App.escapeHtml(c.id)}"><div class="ccx-class-card-title"><span class="ccx-class-initial">${App.escapeHtml((c.section_name||'CL').slice(0,2).toUpperCase())}</span><div><h3>${title}</h3><p>${App.escapeHtml(roleText(c))}</p></div><span class="ccx-chip ${archived?'amber':'success'}">${archived?'Archived':'Active'}</span></div>
+        <div class="ccx-class-figures"><span><b>${count}</b>Enrolled</span><span><b>${boys}</b>Boys</span><span><b>${count-boys}</b>Girls</span></div>
+        <div class="ccx-class-buttons"><button class="btn primary open-roster" type="button">${archived?'View roster':'Open roster'}</button>${archived?(adviser?'<button class="btn soft restore-class" type="button">Restore</button>':''):`<button class="btn soft ccx-class-attend" type="button">Attendance</button>${adviser?'<button class="btn ghost ccx-class-archive" type="button">Archive</button>':''}`}</div></article>`;
+    }).join('')||`<div class="ccx-card ccx-illustrated-empty"><img src="assets/${currentFilter==='archived'?'empty-archive.png':'empty-classes.png'}" alt="" loading="lazy"><h3>${currentFilter==='archived'?'No archived classes':'No classes yet'}</h3><p>${currentFilter==='archived'?'Archived classes will appear here.':'Create a class or join one using a class code.'}</p></div>`;
+    list.querySelectorAll('.open-roster').forEach(btn=>btn.onclick=e=>openRoster(e.currentTarget.closest('[data-id]').dataset.id));
+    list.querySelectorAll('.restore-class').forEach(btn=>btn.onclick=e=>setClassArchived(e.currentTarget.closest('[data-id]').dataset.id,false));
+    list.querySelectorAll('.ccx-class-archive').forEach(btn=>btn.onclick=e=>setClassArchived(e.currentTarget.closest('[data-id]').dataset.id,true));
+    list.querySelectorAll('.ccx-class-attend').forEach(btn=>btn.onclick=e=>App.navigate('#attendance?class='+encodeURIComponent(e.currentTarget.closest('[data-id]').dataset.id)));
+    document.dispatchEvent(new CustomEvent('classcheck:classesupdated'));
   }
 
   function updateRosterBulkUI(classId,adviser){
@@ -485,8 +489,8 @@ document.addEventListener('DOMContentLoaded',async()=>{
     const el=document.getElementById('sf1ImportStatus');if(!el)return;el.textContent=message;el.classList.remove('error','success');if(type)el.classList.add(type);
   }
 
-  document.getElementById('sf1File').addEventListener('change',async e=>{
-    const file=e.target.files?.[0];if(!file)return;
+  async function previewSf1File(file){
+    if(!file)return;
     setSf1Status(`Reading ${file.name}…`);
     try{
       sf1Rows=await App.withLoading('Reading SF1…','Finding learner names, LRNs, and sex from the uploaded file.',()=>parseSf1(file),{minimum:220});
@@ -496,8 +500,8 @@ document.addEventListener('DOMContentLoaded',async()=>{
       document.getElementById('sf1PreviewBody').innerHTML=sf1Rows.slice(0,30).map((r,i)=>`<tr><td>${i+1}</td><td>${r.lrn||'—'}</td><td>${r.last_name}, ${r.first_name}${r.name_extension?' '+r.name_extension:''}${r.middle_name?' '+r.middle_name:''}</td><td>${r.sex}</td></tr>`).join('')+(sf1Rows.length>30?`<tr><td colspan="4">+ ${sf1Rows.length-30} more learners</td></tr>`:'');
       sf1Preview.classList.remove('hidden');
     }catch(error){console.error('SF1 IMPORT ERROR',error);sf1Rows=[];setSf1Status(error.message||'Unable to read this SF1 file.','error');App.toast(error.message||'Unable to read this SF1 file.');}
-    finally{e.target.value='';}
-  });
+  }
+  document.getElementById('sf1File').addEventListener('change',async e=>{const file=e.target.files?.[0];await previewSf1File(file);e.target.value='';});
 
   document.getElementById('confirmSf1Import').onclick=async()=>{
     const classId=roster.dataset.classId;if(!classId||!sf1Rows.length)return;
@@ -584,6 +588,13 @@ document.addEventListener('DOMContentLoaded',async()=>{
     }catch(error){console.error(error);App.toast('Unable to delete this class.');}
   };
 
+  window.ClassCheckClasses={
+   openRoster,create:()=>classModal.classList.remove('hidden'),join:()=>joinModal.classList.remove('hidden'),
+   setArchived:setClassArchived,render,
+   previewSf1File:async (file,classId)=>{const c=state.classes.find(x=>x.id===classId);if(!c||!isAdviser(c))throw new Error('Only the class adviser can import an SF1 roster.');await openRoster(classId);await previewSf1File(file);},
+   openImport:async classId=>{await openRoster(classId);const file=document.getElementById('sf1File');file?.closest('.sf1-upload-label')?.scrollIntoView({block:'center'});file?.focus();},
+   openAddLearner:async classId=>{await openRoster(classId);document.getElementById('addStudentForm')?.scrollIntoView({block:'center'});document.getElementById('addStudentForm')?.querySelector('input[name="last"]')?.focus();}
+  };
   document.addEventListener('classcheck:panelchange',e=>{if(e.detail?.panel==='classes')render();});
   render();
 });

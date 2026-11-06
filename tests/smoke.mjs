@@ -16,6 +16,6 @@ assert.match(qr,/attendanceQR.*attendanceCards/,'both QR controls remain');
 assert.match(sync,/OfflineDB.saveQueued/,'atomic device attendance + queue write remains');
 assert.match(sync,/window.addEventListener\('online'/,'automatic sync on reconnect remains');
 assert.match(sw,/addEventListener\('fetch'/,'offline fetch interception is enabled');
-assert.match(sw,/classcheck-shell-v17/,'new versioned cache is used');
+assert.match(sw,/classcheck-shell-v18/,'new versioned cache is used');
 assert.ok(existsSync(new URL('../.github/workflows/build-android-apk.yml',import.meta.url)));
 console.log('PASS: Present default, finish, QR, local queue, reconnect sync and APK workflow.');

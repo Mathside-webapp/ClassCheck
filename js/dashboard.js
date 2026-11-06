@@ -1,83 +1,41 @@
-/* ClassCheck 2026 dashboard: real cached class/attendance state, no mock data. */
+/* ClassCheck v18 preview-to-live dashboard. Real cached teacher data only. */
 document.addEventListener('DOMContentLoaded',async()=>{
  const root=document.getElementById('dashboardContent');if(!root)return;
- let ctx;try{ctx=await AppBoot.ready();}catch(e){root.textContent=e.message||'Could not open dashboard.';return;}
+ let ctx;try{ctx=await AppBoot.ready()}catch(e){root.textContent=e.message||'Sign in to open your dashboard.';return;}
  if(!App.isUnified())App.nav('dashboard');
- const esc=App.escapeHtml;
- const icon=(name)=>App.icon(name);
- const today=()=>App.fmtDate();
- const summary=row=>row?.session_status==='completed'||row?.status==='completed';
- let refreshInProgress=false;
+ const esc=App.escapeHtml,icon=App.icon,today=()=>App.fmtDate();
+ const empty=(asset,title,description,action)=>`<div class="ccx-illustrated-empty"><img src="assets/${asset}.png" alt="" loading="lazy"><h3>${esc(title)}</h3><p>${esc(description)}</p>${action||''}</div>`;
+ let isRendering=false,rerender=false;
  async function render(){
-  if(refreshInProgress)return;refreshInProgress=true;
+  if(isRendering){rerender=true;return;}isRendering=true;
   try{
-   const state=AppStorage.get();const date=today();const name=state.profile?.full_name?.trim()||'Teacher';
-   const classes=(state.classes||[]).filter(c=>!c.archived);
-   const students=(state.students||[]).filter(s=>!s.archived&&classes.some(c=>c.id===s.class_id));
-   const allRows=await OfflineDB.all('attendance');
-   const rows=allRows.filter(r=>r.teacher_id===ctx.user.id&&r.attendance_date===date&&students.some(s=>s.id===r.student_id));
-   const allSessions=await OfflineDB.all('sessions');
-   const sessions=allSessions.filter(s=>s.teacher_id===ctx.user.id&&s.attendance_date===date&&summary(s));
-   const uniqueRows=[...new Map(rows.map(r=>[`${r.class_id}_${r.student_id}`,r])).values()];
-   const counts={present:0,absent:0,late:0};uniqueRows.forEach(r=>{if(r.status in counts)counts[r.status]++;});
-   const done=classes.filter(c=>sessions.some(s=>s.class_id===c.id));
-   const totals=classes.map((c,i)=>({c,i,learners:students.filter(s=>s.class_id===c.id),saved:uniqueRows.filter(r=>r.class_id===c.id),finished:done.some(x=>x.id===c.id)}));
-   const welcomeDate=App.longDate(date);
-   root.innerHTML=`<div class="cc-dashboard">
-    <header class="cc-dash-hero"><div><h1>Dashboard</h1><p>Good day, ${esc(name)}! Ready for today's class?</p></div><div class="cc-dash-date">${esc(welcomeDate)}</div></header>
-    <section class="cc-kpis" aria-label="Today's attendance numbers">
-      ${[
-       ['users',classes.length,'Classes',''],['users',students.length,'Learners',''],
-       ['check-circle',counts.present,'Present','success'],['user',counts.absent,'Absent','warning'],['calendar',counts.late,'Late','']
-      ].map(([i,n,label,t])=>`<article class="cc-kpi"><span class="cc-kpi-icon ${t}">${icon(i)}</span><div><strong>${n}</strong><span>${label}</span></div></article>`).join('')}
-    </section>
-    <div class="cc-dash-grid">
-      <section class="cc-maroon-panel"><div class="cc-panel-header"><h2>My Classes</h2><a href="#classes">Manage classes ${icon('chevron-right')}</a></div>
-       ${totals.length?totals.map(({c,i,learners,saved,finished})=>`<a class="cc-dash-class" href="#attendance?class=${encodeURIComponent(c.id)}&date=${date}"><span class="cc-class-bubble">${esc((c.section_name||'CL').slice(0,2).toUpperCase())}</span><span class="cc-class-text"><b>${esc(c.grade_level)} – ${esc(c.section_name)}</b><small>${learners.length} learners · ${saved.length} marked today</small></span><span class="cc-finish-tag ${finished?'done':''}">${finished?'✓ Complete':saved.length?'In progress':'To do'}</span>${icon('chevron-right')}</a>`).join(''):`<div class="cc-empty-art"><img src="assets/empty-classes.png" alt="Books and classroom board"><b>No classes yet</b><p>Create a class or join an adviser’s shared class.</p><a class="btn primary" href="#classes">Open classes</a></div>`}
-      </section>
-      <section class="cc-maroon-panel"><div class="cc-panel-header"><h2>Quick Actions</h2></div>
-       <div class="cc-quick-grid">
-        <a class="cc-quick-tile" href="#attendance">${icon('clipboard-check')}<span>Mark Attendance<small>Record P, A or L</small></span></a>
-        <a class="cc-quick-tile" href="#calendar">${icon('calendar')}<span>View Calendar<small>Attendance history</small></span></a>
-        <a class="cc-quick-tile" href="#classes">${icon('users')}<span>Manage SF1<small>Open class → Upload SF1</small></span></a>
-        <a class="cc-quick-tile" href="#reports">${icon('download')}<span>Export SF2<small>Monthly school form</small></span></a>
-        <button class="cc-quick-tile" id="ccDashQrScanner" type="button">${icon('attendance')}<span>Scan QR<small>Check in learners</small></span></button>
-        <button class="cc-quick-tile" id="ccDashQrCards" type="button">${icon('download')}<span>Student QR Cards<small>Prepare class cards</small></span></button>
-       </div></section>
-      <section class="cc-maroon-panel cc-dash-today"><div class="cc-panel-header"><h2>Today's Attendance</h2><a href="#attendance">Take attendance ${icon('chevron-right')}</a></div>
-      ${totals.length?totals.map(({c,learners,saved,finished})=>`<div class="cc-attendance-line"><span class="cc-kpi-icon ${finished?'success':''}" style="width:35px;height:35px">${icon('clipboard-check')}</span><strong>${esc(c.grade_level)} – ${esc(c.section_name)}<small style="display:block;margin-top:3px">${saved.length} of ${learners.length} recorded</small></strong><span class="cc-today-chip ${finished?'done':''}">${finished?'✓ Completed':saved.length?'In progress':'Not started'}</span><a href="#attendance?class=${encodeURIComponent(c.id)}&date=${date}" aria-label="Open attendance for ${esc(c.section_name)}">${icon('chevron-right')}</a></div>`).join(''):`<div class="cc-empty-art"><img src="assets/empty-attendance.png" alt="Attendance checklist"><b>No attendance today</b><p>Add a class to start recording attendance.</p></div>`}
-      </section>
-      <section class="cc-maroon-panel"><div class="cc-panel-header"><h2>Progress & Reports</h2><a href="#reports">View reports ${icon('chevron-right')}</a></div>
-        <div class="cc-attendance-line"><span class="cc-kpi-icon success">${icon('check-circle')}</span><strong>Completed registers</strong><b>${done.length} / ${classes.length}</b></div>
-        <div class="cc-attendance-line"><span class="cc-kpi-icon">${icon('clipboard-check')}</span><strong>Explicitly saved marks</strong><b>${uniqueRows.length} / ${students.length}</b></div>
-        <div class="cc-attendance-line"><span class="cc-kpi-icon warning">${icon('calendar')}</span><strong>Not yet marked</strong><b>${Math.max(0,students.length-uniqueRows.length)}</b></div>
-        <p style="font-size:11px;color:#897b82;margin:12px 0 0">Statistics use marks saved on this device. A learner is not counted Present until that mark has been saved.</p>
-      </section>
-    </div>
-    <div class="cc-dash-note">${icon('shield-check')}<span>Attendance saves to your device first. Pending changes upload automatically after reconnecting with a valid teacher session.</span><a href="#reports">View records</a></div>
-    </div>`;
-   root.querySelector('#ccDashQrScanner')?.addEventListener('click',()=>{App.showPanel('attendance');window.ClassCheckQR?.openScanner?.();});
-   root.querySelector('#ccDashQrCards')?.addEventListener('click',()=>window.ClassCheckQR?.openCards?.());
-  }catch(error){console.error('Dashboard unavailable',error);root.textContent='Cannot read device attendance records. Please reconnect without clearing your browser data.';}
-  finally{refreshInProgress=false;}
+    const state=AppStorage.get();const name=state.profile?.full_name?.trim()||'Teacher';
+    const date=today();const d=new Date(`${date}T12:00:00`);const classes=(state.classes||[]).filter(c=>!c.archived);
+    const studentList=(state.students||[]).filter(s=>!s.archived&&classes.some(c=>c.id===s.class_id));
+    const rows=(await OfflineDB.all('attendance')).filter(r=>r.teacher_id===ctx.user.id&&r.attendance_date===date);
+    const latest=new Map(rows.map(r=>[`${r.class_id}:${r.student_id}`,r]));
+    const sessions=(await OfflineDB.all('sessions')).filter(s=>s.teacher_id===ctx.user.id&&s.attendance_date===date&&(s.session_status==='completed'||s.status==='completed'));
+    const allowed=new Set(studentList.map(s=>`${s.class_id}:${s.id}`));
+    const marks=[...latest].filter(([key])=>allowed.has(key)).map(([,r])=>r);
+    const count={present:0,absent:0,late:0};marks.forEach(m=>{if(m.status in count)count[m.status]++});
+    const details=classes.map(c=>({c,roster:studentList.filter(s=>s.class_id===c.id),marks:marks.filter(m=>m.class_id===c.id),completed:sessions.some(x=>x.class_id===c.id)}));
+    const stats=[['users',classes.length,'Active classes','Your current sections',''],['users',studentList.length,'Total learners','Across active classes',''],['check-circle',count.present,'Present today','Saved attendance','green'],['calendar',count.absent,'Absent today','Saved attendance','red'],['calendar',count.late,'Late today','Saved attendance','amber']];
+    const item=({c,roster,marks,completed})=>`<a class="ccx-dash-class-row" href="#attendance?class=${encodeURIComponent(c.id)}&date=${date}"><span class="ccx-class-initial">${esc((c.section_name||'CL').slice(0,2).toUpperCase())}</span><span class="ccx-class-title"><b>${esc(c.grade_level)} — ${esc(c.section_name)}</b><small>${roster.length} learners · ${marks.length} recorded today</small></span><span class="ccx-chip ${completed?'success':marks.length?'rose':'amber'}">${completed?'Completed':marks.length?'In progress':'Not started'}</span>${icon('chevron-right')}</a>`;
+    const activity=[...(await OfflineDB.all('sessions')).filter(r=>r.teacher_id===ctx.user.id&&(r.session_status==='completed'||r.status==='completed'))].sort((a,b)=>String(b.client_updated_at||b.updated_at||b.attendance_date).localeCompare(String(a.client_updated_at||a.updated_at||a.attendance_date))).slice(0,4);
+    root.innerHTML=`<section class="ccx-dashboard-hero"><div><span class="ccx-eyebrow">TEACHER WORKSPACE</span><h1>Every learner counts. Every day.</h1><p>Good day, ${esc(name)}! Your classes, attendance and reports in one calm workspace.</p></div><div class="ccx-hero-date"><strong>${d.getDate()}</strong><span>${d.toLocaleDateString(undefined,{month:'long',year:'numeric'})}<small>${d.toLocaleDateString(undefined,{weekday:'long'})}</small></span></div></section>
+    <section class="ccx-stat-grid" aria-label="Today's saved attendance statistics">${stats.map(([ico,n,label,help,tone])=>`<article class="ccx-stat-card"><span class="ccx-stat-icon ${tone}">${icon(ico)}</span><div><small>${esc(label)}</small><strong>${n}</strong><span>${esc(help)}</span></div></article>`).join('')}</section>
+    <div class="ccx-dashboard-grid"><div class="ccx-dashboard-stack"><section class="ccx-card ccx-card-pad"><header class="ccx-section-title"><h2>My Classes</h2><a href="#classes">View all ${icon('chevron-right')}</a></header>${details.length?details.map(item).join(''):empty('empty-classes','No classes yet','Create a class or join an adviser’s class.','<a class="btn primary" href="#classes">Manage classes</a>')}</section>
+    <section class="ccx-card ccx-card-pad"><header class="ccx-section-title"><h2>Today's Attendance</h2><a href="#attendance">Open register ${icon('chevron-right')}</a></header>${details.length?details.map(({c,roster,marks,completed})=>`<a class="ccx-dash-class-row" href="#attendance?class=${encodeURIComponent(c.id)}&date=${date}"><span class="ccx-class-initial">${icon('clipboard-check')}</span><span class="ccx-class-title"><b>${esc(c.grade_level)} — ${esc(c.section_name)}</b><small>${marks.length} of ${roster.length} marked</small></span><span class="ccx-chip ${completed?'success':'amber'}">${completed?'Complete':marks.length?'In progress':'Pending'}</span></a>`).join(''):empty('empty-attendance','No attendance yet','Open your classes to get started','<a class="btn primary" href="#attendance">Daily attendance</a>')}</section></div>
+    <div class="ccx-dashboard-stack"><section class="ccx-card ccx-card-pad"><header class="ccx-section-title"><h2>Quick Actions</h2></header><div class="ccx-action-grid"><a href="#attendance">${icon('clipboard-check')}<b>Mark Attendance</b></a><a href="#calendar">${icon('calendar')}<b>View Calendar</b></a><a href="#import">${icon('download')}<b>Import SF1</b></a><a href="#reports">${icon('report')}<b>Export SF2</b></a><button type="button" id="ccxDashScan">${icon('attendance')}<b>Scan QR</b></button><button type="button" id="ccxDashQrCards">${icon('download')}<b>QR Cards</b></button></div></section>
+    <section class="ccx-card ccx-card-pad"><header class="ccx-section-title"><h2>Recent Activity</h2><a href="#calendar">View history ${icon('chevron-right')}</a></header>${activity.length?activity.map(a=>`<div class="ccx-activity-row"><span class="ccx-activity-symbol">${icon('check-circle')}</span><span><b>Completed attendance register</b><small>${esc(a.attendance_date)} · ${esc(classes.find(c=>c.id===a.class_id)?.section_name||'Class')}</small></span><span class="ccx-chip success">Saved</span></div>`).join(''):empty('empty-calendar','No saved activity yet','Completed registers will appear here.')}</section></div></div>
+    <div class="ccx-dashboard-hint">${icon('clipboard-check')} Attendance is saved on this device first and then synchronized with Supabase after reconnection and authentication.</div>`;
+    root.querySelector('#ccxDashScan')?.addEventListener('click',()=>{App.showPanel('attendance');window.ClassCheckQR?.openScanner?.();});
+    root.querySelector('#ccxDashQrCards')?.addEventListener('click',()=>{App.showPanel('attendance');window.ClassCheckQR?.openCards?.();});
+  }catch(e){console.error('Dashboard read failed',e);root.innerHTML='<div class="ccx-card ccx-card-pad"><h2>Local records unavailable</h2><p>Do not clear your browser data. Reopen ClassCheck with a valid session or retry when your local database is accessible.</p></div>';}finally{isRendering=false;if(rerender){rerender=false;render();}}
  }
- // Keep legacy live sync elements functioning, alongside the newer header indicator.
- let lastState='';
- async function updateSync(){
-  const title=document.getElementById('dashSyncText'),hint=document.getElementById('dashSyncHint'),retry=document.getElementById('dashSyncRetry');
-  if(!title)return;
-  try{
-   const pending=(await OfflineDB.all('syncQueue')).filter(x=>x.payload?.teacher_id===ctx.user.id).length;
-   const storageError=SyncManagerApp.storageError();
-   title.textContent=storageError?'Device storage error':!navigator.onLine?`Offline · ${pending} pending`:
-    lastState==='syncing'?`Syncing ${pending} changes`:pending?`${pending} changes saved locally`:'All attendance synced';
-   if(hint)hint.textContent=storageError?'Do not clear site data; check device storage.':'Your saved attendance remains available on this device.';
-   if(retry){retry.hidden=!pending||!navigator.onLine;retry.onclick=()=>SyncManagerApp.flush();}
-  }catch(e){console.warn(e);}
- }
- SyncManagerApp.onState(event=>{lastState=event.type;updateSync();render();});
- document.addEventListener('classcheck:panelchange',event=>{if(event.detail.panel==='dashboard')render();});
- document.addEventListener('visibilitychange',()=>{if(!document.hidden)render();});
- window.addEventListener('focus',render);
- await render();await updateSync();
+ window.ClassCheckDashboard={refresh:render};
+ window.SyncManagerApp?.onState?.(()=>render());
+ document.addEventListener('classcheck:panelchange',e=>{if(e.detail?.panel==='dashboard')render();});
+ document.addEventListener('visibilitychange',()=>{if(!document.hidden&&document.querySelector('[data-app-panel="dashboard"]:not([hidden])'))render();});
+ await render();
 });

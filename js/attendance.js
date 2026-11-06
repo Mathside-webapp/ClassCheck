@@ -85,6 +85,7 @@ document.addEventListener('DOMContentLoaded',async()=>{
     const year=displayMonth.getFullYear();
     const month=displayMonth.getMonth();
     monthLabel.textContent=displayMonth.toLocaleDateString(undefined,{month:'long',year:'numeric'});
+    const previewDate=document.getElementById('ccxDateSelect');if(previewDate)previewDate.value=selectedDate;
     const max=daysInMonth(displayMonth);
     const todayKey=App.fmtDate();
     let html='';
@@ -172,6 +173,8 @@ document.addEventListener('DOMContentLoaded',async()=>{
 
   function renderClasses(){
     classRail.innerHTML=activeClasses.map(c=>`<button type="button" class="class-pill ${c.id===selectedClassId?'selected':''}" data-class="${c.id}" aria-pressed="${c.id===selectedClassId}">${c.grade_level}<b>${c.section_name}</b><small>${subjectForClass(c.id)}</small></button>`).join('');
+    const classSelect=document.getElementById('ccxClassSelect');
+    if(classSelect){classSelect.innerHTML=activeClasses.map(c=>`<option value="${App.escapeHtml(c.id)}" ${c.id===selectedClassId?'selected':''}>${App.escapeHtml(c.grade_level)} — ${App.escapeHtml(c.section_name)}</option>`).join('');}
     classRail.querySelectorAll('.class-pill').forEach(btn=>btn.onclick=async()=>{
       selectedClassId=btn.dataset.class;
       renderClasses();
@@ -302,6 +305,8 @@ document.addEventListener('DOMContentLoaded',async()=>{
       </section>`;
     }).join('');
 
+    const filter=()=>{const term=(document.getElementById('ccxStudentSearch')?.value||'').trim().toLocaleLowerCase();list.querySelectorAll('.learner-group .student-row').forEach(row=>{row.hidden=Boolean(term)&&!row.querySelector('.student-main')?.textContent.toLocaleLowerCase().includes(term);});list.querySelectorAll('.learner-group').forEach(group=>{const all=[...group.querySelectorAll('.student-row')];group.hidden=Boolean(term)&&all.length>0&&all.every(row=>row.hidden);});};
+    filter();
     list.querySelectorAll('input[type="radio"]').forEach(input=>input.onchange=async e=>{
       if(!e.target.checked)return;
       const row=e.target.closest('.student-row');
@@ -330,6 +335,12 @@ document.addEventListener('DOMContentLoaded',async()=>{
     const late=current.filter(([,r])=>r.status==='late').length;
     const present=Math.max(0,total-absent-late);
     summary.textContent=`${present} present • ${absent} absent • ${late} late`;
+    const put=(id,text)=>{const el=document.getElementById(id);if(el)el.textContent=text;};
+    put('ccxPresent',present);put('ccxAbsent',absent);put('ccxLate',late);
+    put('ccxLearnerCount',`${total} learner${total===1?'':'s'}`);
+    put('ccxSummaryDate',App.longDate(selectedDate));put('ccxMarkedCount',`${current.length} of ${total} explicitly marked`);
+    const meter=document.getElementById('ccxSummaryMeter');if(meter){const n=Math.max(total,1);const bars=meter.querySelectorAll('i');[present,absent,late].forEach((v,i)=>{if(bars[i])bars[i].style.width=(v/n*100)+'%';});}
+
   }
 
   async function save(studentId,status){
@@ -454,6 +465,19 @@ document.addEventListener('DOMContentLoaded',async()=>{
   };
 
 
+  document.getElementById('ccxStudentSearch')?.addEventListener('input',()=>{const term=(document.getElementById('ccxStudentSearch')?.value||'').trim().toLocaleLowerCase();list.querySelectorAll('.learner-group .student-row').forEach(row=>{row.hidden=Boolean(term)&&!row.querySelector('.student-main')?.textContent.toLocaleLowerCase().includes(term);});list.querySelectorAll('.learner-group').forEach(group=>{const all=[...group.querySelectorAll('.student-row')];group.hidden=Boolean(term)&&all.length>0&&all.every(row=>row.hidden);});});
+  document.getElementById('ccxClassSelect')?.addEventListener('change',async e=>{if(!activeClasses.some(c=>c.id===e.target.value))return;selectedClassId=e.target.value;renderClasses();await load();});
+  document.getElementById('ccxDateSelect')?.addEventListener('change',async e=>{const date=e.target.value;if(!/^\d{4}-\d{2}-\d{2}$/.test(date))return;if(isWeekendDate(date)){App.toast('Weekend attendance is not allowed.');e.target.value=selectedDate;return;}selectedDate=date;dateInput.value=date;displayMonth=new Date(`${date}T12:00:00`);displayMonth.setDate(1);renderDates();await load();});
+  document.getElementById('ccxMarkAll')?.addEventListener('click',async e=>{
+    if(isWeekendDate(selectedDate)){App.toast('Weekend attendance is not allowed.');return;}
+    const students=state.students.filter(s=>s.class_id===selectedClassId&&!s.archived);if(!students.length){App.toast('Add learners before taking attendance.');return;}
+    const ok=await App.confirmAction({title:'Mark all learners Present?',message:`This will set the attendance of ${students.length} learner${students.length===1?'':'s'} to Present for ${App.longDate(selectedDate)} and save those changes locally.`,confirmText:'Mark all Present'});
+    if(!ok)return;
+    e.currentTarget.disabled=true;
+    try{for(const student of students){if(records[student.id]?.status==='present')continue;await save(student.id,'present');}renderStudents();App.toast('Present marks saved on this device.');}
+    catch(err){storageError=err.message;setSync('storage-error');App.toast('Some records could not be saved. Check device storage and retry.');}
+    finally{e.currentTarget.disabled=false;}
+  });
   document.addEventListener('classcheck:panelchange',async e=>{
     if(e.detail?.panel!=='attendance')return;
     state=AppStorage.get();

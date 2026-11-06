@@ -1,13 +1,14 @@
-/* ClassCheck v17 offline shell. Scoped to the repository path on GitHub Pages. */
-const VERSION='classcheck-shell-v17-20261106';
+/* ClassCheck v18 complete design offline shell. Scoped to the repository path on GitHub Pages. */
+const VERSION='classcheck-shell-v18-20261106';
 const SHELL=[
  './','./index.html','./app.html','./offline.html',
  './dashboard.html','./attendance.html','./calendar.html','./classes.html','./reports.html','./profile.html',
+ './roster.html','./import.html','./archive.html','./sync.html',
  './manifest.webmanifest',
- './css/styles.css','./css/responsive.css','./css/dashboard.css','./css/redesign.css','./css/maroon-2026.css',
+ './css/styles.css','./css/responsive.css','./css/dashboard.css','./css/redesign.css','./css/maroon-2026.css','./css/preview-implementation.css',
  './js/config.js','./js/demo-data.js','./js/storage.js','./js/offline-db.js','./js/supabase-client.js','./js/bootstrap.js','./js/sync.js',
  './js/app.js','./js/auth.js','./js/dashboard.js','./js/classes.js','./js/attendance.js','./js/calendar.js','./js/reports.js',
- './js/profile.js','./js/profile-photo.js','./js/sf2-template.js','./js/pwa-register.js','./js/workspace-ui.js',
+ './js/profile.js','./js/profile-photo.js','./js/sf2-template.js','./js/pwa-register.js','./js/workspace-ui.js','./js/preview-live.js',
  './js/qr-attendance.js','./js/jszip.min.js','./js/vendor/supabase.js','./js/vendor/xlsx.js','./js/vendor/qrcode.js','./js/vendor/jsQR.js',
  './assets/classcheck-logo-icon.png','./assets/classcheck-tabicon.png','./assets/icons/classcheck-192.png','./assets/icons/classcheck-512.png',
  './assets/empty-classes.png','./assets/empty-roster.png','./assets/empty-attendance.png','./assets/empty-calendar.png','./assets/empty-archive.png',

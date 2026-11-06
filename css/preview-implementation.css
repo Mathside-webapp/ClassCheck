@@ -1,0 +1,251 @@
+/* CLASSCHECK V18 — Full approved-preview implementation, applied AFTER all legacy styles.
+   This stylesheet uses isolated ccx-* classes to remove old-screen visual remnants
+   without changing the identifiers used by Supabase, SF1, SF2 or attendance logic. */
+:root{--ccx-maroon:#68172e;--ccx-rose:#902c4a;--ccx-gold:#d6a65e;--ccx-ink:#28232a;--ccx-muted:#77707a;--ccx-line:#ebdfe3;--ccx-soft:#f8f1f3;--ccx-shadow:0 5px 18px rgba(68,20,36,.045);--ccx-success:#238665;--ccx-warning:#d99632;--ccx-danger:#c74752}
+body.classcheck-app{background:#f8f1f3!important;color:#28232a!important;font:14px/1.5 Inter,'Segoe UI',Arial,sans-serif!important}
+body.classcheck-app .app-shell{background:transparent!important;margin-left:252px!important;width:calc(100% - 252px)!important;max-width:none!important;min-height:100dvh!important;padding:111px clamp(20px,2.7vw,36px) 64px!important}
+body.classcheck-app .app-shell>*{max-width:1480px;margin-left:auto;margin-right:auto}
+body.classcheck-app .app-shell :is(h1,h2,h3){font-family:Helvetica,Arial,sans-serif!important;letter-spacing:-.02em!important;color:#28232a!important}
+body.classcheck-app .app-shell h1{font-size:clamp(26px,2.4vw,32px)!important;letter-spacing:-.04em!important}
+body.classcheck-app :is(.ccx-sidebar a,.ccx-topbar a,.ccx-dash-class-row,.ccx-roster-row){text-decoration:none!important}
+body.classcheck-app [hidden]{display:none!important}
+body.classcheck-app :is(a,button,input,select,textarea):focus-visible{outline:3px solid #c8829580!important;outline-offset:2px!important}
+/* Sidebar: matches the preview's full workspace structure, not the old six-button list. */
+body.classcheck-app .ccx-sidebar{position:fixed;inset:0 auto 0 0;width:252px;background:linear-gradient(165deg,#68172e 0%,#511326 84%);color:#fff;display:flex;flex-direction:column;padding:24px 14px 16px;z-index:61;box-shadow:4px 0 25px #40132514;overflow-y:auto;scrollbar-width:thin;scrollbar-color:#9a4b66 transparent}
+body.classcheck-app .ccx-brand{display:flex;align-items:center;gap:11px;padding:0 9px 30px;color:#fff!important}
+body.classcheck-app .ccx-brand img{display:block;width:48px;height:48px;object-fit:contain;background:#fff2f5;border-radius:13px;padding:4px;flex-shrink:0}
+body.classcheck-app .ccx-brand b{font:800 23px Helvetica,Arial,sans-serif!important;letter-spacing:-.7px;color:white!important}
+body.classcheck-app .ccx-brand small{display:block;color:#edcbd4!important;font-size:9px!important;letter-spacing:.085em;font-weight:650}
+body.classcheck-app .ccx-nav-label{font-size:10px!important;letter-spacing:1.5px;color:#dda6b9!important;font-weight:750;padding:0 15px 10px}
+body.classcheck-app .ccx-nav-stack{display:grid;gap:3px}
+body.classcheck-app .ccx-nav-link{display:flex;align-items:center;gap:12px;min-height:42px;color:#f8e5eb!important;padding:10px 13px;border-radius:10px;font-size:12px!important;font-weight:600;transition:background .16s}
+body.classcheck-app .ccx-nav-link:hover{background:#ffffff17;color:white!important}
+body.classcheck-app .ccx-nav-link.active{background:#ffffff26;color:white!important;font-weight:780;box-shadow:inset 3px 0 0 #d6a65e}
+body.classcheck-app .ccx-nav-link .svg-icon{width:18px;height:18px;flex:none;stroke-width:1.85}
+body.classcheck-app .ccx-account-label{margin-top:20px;padding-top:18px;border-top:1px solid #ffffff27}
+body.classcheck-app .ccx-nav-spacer{flex:1;min-height:25px}
+body.classcheck-app .ccx-sidebar-synccard{display:flex;align-items:center;gap:11px;color:#fff!important;background:#ffffff13;border:1px solid #ffffff2d;border-radius:11px;padding:12px 9px;font-size:11px}
+body.classcheck-app .ccx-sidebar-synccard>span:nth-child(2){flex:1;min-width:0}
+body.classcheck-app .ccx-sidebar-synccard b{display:block;color:#fff!important;font-size:11px}
+body.classcheck-app .ccx-sidebar-synccard small{display:block;font-size:10px;color:#edd2da!important}
+body.classcheck-app .ccx-sidebar-synccard svg{width:15px;height:15px}
+.ccx-online-dot{width:9px;height:9px;background:#65d0a1;border-radius:50%;box-shadow:0 0 0 4px #65d0a12a;flex:none}
+.ccx-sidebar-footer{font-size:9px;color:#e5b9c7;padding:14px 6px 0;letter-spacing:.09em;opacity:.7}
+.ccx-nav-scrim,.ccx-mobile-nav{display:none}
+/* Shared header: preview breadcrumb and compact account, real synchronized status. */
+body.classcheck-app .ccx-topbar{position:fixed;z-index:55;top:0;left:252px;right:0;min-height:83px;display:flex;align-items:center;justify-content:space-between;gap:17px;padding:12px 34px;border-bottom:1px solid var(--ccx-line);background:#ffffffeb;backdrop-filter:blur(15px)}
+.ccx-topbar-left,.ccx-topbar-right{display:flex;align-items:center;gap:16px;min-width:0}
+.ccx-topbar-heading small{display:block;color:var(--ccx-rose);font-size:10px;letter-spacing:1.3px;font-weight:800}
+.ccx-topbar-heading small span{padding:0 4px;color:#aaa0a4}.ccx-topbar-heading small b{font-weight:800}
+body.classcheck-app .ccx-topbar-heading .ccx-page-title{display:block;color:var(--ccx-ink);font:800 22px Helvetica,Arial,sans-serif;letter-spacing:-.025em}
+.ccx-today-chip{background:#f8edf1;color:#834259;font-size:11px;font-weight:750;border-radius:10px;padding:9px 11px;white-space:nowrap}
+body.classcheck-app .ccx-sync-pill{border:1px solid #d5e7da;background:#edf7f0;color:#24714c;padding:8px 12px;display:flex;align-items:center;gap:10px;border-radius:10px;min-width:150px;min-height:42px;text-align:left;cursor:pointer;white-space:nowrap}
+.ccx-sync-led{background:#238665;border-radius:50%;width:9px;height:9px;flex:none}
+.ccx-sync-pill b,.ccx-sync-pill small{display:block}.ccx-sync-pill b{font-size:11px;font-weight:800}.ccx-sync-pill small{font-size:10px;opacity:.79}
+.ccx-sync-pill[data-status=offline],.ccx-sync-pill[data-status=saved]{background:#fff4df!important;border-color:#edddbb!important;color:#956016!important}.ccx-sync-pill[data-status=offline] .ccx-sync-led,.ccx-sync-pill[data-status=saved] .ccx-sync-led{background:#d99632}
+.ccx-sync-pill[data-status=error]{background:#fff0f1!important;border-color:#edcbd0!important;color:#a02e3f!important}.ccx-sync-pill[data-status=error] .ccx-sync-led{background:#c74752}
+.ccx-sync-pill[data-status=syncing]{background:#edf1fb!important;color:#4d63a3!important}.ccx-sync-pill[data-status=syncing] .ccx-sync-led{background:#5876c1}
+.ccx-account-link{display:flex;align-items:center;gap:9px;border-left:1px solid #eadde1;padding-left:16px;color:#35282f!important;min-width:0}.ccx-account-initial{display:grid;place-items:center;width:37px;height:37px;border-radius:11px;background:#f2dbe3;color:#68172e;font-weight:800;flex:none}.ccx-account-link b{display:block;max-width:150px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:11px;color:var(--ccx-ink)}.ccx-account-link small{display:block;font-size:10px;color:#8b7d85}
+.ccx-menu-btn{display:none!important}.ccx-sync-popover{position:fixed;top:72px;right:24px;width:min(360px,calc(100vw - 32px));z-index:90;background:#fff;border:1px solid var(--ccx-line);border-radius:13px;box-shadow:0 14px 50px #581b3030;padding:18px}.ccx-sync-popover h3{margin:0 0 12px!important;font-size:17px!important}.ccx-sync-popover p{margin:7px 0;font-size:12px;color:#7b6a73}.ccx-sync-popover-actions{display:flex;align-items:center;justify-content:flex-end;gap:8px;margin-top:14px}.ccx-sync-popover-actions button,.ccx-sync-popover-actions a{display:inline-flex;border-radius:8px;border:1px solid #e9d6de;padding:8px 10px;font-size:11px;font-weight:750;cursor:pointer;text-decoration:none}.ccx-small-primary{background:#68172e;color:white;border-color:#68172e!important}.ccx-small-secondary{background:#fff;color:#68172e}
+/* Shared preview headings, cards, buttons */
+body.classcheck-app .ccx-page-heading{display:flex;justify-content:space-between;align-items:center;gap:16px;margin-bottom:22px!important;padding:0!important;min-height:55px;background:transparent!important;box-shadow:none!important;border:0!important}
+body.classcheck-app .ccx-eyebrow{color:var(--ccx-rose);font-weight:800;font-size:10px!important;letter-spacing:1.5px;text-transform:uppercase}
+body.classcheck-app .ccx-page-heading h1{margin:3px 0 4px!important;line-height:1.15!important;font-size:30px!important}
+body.classcheck-app .ccx-page-heading p{color:var(--ccx-muted);font-size:12px;line-height:1.5;margin:0}
+.ccx-heading-actions{display:flex;align-items:center;justify-content:flex-end;gap:9px;flex-wrap:wrap}
+body.classcheck-app .ccx-card{background:#fff!important;border:1px solid #efe4e8!important;border-radius:15px!important;box-shadow:var(--ccx-shadow)!important;min-width:0}
+.ccx-card-pad{padding:21px}
+.ccx-muted{font-size:12px;color:var(--ccx-muted)!important;line-height:1.5}
+body.classcheck-app .ccx-section-title{display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px;margin-bottom:15px}
+body.classcheck-app .ccx-section-title h2{font-size:18px!important;margin:0!important}
+.ccx-section-title a{display:inline-flex;align-items:center;gap:4px;color:#902c4a;font-size:11px;font-weight:800}
+.ccx-section-title a svg{width:15px;height:15px}
+body.classcheck-app .ccx-chip{white-space:nowrap;display:inline-flex;align-items:center;gap:5px;padding:5px 9px;border-radius:7px;background:#f6e8ed;color:#872b4b;font-size:10px!important;font-weight:750;line-height:1.2}
+body.classcheck-app .ccx-chip.success{background:#e7f5ec!important;color:#177348!important}.ccx-chip.amber{background:#fff1dc!important;color:#a76b1f!important}.ccx-chip.grey{background:#f4f1f2!important;color:#766a70!important}.ccx-chip.rose{background:#f7e7ed!important;color:#822a49!important}
+body.classcheck-app .ccx-page-heading .btn,body.classcheck-app .ccx-class-buttons .btn,body.classcheck-app .ccx-file-button{min-height:39px!important;border-radius:9px!important;font-size:12px!important;padding:10px 15px!important}
+body.classcheck-app .ccx-illustrated-empty{padding:22px;text-align:center;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:7px;min-height:175px}
+body.classcheck-app .ccx-illustrated-empty img{max-height:120px;width:min(190px,80%);object-fit:contain;mix-blend-mode:multiply}
+body.classcheck-app .ccx-illustrated-empty h3{font-size:15px!important;margin:3px 0 1px!important}.ccx-illustrated-empty p{font-size:12px;color:var(--ccx-muted);margin:0 0 6px}
+body.classcheck-app .ccx-illustrated-empty .btn{margin-top:9px}
+/* Preview dashboard: maroon hero, stat tiles, class rows, action tiles. */
+body.classcheck-app .ccx-dashboard-hero{background:linear-gradient(112deg,#68172e,#902c4a 76%,#a74463);padding:25px 29px;display:flex;align-items:center;justify-content:space-between;gap:16px;border-radius:17px;margin-bottom:19px;box-shadow:0 9px 24px #68172e1d;position:relative;overflow:hidden}
+body.classcheck-app .ccx-dashboard-hero::after{content:"";position:absolute;width:200px;height:200px;right:9%;top:-125px;border:1px solid #ffffff25;border-radius:50%;pointer-events:none}
+body.classcheck-app .ccx-dashboard-hero .ccx-eyebrow{color:#e8bf81!important}
+body.classcheck-app .ccx-dashboard-hero h1{margin:4px 0 5px!important;font-size:clamp(23px,2.5vw,29px)!important;color:#fff!important}
+body.classcheck-app .ccx-dashboard-hero p{margin:0!important;color:#f6dae4!important;font-size:12px}
+.ccx-hero-date{display:flex;align-items:center;gap:12px;border:1px solid #ffffff50;border-radius:12px;background:#ffffff16;padding:11px 17px;flex:none;position:relative;z-index:1;color:white}.ccx-hero-date strong{font:800 30px Helvetica,Arial,sans-serif}.ccx-hero-date span{font-size:11px}.ccx-hero-date small{display:block;opacity:.8}
+.ccx-stat-grid{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:12px;margin-bottom:18px}
+.ccx-stat-card{display:flex;align-items:center;gap:12px;background:#fff;border:1px solid #efe4e8;border-radius:14px;box-shadow:var(--ccx-shadow);padding:17px 15px;min-height:95px;min-width:0}
+.ccx-stat-icon{width:44px;height:44px;flex:0 0 44px;display:grid;place-items:center;background:#f8e9ee;color:#902c4a;border-radius:13px}.ccx-stat-icon svg{width:22px;height:22px}
+.ccx-stat-icon.green{background:#e7f4ed;color:#238665}.ccx-stat-icon.red{background:#ffedee;color:#b84453}.ccx-stat-icon.amber{background:#fff0dd;color:#c4862b}
+.ccx-stat-card small,.ccx-stat-card strong,.ccx-stat-card span:not(.ccx-stat-icon){display:block}.ccx-stat-card small{font-size:10px;color:var(--ccx-muted)}.ccx-stat-card strong{font:800 25px Helvetica,Arial,sans-serif;line-height:1.25;color:var(--ccx-ink)}.ccx-stat-card span:not(.ccx-stat-icon){font-size:10px;color:var(--ccx-muted)}
+.ccx-dashboard-grid{display:grid;grid-template-columns:minmax(0,1.14fr) minmax(0,.86fr);gap:16px}.ccx-dashboard-stack{display:grid;gap:16px;align-content:start}
+.ccx-dash-class-row,.ccx-activity-row{display:flex;gap:11px;align-items:center;padding:12px 3px;border-top:1px solid #f2ebef;color:var(--ccx-ink);min-width:0}
+.ccx-dash-class-row:first-of-type,.ccx-activity-row:first-of-type{border-top:0}
+.ccx-dash-class-row:hover{background:#fff9fb}.ccx-class-initial{display:grid;place-items:center;width:43px;height:43px;flex:0 0 43px;background:#f6e4eb;border-radius:11px;color:#7c2844;font-size:15px;font-weight:800}.ccx-class-initial svg{width:19px;height:19px}
+.ccx-class-title{min-width:0;flex:1}.ccx-class-title b{display:block;font-size:12px;color:var(--ccx-ink)}.ccx-class-title small{display:block;color:#8a7a83;font-size:10px;margin-top:2px}
+.ccx-dash-class-row>.svg-icon{width:15px;height:15px;color:#8c5970}
+.ccx-action-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
+body.classcheck-app .ccx-action-grid>a,body.classcheck-app .ccx-action-grid>button{min-width:0;min-height:87px;display:flex;align-items:center;justify-content:center;flex-direction:column;gap:10px;color:#68172e;background:#fff9fb;border:1px solid #eadde1;border-radius:12px;padding:13px;cursor:pointer;text-align:center}
+.ccx-action-grid>a:hover,.ccx-action-grid>button:hover{background:#f8e9ee}.ccx-action-grid svg{width:25px;height:25px}.ccx-action-grid b{font-size:11px;font-weight:750}
+.ccx-activity-symbol{display:grid;place-items:center;flex:0 0 30px;width:30px;height:30px;border-radius:50%;color:#238665;background:#e6f4ec}.ccx-activity-symbol svg{width:17px;height:17px}.ccx-activity-row>span:nth-child(2){flex:1;min-width:0}.ccx-activity-row b{display:block;font-size:12px}.ccx-activity-row small{display:block;font-size:10px;color:var(--ccx-muted)}
+.ccx-dashboard-hint{display:flex;gap:9px;align-items:center;color:#876b3e;border:1px solid #eadcc5;background:#fffaf1;border-radius:9px;padding:12px 14px;font-size:11px;margin-top:16px}.ccx-dashboard-hint svg{width:16px;height:16px;flex:none}
+/* Classes list rebuilt as proper preview cards, preserving existing class events. */
+body.classcheck-app #classList.ccx-live-class-grid,.ccx-live-class-grid{display:grid!important;grid-template-columns:repeat(2,minmax(0,1fr))!important;gap:15px!important;align-items:stretch!important;max-width:1480px}
+body.classcheck-app #classList.ccx-live-class-grid>.ccx-illustrated-empty{grid-column:1/-1}
+body.classcheck-app .ccx-class-card{padding:19px!important;display:flex!important;flex-direction:column!important;gap:13px!important;border:1px solid #efe4e8!important;min-height:200px!important;border-radius:14px!important;background:#fff!important}
+.ccx-class-card-title{display:flex;align-items:center;gap:12px;min-width:0}.ccx-class-card-title>div{flex:1;min-width:0}.ccx-class-card-title h3{font-size:16px!important;margin:0 0 3px!important}.ccx-class-card-title p{font-size:11px;margin:0;color:var(--ccx-muted)}
+.ccx-class-figures{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));border-top:1px solid #f2e9ec;border-bottom:1px solid #f2e9ec;padding:11px 0;gap:6px}.ccx-class-figures span{color:var(--ccx-muted);font-size:10px;text-align:center;border-right:1px solid #f2e9ec}.ccx-class-figures span:last-child{border:0}.ccx-class-figures b{display:block;color:var(--ccx-ink);font-size:19px;line-height:1.15}
+.ccx-class-buttons{display:flex;gap:8px;flex-wrap:wrap;margin-top:auto}.ccx-class-buttons .btn{flex:1;white-space:nowrap}
+body.classcheck-app [data-app-panel=classes] .pills.centered-pills{justify-content:flex-start!important;margin:0 auto 18px!important;max-width:1480px!important}.ccx-page-heading+.pills{margin-top:3px}
+body.classcheck-app .centered-pills .pill{background:#fff!important;border:1px solid #ead9e0!important;border-radius:9px!important;padding:9px 15px!important;color:#6c5360!important;font-size:11px!important}.centered-pills .pill.active{background:#68172e!important;color:white!important;border-color:#68172e!important}
+/* Actual attendance: preview's class / date / search toolbar, roster left, summary right. */
+body.classcheck-app [data-app-panel=attendance] .app-shell{padding-bottom:70px!important}
+body.classcheck-app .ccx-attendance-heading{align-items:center!important}
+body.classcheck-app .ccx-attendance-heading .sync-badge{font-size:10px!important;padding:7px 10px!important}
+.ccx-filterbar{display:flex;align-items:end;gap:13px;flex-wrap:wrap;padding:14px 17px;border:1px solid #eee2e7;border-radius:14px;background:#fff;box-shadow:var(--ccx-shadow);margin-bottom:17px!important}
+.ccx-filterbar label{display:flex;flex-direction:column;gap:6px;font-weight:750;font-size:11px;color:#655660;flex:1;min-width:180px}
+body.classcheck-app .ccx-filterbar .input{width:100%;background:#fff!important;min-height:42px!important;padding:10px 12px!important;border:1px solid #e6d9df!important;border-radius:9px!important;line-height:1.4!important}
+.ccx-filterbar .ccx-search-field{flex:1.25;min-width:220px}
+body.classcheck-app .ccx-register-layout{display:grid!important;grid-template-columns:minmax(0,1fr) minmax(270px,320px)!important;gap:16px!important;align-items:start!important;max-width:1480px!important}
+body.classcheck-app .ccx-attendance-register{grid-column:1;grid-row:1;min-width:0!important;position:static!important;padding:0!important;overflow:hidden!important}
+body.classcheck-app .ccx-attendance-tools{grid-column:2;grid-row:1;position:static!important;padding:18px!important;min-width:0!important;box-shadow:var(--ccx-shadow)!important}
+body.classcheck-app .ccx-attendance-register .roster-heading{display:flex;align-items:center;justify-content:space-between;margin:0!important;padding:21px 21px 16px!important;border-bottom:1px solid #f0e5e9!important}
+body.classcheck-app .ccx-attendance-register .roster-heading h2{display:inline-block!important;font-size:18px!important;margin:0 6px 0 0!important}
+.ccx-learner-total{font-size:10px;display:inline-flex;background:#f8e9ee;color:#7c2944;font-weight:750;padding:5px 9px;border-radius:7px}
+body.classcheck-app .ccx-attendance-register .roster-heading p{font-size:11px!important;max-width:440px;color:var(--ccx-muted)!important;margin:6px 0 0!important}
+body.classcheck-app .ccx-attendance-register .roster-status{color:#902c4a!important;font-size:9px!important;font-weight:750;background:transparent!important;white-space:nowrap}
+body.classcheck-app .radio-attendance-list .learner-group{margin:0!important;padding:0 19px!important}
+body.classcheck-app .radio-attendance-list .learner-group-heading{background:#fbf4f7!important;border-radius:8px!important;padding:10px 13px!important;margin:14px 0 5px!important;display:flex;align-items:center!important;justify-content:space-between!important;border:0!important}
+body.classcheck-app .radio-attendance-list .learner-group-heading h3{font-size:12px!important;margin:0!important;color:#6c1c35!important}.learner-group-count{font-size:10px!important;color:#8a6d79!important}
+body.classcheck-app .radio-attendance-list .student-row{display:grid!important;grid-template-columns:32px minmax(150px,1fr) minmax(290px,.95fr)!important;align-items:center!important;gap:10px!important;padding:11px 4px!important;min-height:64px!important;background:#fff!important;border-bottom:1px solid #f0e9ec!important;box-shadow:none!important;border-radius:0!important;margin:0!important}
+body.classcheck-app .radio-attendance-list .student-row[hidden]{display:none!important}
+body.classcheck-app .radio-attendance-list .student-avatar{display:grid!important;place-items:center!important;width:29px!important;height:29px!important;border:1px solid #eddee5!important;border-radius:8px!important;background:#fff9fb!important;font-size:10px!important;color:#8a6172!important}
+body.classcheck-app .radio-attendance-list .student-main{display:block!important;min-width:0!important}
+body.classcheck-app .radio-attendance-list .student-main b{font-size:11px!important;font-weight:750!important;color:#2f2a2c!important;word-wrap:break-word}
+body.classcheck-app .radio-attendance-list .status-radio-group{display:grid!important;grid-template-columns:repeat(3,minmax(0,1fr))!important;gap:6px!important;margin:0!important;grid-column:3!important;min-width:0!important}
+body.classcheck-app .radio-attendance-list .status-radio{display:flex!important;flex-direction:row!important;gap:7px!important;align-items:center;justify-content:center;min-width:0!important;min-height:39px!important;font-size:11px!important;padding:6px 5px!important;background:#fff!important;border:1px solid #e9e1e5!important;border-radius:8px!important;color:#655860!important;cursor:pointer}
+body.classcheck-app .radio-attendance-list .status-radio .radio-dot{width:12px!important;height:12px!important;margin:0!important;flex:0 0 12px}
+body.classcheck-app .radio-attendance-list .status-radio.checked.present{background:#e6f4eb!important;color:#147b50!important;border-color:#acd5bc!important}
+body.classcheck-app .radio-attendance-list .status-radio.checked.absent{background:#fff0f2!important;color:#b52c46!important;border-color:#ebbfc7!important}
+body.classcheck-app .radio-attendance-list .status-radio.checked.late{background:#fff5e7!important;color:#a66a1a!important;border-color:#edd7ad!important}
+.ccx-register-footer{border-top:1px solid #f0e6e9;padding:17px 21px;display:flex;align-items:center;gap:14px;justify-content:space-between;flex-wrap:wrap}.ccx-register-footer p{margin:0;color:#7a6d75;font-size:11px;max-width:490px}.ccx-register-footer .btn{min-width:178px}
+body.classcheck-app .ccx-attendance-tools .panel-heading{text-align:left!important;margin:0 0 12px!important}.ccx-attendance-tools .panel-heading h2{font-size:16px!important}.ccx-attendance-tools .panel-heading p{font-size:11px!important;color:var(--ccx-muted)}
+body.classcheck-app .ccx-attendance-tools .date-deck{padding:12px!important;margin-bottom:12px!important;background:#fff!important;border:1px solid #eee1e7!important;border-radius:11px!important}
+body.classcheck-app .ccx-attendance-tools .date-chip{min-width:43px!important;flex-basis:43px!important;font-size:10px!important}
+body.classcheck-app .ccx-attendance-tools .date-rail{max-width:100%!important}
+body.classcheck-app .ccx-attendance-tools .class-rail{gap:6px!important;margin:0!important}
+body.classcheck-app .ccx-attendance-tools .class-pill{min-width:95px!important;padding:10px 9px!important;font-size:10px!important;border-radius:9px!important}
+body.classcheck-app .ccx-attendance-tools .section-label{margin:13px 0 8px!important;font-size:9px!important;text-align:left!important}
+.ccx-real-summary{border:1px solid #eddee4;border-radius:12px;background:#fff9fb;padding:15px;margin-top:18px}.ccx-real-summary h3{margin:0 0 4px!important;font-size:16px!important}.ccx-real-summary .ccx-muted{margin:0 0 12px;font-size:11px!important}.ccx-summary-numbers{display:grid;grid-template-columns:repeat(3,1fr);gap:4px}.ccx-summary-numbers>div{text-align:center;border-right:1px solid #eee3e6}.ccx-summary-numbers>div:last-child{border:0}.ccx-summary-numbers b{display:block;font-size:23px;color:#238665}.ccx-summary-numbers>div:nth-child(2) b{color:#bf4a59}.ccx-summary-numbers>div:nth-child(3) b{color:#ba812e}.ccx-summary-numbers small{font-size:10px;color:#796b73}.ccx-summary-meter{display:flex;overflow:hidden;background:#f3eef0;border-radius:100px;height:8px;margin-top:12px}.ccx-summary-meter i{background:#238665;transition:width .14s}.ccx-summary-meter i:nth-child(2){background:#c74752}.ccx-summary-meter i:nth-child(3){background:#d99632}.ccx-real-summary #ccxMarkedCount{margin:9px 0 0;font-size:10px}
+body.classcheck-app .ccx-attendance-tools .attendance-summary-card{background:transparent!important;border:0!important;box-shadow:none!important;padding:10px 0 0!important;margin:0!important;font-size:10px!important}
+/* Calendar: preview uses a full calendar card instead of the older date panel. */
+body.classcheck-app [data-app-panel=calendar] .week-strip{padding:21px!important;border-radius:15px!important;max-width:1030px!important}
+body.classcheck-app [data-app-panel=calendar] .week-title{margin-bottom:20px!important;border-bottom:1px solid #f2e7eb;padding-bottom:15px}
+body.classcheck-app [data-app-panel=calendar] .week-title h2{font-size:23px!important}
+body.classcheck-app [data-app-panel=calendar] .calendar-grid{gap:6px!important}
+body.classcheck-app [data-app-panel=calendar] .cal-label{text-align:center;color:#815f70;font-size:10px;font-weight:800;letter-spacing:.08em}
+body.classcheck-app [data-app-panel=calendar] .cal-day{min-height:78px!important;border:1px solid #f1e7eb!important;background:#fff9fb!important;border-radius:10px!important;padding:9px!important;text-align:left}
+body.classcheck-app [data-app-panel=calendar] .cal-day:hover{border-color:#d9a5b6!important;background:#fff1f6!important}
+body.classcheck-app [data-app-panel=calendar] .cal-day.today{border-color:#68172e!important;background:#f4e5ec!important}
+body.classcheck-app [data-app-panel=calendar] .cal-day.complete .dot{background:#238665!important}
+body.classcheck-app [data-app-panel=calendar] .compact-note{max-width:1030px!important;background:#fffaf1!important;border-color:#eddfcc!important;margin-top:15px!important}
+/* SF2: retain original functional form but visually present it in preview-style report cards. */
+body.classcheck-app [data-app-panel=reports] .reports-hero-card{padding:22px!important;max-width:1480px!important}
+body.classcheck-app [data-app-panel=reports] .report-form-grid{display:grid!important;grid-template-columns:repeat(3,minmax(0,1fr))!important;align-items:start;gap:15px!important}
+body.classcheck-app [data-app-panel=reports] .report-form-grid .field{min-width:0}
+body.classcheck-app [data-app-panel=reports] :is(.report-month-wrap,#reportTeacherWrap){position:relative}
+body.classcheck-app .ccx-report-flag{border:1px solid #eed8e1;border-radius:9px;background:#fff;color:#902c4a;padding:10px 15px;font-weight:800;font-size:11px}
+body.classcheck-app [data-app-panel=reports] .report-summary-card{padding:22px!important;border-radius:15px!important;margin-top:16px!important}
+body.classcheck-app [data-app-panel=reports] .report-summary-head-highlight{background:transparent!important}
+body.classcheck-app [data-app-panel=reports] .report-export-actions{display:flex!important;justify-content:flex-end!important;gap:10px!important;max-width:1480px!important}
+/* New live roster, import, archive, and synchronization screens. */
+.ccx-roster-toolbar{padding:15px;display:flex;align-items:end;flex-wrap:wrap;gap:12px;margin-bottom:17px!important}.ccx-roster-toolbar label{display:flex;flex:1;flex-direction:column;gap:7px;min-width:180px;font-size:11px;font-weight:750;color:#71626b}.ccx-roster-toolbar label input,.ccx-roster-toolbar label select{min-height:42px!important;border:1px solid #e9dbe1!important;background:#fff!important;border-radius:9px!important;width:100%;padding:10px 12px!important}
+.ccx-roster-list{max-width:1120px!important}.ccx-roster-group{margin-top:16px}.ccx-roster-group h3{margin:10px 0!important;padding:11px 12px;background:#fff7fa;border-radius:8px;font-size:13px!important;color:#722440!important}.ccx-roster-group h3 small{font-size:10px!important;color:#907989!important;font-weight:500;padding-left:8px}
+body.classcheck-app .ccx-roster-row{width:100%;display:flex;align-items:center;gap:12px;text-align:left;border:0;border-bottom:1px solid #f1e8ec;background:#fff;min-height:65px;padding:10px 4px;color:#332b30;cursor:pointer}.ccx-roster-row:hover{background:#fff9fb}.ccx-roster-avatar{width:37px;height:37px;border-radius:10px;background:#f5e3e9;color:#7e2b48;font-weight:850;display:grid;place-items:center;flex:none}.ccx-roster-row>span:nth-child(2){flex:1;min-width:0}.ccx-roster-row b,.ccx-roster-row small{display:block}.ccx-roster-row b{font-size:12px}.ccx-roster-row small{font-size:10px;color:#8e7f86;margin-top:2px}.ccx-roster-row .svg-icon{width:16px;height:16px;color:#a88091}
+.ccx-import-grid,.ccx-sync-grid{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:16px}.ccx-import-grid>section,.ccx-sync-grid>section{min-width:0}.ccx-import-grid h2,.ccx-sync-grid h2{margin:0 0 10px!important;font-size:19px!important}.ccx-large-art{display:grid;place-items:center;height:140px;overflow:hidden;margin-bottom:9px}.ccx-large-art img{width:190px;max-height:135px;object-fit:contain;mix-blend-mode:multiply}.ccx-import-label{display:flex;flex-direction:column;gap:7px;margin:15px 0;font-size:11px;font-weight:750;color:#6a5662}.ccx-import-label select{min-height:43px;border:1px solid #e9dbe1;background:white;border-radius:9px;padding:10px 11px}
+body.classcheck-app .ccx-file-button{display:flex!important;align-items:center;justify-content:center;gap:9px;background:#68172e!important;color:white!important;cursor:pointer;margin:12px 0;border-radius:9px}.ccx-file-button.disabled{background:#977f88!important;cursor:not-allowed}.ccx-file-button .svg-icon{width:18px;height:18px}.ccx-file-button input{position:absolute;opacity:0;width:1px;height:1px;overflow:hidden;pointer-events:none}
+.ccx-import-steps{display:grid;gap:12px;margin-top:18px}.ccx-import-steps>div{display:flex;align-items:center;gap:13px;border:1px solid #f0e5e9;border-radius:10px;padding:13px}.ccx-import-steps b{width:39px;height:39px;background:#f8e8ed;color:#7d2b45;border-radius:10px;display:grid;place-items:center;flex:none}.ccx-import-steps span{font-size:12px;color:#665661}.ccx-note{font-size:11px;color:#876632;background:#fffaf0;border:1px solid #eddfc6;border-radius:9px;padding:12px;margin-top:16px}
+.ccx-sync-status-line{display:flex;justify-content:space-between;align-items:center;gap:12px;border-top:1px solid #f2e9ec;padding:13px 0;font-size:12px}.ccx-sync-status-line>b{color:#4e3d46}.ccx-sync-status-line>span:last-child{font-size:11px;color:#786973;text-align:right}.ccx-sync-queue-row{display:flex;gap:11px;align-items:center;border-bottom:1px solid #f1e8eb;padding:11px 0}.ccx-sync-queue-row>span:nth-child(2){flex:1}.ccx-sync-queue-row b,.ccx-sync-queue-row small{display:block}.ccx-sync-queue-row b{font-size:12px}.ccx-sync-queue-row small{font-size:10px;color:#8b7e85}
+/* Profile forms and dialogs stay bound to their original JS handlers. */
+body.classcheck-app [data-app-panel=profile] .cc-photo-section{max-width:1040px!important;border:1px solid #f0e6e9!important;background:#fff!important;border-radius:15px!important;padding:24px!important}
+body.classcheck-app [data-app-panel=profile] #profileForm{max-width:1040px!important;padding:24px!important;border-radius:15px!important}
+body.classcheck-app [data-app-panel=profile] .cc-danger-zone{max-width:1040px!important;border-radius:15px!important}
+/* Login as preview: maroon branded area, clay PNG, simple raised form. */
+body.classcheck-login .login-wrap{max-width:1120px!important;min-height:620px!important;overflow:hidden!important;border:1px solid #f0e2e7!important;border-radius:18px!important;box-shadow:0 18px 48px #5b1c321b!important;background:white!important}
+body.classcheck-login .ccx-login-brand{background:linear-gradient(150deg,#68172e,#872642 70%,#a23b58)!important;color:white!important;padding:40px 38px!important}
+body.classcheck-login .ccx-login-brand h2{color:white!important;font-size:35px!important;line-height:1.13}.ccx-login-brand .cc-brand>span:last-child{color:white!important}
+body.classcheck-login .ccx-login-brand p{color:#f1d6e0!important}.ccx-login-brand .cc-welcome-label{color:#edc186!important}
+body.classcheck-login .ccx-login-art{display:block;width:min(330px,100%);height:220px;object-fit:contain;margin:15px auto -8px;filter:drop-shadow(0 8px 14px #280c1720)}
+body.classcheck-login .ccx-login-brand .cc-register-art{display:none!important}
+body.classcheck-login .ccx-login-card{background:#fff!important;padding:56px clamp(26px,4vw,60px)!important}
+body.classcheck-login .ccx-login-card h1.classcheck-hero-heading{font-size:clamp(30px,3vw,43px)!important;letter-spacing:-.04em!important;line-height:1.15!important}
+body.classcheck-login .ccx-login-card .hero-heading-accent{color:#902c4a!important}
+/* Cross-device layout and tap target compliance */
+@media(max-width:1220px){.ccx-stat-grid{grid-template-columns:repeat(3,minmax(0,1fr))}.ccx-dashboard-grid{grid-template-columns:1fr 1fr}.ccx-topbar .ccx-today-chip{display:none}.ccx-account-link small{display:none}.ccx-dash-class-row .ccx-chip{display:none}}
+@media(max-width:1050px){body.classcheck-app .app-shell{padding-left:21px!important;padding-right:21px!important}.ccx-dashboard-grid{grid-template-columns:1fr}.ccx-stat-grid{grid-template-columns:repeat(3,minmax(0,1fr))}body.classcheck-app .ccx-register-layout{grid-template-columns:minmax(0,1fr)!important}.ccx-attendance-register{grid-row:1!important;grid-column:1!important}.ccx-attendance-tools{grid-row:2!important;grid-column:1!important}body.classcheck-app [data-app-panel=reports] .report-form-grid{grid-template-columns:repeat(2,minmax(0,1fr))!important}}
+@media(max-width:780px){
+ body.classcheck-app{overflow-x:hidden!important}
+ body.classcheck-app .ccx-sidebar{width:min(284px,83vw)!important;left:0!important;right:auto!important;transform:translateX(-105%);transition:transform .24s ease;box-shadow:9px 0 40px #3011243b!important;z-index:99!important}
+ body.classcheck-app.ccx-nav-open .ccx-sidebar{transform:translateX(0)!important}
+ body.classcheck-app .ccx-nav-scrim{display:block;position:fixed;inset:0;z-index:95;border:0;background:#16080fb0;opacity:0;pointer-events:none;transition:opacity .2s}
+ body.classcheck-app.ccx-nav-open .ccx-nav-scrim{opacity:1;pointer-events:auto}
+ body.classcheck-app .ccx-mobile-nav{position:fixed;bottom:0;left:0;right:0;z-index:60;display:grid;grid-template-columns:repeat(5,minmax(0,1fr));background:#fffefa;border-top:1px solid #e9d9df;padding:7px 6px calc(7px + env(safe-area-inset-bottom));min-height:calc(65px + env(safe-area-inset-bottom))}
+ body.classcheck-app .ccx-mobile-nav a{display:flex;align-items:center;justify-content:center;flex-direction:column;gap:4px;min-width:0;color:#86727a!important;font-size:9px!important;padding:7px 2px;border-radius:9px;text-decoration:none}
+ body.classcheck-app .ccx-mobile-nav a.active{background:#f8e9ee;color:#68172e!important;font-weight:800}
+ .ccx-mobile-nav svg{width:20px;height:20px}
+ body.classcheck-app .ccx-topbar{left:0!important;right:0;min-height:67px;padding:10px 17px!important;z-index:55}
+ body.classcheck-app .ccx-menu-btn{display:grid!important;place-items:center;width:35px;height:35px;min-width:35px;border:1px solid #eadbe1;border-radius:9px;background:#fff!important;color:#68172e;font-size:20px;padding:0}
+ .ccx-topbar-left{gap:10px}.ccx-topbar-heading small{font-size:8px}.ccx-topbar-heading .ccx-page-title{font-size:17px!important}
+ body.classcheck-app .ccx-account-link{padding-left:0;border:0}.ccx-account-link>span:nth-child(2){display:none}.ccx-account-initial{width:33px;height:33px;font-size:12px}.ccx-topbar-right{gap:8px}
+ body.classcheck-app .ccx-sync-pill{min-width:0!important;min-height:36px;padding:7px 9px!important}.ccx-sync-pill b{font-size:10px}.ccx-sync-pill small{font-size:9px}
+ body.classcheck-app .app-shell,body.classcheck-app .attendance-page,body.classcheck-app .reports-page{margin-left:0!important;width:100%!important;max-width:100%!important;padding:91px 16px calc(89px + env(safe-area-inset-bottom))!important;min-height:100dvh!important}
+ body.classcheck-app [data-app-panel=attendance] .app-shell{padding-bottom:calc(90px + env(safe-area-inset-bottom))!important}
+ body.classcheck-app .ccx-page-heading{flex-wrap:wrap;gap:12px!important;margin-bottom:17px!important}
+ body.classcheck-app .ccx-page-heading h1{font-size:25px!important}
+ body.classcheck-app .ccx-page-heading p{font-size:11px}.ccx-heading-actions{justify-content:flex-start}
+ .ccx-dashboard-hero{padding:20px 19px!important;align-items:flex-start!important}.ccx-dashboard-hero .ccx-hero-date{display:none}.ccx-dashboard-hero h1{font-size:22px!important;line-height:1.2!important}
+ .ccx-stat-grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}.ccx-stat-card{padding:13px!important;min-height:82px}.ccx-stat-icon{width:36px;height:36px;flex-basis:36px}.ccx-stat-icon svg{width:18px;height:18px}.ccx-stat-card strong{font-size:23px}.ccx-stat-card small,.ccx-stat-card span:not(.ccx-stat-icon){font-size:9px}
+ .ccx-dashboard-grid{grid-template-columns:1fr!important}.ccx-card-pad{padding:16px}.ccx-action-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.ccx-dash-class-row .ccx-chip{display:inline-flex}
+ body.classcheck-app #classList.ccx-live-class-grid,.ccx-live-class-grid{grid-template-columns:1fr!important}.ccx-import-grid,.ccx-sync-grid{grid-template-columns:1fr!important}
+ body.classcheck-app .ccx-register-layout{display:grid!important;grid-template-columns:minmax(0,1fr)!important;gap:14px!important}
+ body.classcheck-app .ccx-attendance-register{grid-row:1!important;grid-column:1!important}
+ body.classcheck-app .ccx-attendance-tools{grid-row:2!important;grid-column:1!important}
+ body.classcheck-app .ccx-attendance-register .roster-heading{padding:16px!important}
+ body.classcheck-app .radio-attendance-list .learner-group{padding:0 13px!important}
+ body.classcheck-app .radio-attendance-list .student-row{grid-template-columns:25px minmax(90px,1fr)!important;gap:7px!important;min-height:86px!important;padding:12px 3px!important}
+ body.classcheck-app .radio-attendance-list .student-avatar{width:24px!important;height:24px!important}
+ body.classcheck-app .radio-attendance-list .student-main{grid-column:2!important}
+ body.classcheck-app .radio-attendance-list .student-main b{font-size:11px!important}
+ body.classcheck-app .radio-attendance-list .status-radio-group{grid-row:2!important;grid-column:1/-1!important;margin-left:31px!important;width:calc(100% - 31px)!important}
+ body.classcheck-app .radio-attendance-list .status-radio{min-height:39px!important;font-size:10px!important;padding:7px 4px!important}
+ .ccx-register-footer{padding:16px!important}.ccx-register-footer .btn{width:100%}
+ .ccx-filterbar{padding:12px;gap:9px}.ccx-filterbar label{min-width:calc(50% - 6px);font-size:10px}.ccx-filterbar .ccx-search-field{min-width:100%}
+ body.classcheck-app [data-app-panel=calendar] .week-strip{padding:13px!important}
+ body.classcheck-app [data-app-panel=calendar] .cal-day{min-height:55px!important;padding:6px!important}
+ body.classcheck-app [data-app-panel=calendar] .cal-label{font-size:8px}
+ body.classcheck-app [data-app-panel=reports] .report-form-grid{grid-template-columns:1fr!important}
+ body.classcheck-app [data-app-panel=reports] .report-export-actions{flex-wrap:wrap;justify-content:stretch!important}
+ body.classcheck-app [data-app-panel=reports] .report-export-actions .btn{flex:1}
+ body.classcheck-app .ccx-roster-toolbar{align-items:stretch}.ccx-roster-toolbar label{min-width:100%}
+ body.classcheck-login .login-wrap{width:calc(100% - 28px)!important;margin:20px auto!important;min-height:0!important}
+ body.classcheck-login .ccx-login-card{padding:34px 25px!important}
+ body.classcheck-login .ccx-login-brand{display:none!important}
+ .ccx-sync-popover{right:8px;top:62px}
+}
+@media(max-width:380px){.ccx-stat-card{gap:8px!important}.ccx-stat-icon{width:32px;height:32px;flex-basis:32px}.ccx-stat-card strong{font-size:21px}.ccx-account-initial{display:none!important}body.classcheck-app .ccx-sync-pill{padding:5px 7px!important}}
+@media(prefers-reduced-motion:reduce){body.classcheck-app .ccx-sidebar,body.classcheck-app .ccx-nav-scrim,.ccx-sync-pill,.ccx-stat-card{transition:none!important;animation:none!important}}
+
+/* v18 preview fidelity: replace legacy date/section panel with live overview. The legacy DOM controls remain hidden for compatibility with the original date-navigation event handlers. */
+body.classcheck-app .ccx-attendance-tools>.panel-heading,body.classcheck-app .ccx-attendance-tools>.date-deck,body.classcheck-app .ccx-attendance-tools>.section-label,body.classcheck-app .ccx-attendance-tools>.class-rail,body.classcheck-app .ccx-attendance-tools>.attendance-summary-card{display:none!important}
+body.classcheck-app .ccx-side-overview-heading{margin-bottom:14px;padding-bottom:15px;border-bottom:1px solid #eee0e5}
+body.classcheck-app .ccx-side-overview-heading h2{margin:7px 0 6px;font-size:18px;font-weight:750;letter-spacing:-.025em;color:#29212b}
+body.classcheck-app .ccx-side-overview-heading p{font-size:12px;margin:0;color:#817680;line-height:1.5}
+body.classcheck-app .ccx-attendance-tools .ccx-real-summary{margin-top:0!important}
+body.classcheck-app .ccx-attendance-tools .cc-qr-toolbar{margin-top:16px!important;display:grid!important;grid-template-columns:1fr!important;gap:9px!important}
+body.classcheck-app .ccx-attendance-tools .cc-qr-toolbar button{width:100%!important}
+
+/* Keep QR actions from the original component available while removing only its redundant old count labels. */
+body.classcheck-app .ccx-attendance-tools>.attendance-summary-card{display:block!important;margin:0!important;padding:0!important;background:transparent!important;border:0!important;box-shadow:none!important}
+body.classcheck-app .ccx-attendance-tools>.attendance-summary-card>.summary-icon,body.classcheck-app .ccx-attendance-tools>.attendance-summary-card>.summary-copy{display:none!important}
+body.classcheck-app .ccx-attendance-tools .cc-qr-toolbar{padding:0!important}

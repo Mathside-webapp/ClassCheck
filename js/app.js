@@ -216,7 +216,8 @@
         <span><b>${escapeHtml(teacherName)}</b><small>Daily attendance</small></span>
       </a>
       <div class="classcheck-nav-links">
-        ${items.map(([key,ico,label])=>`<a class="nav-item ${key==='profile'?'classcheck-mobile-profile-nav ':''}${active===key?'active':''}" href="${hrefFor(key)}" ${active===key?'aria-current="page"':''}><span class="nav-icon">${icon(ico)}</span><span>${label}</span></a>`).join('')}
+        ${items.map(([key,ico,label])=>`<a class="nav-item ${['calendar','reports','profile'].includes(key)?'qb-secondary-nav ':''}${key==='profile'?'classcheck-mobile-profile-nav ':''}${active===key?'active':''}" href="${hrefFor(key)}" ${active===key?'aria-current="page"':''}><span class="nav-icon">${icon(ico)}</span><span>${label}</span></a>`).join('')}
+        <details class="qb-more"><summary class="nav-item ${['calendar','reports','profile'].includes(active)?'active':''}"><span class="nav-icon">${icon('chevron-down')}</span><span>More</span></summary><div class="qb-more-menu">${items.filter(([key])=>['calendar','reports','profile'].includes(key)).map(([key,ico,label])=>`<a href="${hrefFor(key)}" ${active===key?'aria-current="page"':''}>${icon(ico)} ${label}</a>`).join('')}</div></details>
       </div>
       <a class="classcheck-profile-link ${active==='profile'?'active':''}" href="${hrefFor('profile')}"><span class="nav-icon">${icon('user')}</span><span>Teacher Profile</span></a><div class="cc-sidebar-note">A little check.<br><b>A big difference.</b><span>Every learner counts.</span></div>`;
     hydrateIcons(el);

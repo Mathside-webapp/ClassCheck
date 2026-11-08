@@ -34,15 +34,15 @@ document.addEventListener('DOMContentLoaded',async()=>{
   function render(){
     refreshState();
     document.querySelectorAll('[data-class-filter]').forEach(btn=>btn.classList.toggle('active',btn.dataset.classFilter===currentFilter));
-    const rows=filteredClasses();
-    list.innerHTML=rows.map(c=>{
+    const rows=filteredClasses().slice().sort((a,b)=>Number(isAdviser(b))-Number(isAdviser(a)));
+    list.innerHTML=rows.map((c,index)=>{
       const count=activeStudents(c.id).length;
       const adviser=isAdviser(c);
       const archived=c.archived;
       const action=archived&&adviser
         ? '<button class="btn primary restore-class" type="button">Restore</button>'
         : `<button class="btn soft open-roster" type="button">${archived?'View':'Open'}</button>`;
-      return `<div class="card class-card ${archived?'is-archived':''}" data-id="${c.id}"><div class="class-badge">${c.section_name.slice(0,2).toUpperCase()}</div><div class="class-info"><h3>${c.grade_level} – ${c.section_name}</h3><p>${count} learners • ${roleText(c)}${archived?' • Archived':''}</p></div>${action}</div>`;
+      return `${index===0||isAdviser(rows[index-1])!==adviser?`<h2 class="qb-directory-heading">${adviser?'Advisory classes':'Shared classes'}</h2>`:''}<div class="card class-card ${archived?'is-archived':''}" data-id="${c.id}"><div class="class-badge">${c.section_name.slice(0,2).toUpperCase()}</div><div class="class-info"><h3>${c.grade_level} – ${c.section_name}</h3><p>${count} learners • ${roleText(c)}${archived?' • Archived':''}</p></div>${action}</div>`;
     }).join('')||`<div class="card empty">${currentFilter==='archived'?'No archived classes.':'No classes here yet.'}</div>`;
     document.querySelectorAll('.open-roster').forEach(btn=>btn.onclick=e=>openRoster(e.target.closest('[data-id]').dataset.id));
     document.querySelectorAll('.restore-class').forEach(btn=>btn.onclick=e=>setClassArchived(e.target.closest('[data-id]').dataset.id,false));

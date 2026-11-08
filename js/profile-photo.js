@@ -2,6 +2,26 @@
 (() => {
   const bucket = 'classcheck-profile-photos';
   let photoURL = '', request = 0;
+  function photoErrorMessage(error, uploaded = false) {
+    const code = String(error?.code || error?.error || '').toLowerCase();
+    const message = String(error?.message || '').toLowerCase();
+    const status = Number(error?.statusCode || error?.status || 0);
+    const details = `${code} ${message}`;
+    const prefix = uploaded ? 'Your photo was uploaded, but its preview could not be loaded. ' : '';
+    if (/bucket.*not.*found|nosuchbucket|bucket_not_found/.test(details))
+      return prefix + 'Profile-photo storage is missing. Run sql/09-profile-photos.sql in the ClassCheck Supabase project, then retry.';
+    if (/jwt|token.*expired|invalid.*token|session.*missing/.test(details) || status === 401)
+      return prefix + 'Your sign-in session has expired. Sign in again, then retry.';
+    if (/row.level.security|row_level_security|unauthorized|access.?denied|permission/.test(details) || status === 403)
+      return prefix + 'Profile-photo access was denied. Check the owner-only storage policies in sql/09-profile-photos.sql, then retry.';
+    if (status === 413 || /too.large|size.*exceed|payload/.test(details))
+      return prefix + 'The photo is too large for storage. Choose a smaller image size and retry.';
+    if (/mime|content.type|invalid.*type/.test(details))
+      return prefix + 'Storage rejected the image format. The profile-photo bucket must allow image/jpeg.';
+    if (/fetch|network|connection|timeout/.test(details))
+      return prefix + 'The storage service could not be reached. Check your connection and retry.';
+    return prefix + `The photo request failed${status ? ` (HTTP ${status})` : ''}. Please retry. If it continues, check the browser console for the storage error.`;
+  }
   function paint() {
     const preview = document.getElementById('profilePhotoPreview');
     const placeholder = document.getElementById('profilePhotoPlaceholder');
@@ -26,8 +46,10 @@
     const rotated = document.createElement('canvas');
     async function loadPhoto() {
       if (APP_CONFIG.DEMO_MODE) return;
-      const { data, error } = await supa.storage.from(bucket).createSignedUrl(path, 3600);
-      if (!error && data?.signedUrl) { photoURL = data.signedUrl; paint(); }
+      try {
+        const { data, error } = await supa.storage.from(bucket).createSignedUrl(path, 3600);
+        if (!error && data?.signedUrl) { photoURL = data.signedUrl; paint(); }
+      } catch { /* Existing initials remain available offline. */ }
     }
     function draw() {
       if (!source) return;
@@ -71,17 +93,20 @@
       if (!navigator.onLine) { editorStatus.textContent = 'Reconnect to the internet, then try uploading again.'; return; }
       busy = true; editorStatus.textContent = 'Uploading your photo…';
       dialog.querySelectorAll('button,input,select').forEach(el => el.disabled = true);
+      let uploaded = false;
       try {
         const blob = await new Promise(resolve => canvas.toBlob(resolve, 'image/jpeg', .88));
         if (!blob) throw new Error('Image export failed. Please try another photo.');
         const { error } = await supa.storage.from(bucket).upload(path, blob, { contentType:'image/jpeg', upsert:true, cacheControl:'0' });
         if (error) throw error;
+        uploaded = true;
         const { data, error:readError } = await supa.storage.from(bucket).createSignedUrl(path, 3600);
         if (readError) throw readError;
+        if (!data?.signedUrl) throw new Error('Storage did not return a preview URL.');
         photoURL = data.signedUrl; paint(); dialog.close(); status.textContent = 'Profile photo updated.';
       } catch (err) {
         console.error('Profile photo upload failed', err);
-        editorStatus.textContent = 'Could not upload your photo. Check your connection and that the profile-photo SQL setup has been applied, then retry.';
+        editorStatus.textContent = photoErrorMessage(err, uploaded);
       } finally { busy = false; dialog.querySelectorAll('button,input,select').forEach(el => el.disabled = false); }
     };
     await loadPhoto(); paint();

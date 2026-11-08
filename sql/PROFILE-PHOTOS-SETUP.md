@@ -14,3 +14,7 @@ The editor accepts JPEG, PNG and WebP up to 10 MB / 32 megapixels, crops a squar
 - Test account deletion on a disposable account with a photo after deploying the replacement function.
 
 These migrations/functions have been prepared, not executed or deployed by this task. Live storage authorization and account-deletion integration require these checks after deployment.
+
+## Upload troubleshooting
+
+If setup has not been applied, run `09-profile-photos.sql` in the project configured in `js/config.js`. If it has, run `10-profile-photo-diagnostics.sql` (read-only) to inspect the bucket and policies. The frontend now distinguishes missing bucket, denied access, expired session, oversized image, unsupported MIME type and network failure. It separately reports when the upload succeeds but the signed preview fails. Keep the bucket private and retain owner-only access; do not disable RLS to resolve an upload failure.
